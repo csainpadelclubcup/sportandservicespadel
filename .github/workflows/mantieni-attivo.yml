@@ -1,0 +1,32 @@
+name: Mantieni attivo Supabase
+# Ogni 2 giorni interroga il database Supabase, così il progetto gratuito non va in pausa.
+on:
+  schedule:
+    - cron: "23 5 */2 * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Interroga Supabase
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://hbmmlnyfiesmmbmxkmcp.supabase.co/rest/v1/schede?select=id&limit=1" \
+            -H "apikey: sb_publishable_TYJtDyl4jTCrVNPYCJ-B4w_00i41uID")
+          echo "Risposta Supabase: $code"
+          test "$code" = "200"
+      - name: Segno di vita mensile (evita che GitHub sospenda questa automazione)
+        if: github.event_name == 'workflow_dispatch' || startsWith(format('{0}', github.run_number), '') 
+        run: |
+          d=$(date +%d)
+          if [ "$d" = "01" ] || [ "$d" = "02" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            git clone --depth 1 "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" repo
+            cd repo
+            date -u +"%Y-%m-%d %H:%M UTC" > .github/ultimo-controllo.txt
+            git config user.name "mantieni-attivo"
+            git config user.email "actions@users.noreply.github.com"
+            git add .github/ultimo-controllo.txt
+            git commit -m "Controllo automatico Supabase" && git push || true
+          fi
