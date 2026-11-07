@@ -76,6 +76,14 @@
     // interrogazione al database con il token dell'utente
     db: function (path) {
       return Auth.token().then(function (t) { if (!t) return { ok: false, status: 401, data: null }; return req('/rest/v1/' + path, { token: t }); });
+    },
+    // invio di una riga (modulo) con il token dell'utente
+    invia: function (tabella, riga) {
+      return Auth.token().then(function (t) { if (!t) return { ok: false, status: 401, data: null }; return req('/rest/v1/' + tabella, { method: 'POST', token: t, body: riga, headers: { Prefer: 'return=minimal' } }); });
+    },
+    // dati del profilo (nome, cognome, telefono) salvati alla registrazione
+    profilo: function () {
+      return Auth.token().then(function (t) { if (!t) return null; return req('/auth/v1/user', { token: t }).then(function (r) { return r.ok ? (r.data.user_metadata || {}) : null; }); });
     }
   };
   window.SSAuth = Auth;
