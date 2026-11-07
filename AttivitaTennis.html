@@ -197,7 +197,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <section class="wrapx" style="padding-top:56px;padding-bottom:16px">
 <p class="eb">Attività · Tennis</p>
 <h1 class="h1x">Moduli Tennis</h1>
-<p class="lead">Scegli il modulo, compila i campi e premi <b>Invia</b>. Ti risponderemo per confermare giorno e orario.</p>
+<p class="lead">Scegli il modulo, compila i campi e premi <b>Invia</b>. È una <b>richiesta</b>: la conferma di giorno e orario ti arriverà sempre con un messaggio <b>WhatsApp o SMS</b>.</p>
 <p class="small" style="margin-top:10px">Cerchi i moduli di padel? <a href="AttivitaPadel.html">Vai ai moduli padel</a> · <a href="Attivita.html">Come funzionano i moduli</a></p>
 </section>
 <section class="wrapx" style="padding-top:16px;padding-bottom:96px">
@@ -253,11 +253,11 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <div class="grid2">
 <label class="fld">Nome *<input id="nome" type="text" required autocomplete="given-name"></label>
 <label class="fld">Cognome *<input id="cognome" type="text" required autocomplete="family-name"></label>
-<label class="fld">Telefono *<input id="tel" type="tel" required autocomplete="tel"></label>
+<label class="fld">Cellulare (per la conferma via WhatsApp o SMS) *<input id="tel" type="tel" required autocomplete="tel"></label>
 <label class="fld">Email<input id="email" type="email" readonly></label>
 </div>
 <label class="fld">Note<textarea id="note" placeholder="Altre informazioni utili"></textarea></label>
-<p class="small" style="margin:0 0 16px">Ricorda: il modulo va inviato almeno il giorno prima, per i prossimi 14 giorni al massimo; per i corsi entro la domenica sera. I campi con * sono obbligatori.</p>
+<p class="small" style="margin:0 0 16px">Questa è una <b>richiesta</b>: riceverai la conferma con un messaggio WhatsApp o SMS. Il modulo va inviato almeno il giorno prima, per i prossimi 14 giorni al massimo; per i corsi entro la domenica sera. I campi con * sono obbligatori.</p>
 <p id="m" class="msg"></p>
 <button id="b" class="bt" type="submit">Invia</button>
 </form>
@@ -270,7 +270,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 </div>
 </section>
 <script>
-var SPORT='tennis', NOME_SPORT='Tennis', MODS={"lezione": ["Lezione privata", "Una lezione con il maestro: da solo (singola), in due o in tre. Scegli la formula, il giorno e l’orario che preferisci."], "corso": ["Corso", "Iscrizione a un corso settimanale. La richiesta va inviata entro la domenica sera per la settimana seguente."], "allenamento": ["Allenamento", "Una sessione di allenamento per migliorare colpi, gioco e condizione, da solo o con altri giocatori."], "partita": ["Partita", "Vuoi giocare una partita? Dicci quando, con chi e se ti mancano giocatori: organizziamo noi."]}, MOD='lezione';
+var SPORT='tennis', NOME_SPORT='Tennis', MODS={"lezione": ["Lezione privata", "Richiesta di una lezione con il maestro: da solo (singola), in due o in tre. Scegli la formula, il giorno e l’orario che preferisci."], "corso": ["Corso", "Richiesta di partecipazione a un corso settimanale, da inviare entro la domenica sera per la settimana seguente."], "allenamento": ["Allenamento", "Richiesta di una sessione di allenamento per migliorare colpi, gioco e condizione, da solo o con altri giocatori."], "partita": ["Partita", "Richiesta di una partita: dicci quando, con chi e se ti mancano giocatori, la organizziamo noi."]}, MOD='lezione';
 function $(i){return document.getElementById(i)}
 function v(i){return ($(i).value||'').trim()}
 function rv(n){var e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:''}
@@ -281,9 +281,9 @@ function finestra(){var o=oggiRoma(),min=piu(o,1),max=piu(o,14);if(MOD==='corso'
 function fmt(s){if(!s)return'';var d=new Date(s+'T12:00:00');return d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}
 function scegli(k){MOD=k;document.querySelectorAll('.mods button').forEach(function(b){var on=b.dataset.m===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   document.querySelectorAll('[data-solo]').forEach(function(d){d.hidden=d.dataset.solo!==k});
-  $('titolo').textContent=MODS[k][0]+' · '+NOME_SPORT;$('descr').textContent=MODS[k][1];
+  $('titolo').textContent='Richiesta: '+MODS[k][0]+' · '+NOME_SPORT;$('descr').textContent=MODS[k][1];
   var w=finestra();['giorno','giorno2'].forEach(function(i){$(i).min=w[0];$(i).max=w[1];if($(i).value&&($(i).value<w[0]||$(i).value>w[1]))$(i).value=''});
-  $('avviso').innerHTML=(k==='corso'?'Corsi: richiesta <b>entro la domenica sera</b> per la settimana seguente. ':'Richiesta <b>almeno il giorno prima</b>. ')+'Puoi scegliere un giorno dal <b>'+fmt(w[0])+'</b> al <b>'+fmt(w[1])+'</b>.';
+  $('avviso').innerHTML=(k==='corso'?'Corsi: richiesta <b>entro la domenica sera</b> per la settimana seguente. ':'Richiesta <b>almeno il giorno prima</b>. ')+'Puoi scegliere un giorno dal <b>'+fmt(w[0])+'</b> al <b>'+fmt(w[1])+'</b>. È una richiesta: la conferma arriva sempre via WhatsApp o SMS.';
   $('m').textContent='';altri()}
 function altri(){var f=rv('formula');$('w-altri').hidden=!(MOD==='lezione'&&f&&f!=='Singola')}
 document.querySelectorAll('input[name=formula]').forEach(function(r){r.onchange=altri});
@@ -296,7 +296,7 @@ function invia(e){e.preventDefault();var w=finestra(),g=v('giorno');
   if(v('a')<=v('da'))return err('L’orario di fine deve essere dopo quello di inizio.');
   if(!rv('superficie'))return err('Scegli la superficie di gioco.');
   if(MOD==='lezione'&&rv('formula')!=='Singola'&&!v('altri'))return err('Scrivi il nome degli altri partecipanti.');
-  if(!v('nome')||!v('cognome')||!v('tel'))return err('Completa nome, cognome e telefono.');
+  if(!v('nome')||!v('cognome')||!v('tel'))return err('Completa nome, cognome e cellulare (serve per la conferma via WhatsApp o SMS).');
   var d=[];function add(c,x){if(x)d.push({c:c,v:x})}
   add('Sport',NOME_SPORT);add('Modulo',MODS[MOD][0]);
   if(MOD==='lezione'){add('Formula',rv('formula'));add('Altri partecipanti',v('altri'))}
@@ -313,7 +313,7 @@ function invia(e){e.preventDefault();var w=finestra(),g=v('giorno');
     if(r.status===401){location.href='Account.html?next=Attivita'+NOME_SPORT+'.html';return}
     if(!r.ok)return err('Invio non riuscito: controlla il giorno scelto (almeno il giorno prima, massimo 14 giorni; corsi entro domenica sera) e riprova.');
     $('f').hidden=true;$('ok').hidden=false;
-    $('ok-t').textContent='Abbiamo ricevuto la tua richiesta di '+MODS[MOD][0].toLowerCase()+' di '+NOME_SPORT.toLowerCase()+' per '+fmt(g)+', '+v('da')+'–'+v('a')+'. Ti contatteremo per confermare.';
+    $('ok-t').textContent='Abbiamo ricevuto la tua richiesta di '+MODS[MOD][0].toLowerCase()+' di '+NOME_SPORT.toLowerCase()+' per '+fmt(g)+', '+v('da')+'–'+v('a')+'. Non è ancora una prenotazione: ti invieremo la conferma con un messaggio WhatsApp o SMS al numero '+v('tel')+'.';
     $('ok').scrollIntoView({block:'center',behavior:'smooth'});
   }).catch(function(){b.disabled=false;b.textContent='Invia';err('Connessione assente: riprova tra poco.')})
   return false}
