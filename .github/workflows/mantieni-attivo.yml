@@ -18,7 +18,6 @@ jobs:
           echo "Risposta Supabase: $code"
           test "$code" = "200"
       - name: Segno di vita mensile (evita che GitHub sospenda questa automazione)
-        if: github.event_name == 'workflow_dispatch' || startsWith(format('{0}', github.run_number), '') 
         run: |
           d=$(date +%d)
           if [ "$d" = "01" ] || [ "$d" = "02" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
