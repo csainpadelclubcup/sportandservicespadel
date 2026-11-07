@@ -168,6 +168,7 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
   <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:18px">
     <a class="bt" href="SchedePadel.html" style="text-decoration:none">Schede tecniche Padel</a>
     <a class="bt" href="SchedeTennis.html" style="text-decoration:none">Schede tecniche Tennis</a>
+    <a id="lk-adm" hidden class="bt ghost" style="text-decoration:none" href="Iscrizioni.html">Moduli ricevuti</a>
     <button class="bt ghost" type="button" onclick="esci()">Esci</button>
   </div>
 </div>
@@ -217,7 +218,7 @@ function $(i){return document.getElementById(i)}
 function msg(id,t,ok){var e=$(id);e.textContent=t||'';e.className='msg '+(ok?'ok':'err')}
 function tab(w){$('f-acc').hidden=w!=='acc';$('f-reg').hidden=w!=='reg';$('t-acc').classList.toggle('on',w==='acc');$('t-reg').classList.toggle('on',w==='reg')}
 function prossima(){var n=new URLSearchParams(location.search).get('next');return n&&/^[A-Za-z]+\.html$/.test(n)?n:null}
-function mostra(){var s=A.sessione();$('vista-utente').hidden=!s;$('vista-form').hidden=!!s;if(s){$('u-email').textContent=s.email||'';$('u-nome').textContent=s.nome||''}}
+function mostra(){var s=A.sessione();$('vista-utente').hidden=!s;$('vista-form').hidden=!!s;if(s){$('u-email').textContent=s.email||'';$('u-nome').textContent=s.nome||'';$('lk-adm').hidden=(s.email||'').toLowerCase()!=='gianluca.micarelli@gmail.com'}}
 function accedi(e){e.preventDefault();var b=$('b-acc');b.disabled=true;msg('m-acc','');
   A.accedi($('a-email').value.trim(),$('a-pwd').value).then(function(r){b.disabled=false;
     if(!r.ok){msg('m-acc',A.errore(r));return}

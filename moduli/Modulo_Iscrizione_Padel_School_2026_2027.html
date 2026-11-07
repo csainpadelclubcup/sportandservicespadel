@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modulo d’iscrizione Padel School 2026–2027 — Sport &amp; Services Padel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Barlow:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="moduli.css">
+<script src="../js/jspdf.umd.min.js"></script><script src="../js/html2canvas.min.js"></script><script src="moduli.js"></script>
+</head>
+<body data-file="Modulo_Iscrizione_Padel_School_2026_2027" data-modulo="Iscrizione Padel School" >
+<div class="site-bar"><div class="in">
+<a class="brand" href="../Main.dc.html"><img src="img/logo-ss.png" alt=""><div><b>SPORT &amp; SERVICES PADEL</b><span>Padel School · Modulistica online</span></div></a>
+<a class="back" href="../PadelSchool.dc.html">← Torna al sito</a>
+</div></div>
+
+<div class="site-info"><b class="t">Come si invia questo modulo</b><ol>
+<li>Compila il modulo: i dati che scrivi nella prima pagina passano da soli alla tessera assicurativa.</li>
+<li>Scegli l’ente di tesseramento (<b>CSAIN</b> o <b>MSP</b>) e premi <b>Invia</b>: i dati arrivano subito a Sport &amp; Services.</li>
+<li>Premi <b>Stampa</b> o <b>Scarica PDF</b>, <b>firma</b> il modulo e invialo a <a href="mailto:info@sportandservicespadel.it">info@sportandservicespadel.it</a>: è il documento ufficiale che resta agli atti.</li></ol></div>
+<div class="toolbar"><div class="tb-title">Padel School · <span id="tb-sub">Modulo d’iscrizione 2026–2027</span></div>
+<button class="btn btn-lime" onclick="inviaModulo(this)">Invia</button><button class="btn btn-light" onclick="window.print()">Stampa</button><button class="btn btn-ghost" onclick="scaricaPDF()">Scarica PDF</button></div>
+<div id="loader">CREAZIONE PDF IN CORSO…</div><div id="toast"></div>
+<main class="pages">
+<div class="chooser" id="chooser" data-noinvio><b>Ente di tesseramento</b><div class="note" style="font-size:14px">La quota di iscrizione comprende la tessera assicurativa: scegli l’ente.</div>
+<div class="radios"><label><input type="radio" name="ente" value="CSAIN" checked onchange="mostraEnte()"> CSAIN – valida fino al 31/12/2027</label><label><input type="radio" name="ente" value="MSP" onchange="mostraEnte()"> MSP – valida fino al 31/08/2027</label></div></div>
+
+<section class="page" id="p-iscr" data-nome="Iscrizione"><div class="inner"><header class="hdr">
+  <div class="logos"><img class="ss" src="img/logo-ss.png" alt="Sport &amp; Services Padel"></div>
+  <div class="brand"><div class="name">A.S.D. Sport &amp; Services</div><div class="ed">Padel School · Stagione 2026 – 2027</div></div>
+  <div class="badge"><div class="t">Modulo d’iscrizione</div><div class="m">Scuola Padel · Pagina 1 di 2</div></div>
+</header>
+<div class="title">Iscrizione <span>Scuola Padel</span> 2026 – 2027</div>
+<p class="sub">Corsi con Istruttori Federali FITP · lezioni da 60 minuti</p>
+<div class="sec">Quote</div>
+<div class="price"><div class="d"><b>Iscrizione al corso</b><small>comprensiva di tessera assicurativa CSAIN o MSP</small></div><div class="p">€ 30</div></div>
+<div class="price"><div class="d"><b>Corso mono settimanale</b>1 lezione a settimana da 60 minuti<br><small>costo bimestrale</small></div><div class="p">€ 100</div></div>
+<div class="price"><div class="d"><b>Corso bisettimanale</b>2 lezioni a settimana da 60 minuti<br><small>costo bimestrale</small></div><div class="p">€ 200</div></div>
+<div class="sec">Dati dell’allievo</div>
+<div class="grid g2"><div class="f"><label class="lbl">Nome</label><input type="text" class="in up" data-k="nome" placeholder="" ></div><div class="f"><label class="lbl">Cognome</label><input type="text" class="in up" data-k="cognome" placeholder="" ></div></div>
+<div class="grid" style="grid-template-columns:1.2fr 2fr 1fr;margin-top:10px"><div class="f"><label class="lbl">Nato/a il</label><input type="text" class="in " data-k="data_nascita" placeholder="GG/MM/AAAA" ></div><div class="f"><label class="lbl">Nato/a a</label><input type="text" class="in up" data-k="luogo_nascita" placeholder="" ></div><div class="f"><label class="lbl">Provincia</label><input type="text" class="in up" data-k="prov_nascita" placeholder="" ></div></div>
+<div class="grid" style="grid-template-columns:3fr 1fr .9fr;margin-top:10px"><div class="f"><label class="lbl">Indirizzo</label><input type="text" class="in up" data-k="via" placeholder="" ></div><div class="f"><label class="lbl">Provincia</label><input type="text" class="in up" data-k="prov" placeholder="" ></div><div class="f"><label class="lbl">Taglia</label><select class="in" data-k="taglia"><option value=""></option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>Bambino</option></select></div></div>
+<div class="grid g2" style="margin-top:10px"><div class="f"><label class="lbl">Telefono</label><input type="tel" class="in " data-k="telefono" placeholder="" ></div><div class="f"><label class="lbl">E-mail</label><input type="email" class="in " data-k="email" placeholder="" ></div></div>
+<div class="sec">Corso scelto</div>
+<div class="panel"><div class="f"><span class="lbl">Frequenza</span><div class="radios"><label><input type="radio" name="corso" value="Mono settimanale"> Mono settimanale (€ 100 a bimestre)</label><label><input type="radio" name="corso" value="Bisettimanale"> Bisettimanale (€ 200 a bimestre)</label></div></div></div>
+<div class="f" style="margin-top:12px"><label class="lbl">Note (giorni e orari preferiti, livello di gioco…)</label><textarea class="in" rows="3" data-k="note"></textarea></div>
+<label class="check note" style="margin-top:10px"><input type="checkbox" class="consenso"> Ho letto l’informativa privacy (sportandservicespadel.it/Privacy.html) e acconsento al trattamento dei dati per l’iscrizione e il tesseramento.</label>
+<div class="signs"><div class="sign"><div class="ln"></div><div class="cap">Data</div></div><div class="sign"><div class="ln"></div><div class="cap">Firma (o di chi esercita la responsabilità genitoriale)</div></div></div>
+<footer class="foot"><span><b>A.S.D. Sport &amp; Services</b> · Modulo d’iscrizione Scuola Padel 2026 – 2027</span><span class="g">info@sportandservicespadel.it · 393.330.36.52</span></footer>
+</div></section>
+<section class="page" id="p-csain" data-nome="Tessera CSAIN"><div class="inner"><header class="hdr">
+  <div class="logos"><img class="ss" src="img/logo-ss.png" alt="Sport &amp; Services Padel"><span class="sep"></span><img src="img/logo-csain.png" alt="CSAIN" style="height:46px"></div>
+  <div class="brand"><div class="name">A.S.D. Sport &amp; Services</div><div class="ed">Padel School · Stagione 2026 – 2027</div></div>
+  <div class="badge"><div class="t">Modulo tessera assicurativa</div><div class="m">Ente di Promozione Sportiva CSAIN</div></div>
+</header>
+<div class="title">Tessera assicurativa <span>CSAIN</span></div>
+<p class="sub">Tesseramento CSAIN · copertura valida fino al 31 dicembre 2027</p>
+<div class="sec">Dichiarazione</div>
+<p class="legal">Il/la sottoscritto/a richiede di tesserarsi presso l’Ente di Promozione Sportiva <b>CSAIN</b> e prende atto che la tessera assicurativa dà diritto a una copertura assicurativa <b>valida fino al 31/12/2027</b>. Dichiara di aver consultato le condizioni assicurative per il tesseramento “Basic” presenti sul sito dello CSAIN all’indirizzo <b>https://www.csain.it/assicurazioni/reale-mutua/</b> e, con la firma della presente, si impegna a rinunciare a qualsiasi risarcimento eccedente il valore dei massimali della polizza Basic.</p>
+<div class="sec">Dati del tesserato</div>
+<div class="grid" style="grid-template-columns:1fr 1fr"><div class="f"><label class="lbl">Nome</label><input type="text" class="in up" data-k="nome" placeholder="" ></div><div class="f"><label class="lbl">Cognome</label><input type="text" class="in up" data-k="cognome" placeholder="" ></div></div>
+<div class="grid" style="grid-template-columns:2fr 1fr 1.2fr;margin-top:10px"><div class="f"><label class="lbl">Nato/a a</label><input type="text" class="in up" data-k="luogo_nascita" placeholder="" ></div><div class="f"><label class="lbl">Provincia</label><input type="text" class="in up" data-k="prov_nascita" placeholder="" ></div><div class="f"><label class="lbl">Il</label><input type="text" class="in " data-k="data_nascita" placeholder="GG/MM/AAAA" ></div></div>
+<div class="grid" style="grid-template-columns:2fr 1fr;margin-top:10px"><div class="f"><label class="lbl">Residente a</label><input type="text" class="in up" data-k="citta" placeholder="" ></div><div class="f"><label class="lbl">Provincia</label><input type="text" class="in up" data-k="prov" placeholder="" ></div></div>
+<div class="grid" style="grid-template-columns:3fr .8fr 1fr;margin-top:10px"><div class="f"><label class="lbl">Via</label><input type="text" class="in up" data-k="via" placeholder="" ></div><div class="f"><label class="lbl">N°</label><input type="text" class="in " data-k="civico" placeholder="" ></div><div class="f"><label class="lbl">CAP</label><input type="text" class="in " data-k="cap" placeholder="" ></div></div>
+<div class="sec">Documento di riconoscimento</div>
+<div class="grid g4"><div class="f"><label class="lbl">Tipo di documento</label><input type="text" class="in " data-k="doc_tipo" placeholder="Carta d’identità…" ></div><div class="f"><label class="lbl">Emesso da</label><input type="text" class="in " data-k="doc_ente" placeholder="" ></div><div class="f"><label class="lbl">Emesso il</label><input type="text" class="in " data-k="doc_data" placeholder="GG/MM/AAAA" ></div><div class="f"><label class="lbl">Scadenza il</label><input type="text" class="in " data-k="doc_scad" placeholder="GG/MM/AAAA" ></div></div>
+<div class="grid g2" style="margin-top:10px"><div class="f"><label class="lbl">Telefono</label><input type="tel" class="in " data-k="telefono" placeholder="" ></div><div class="f"><label class="lbl">E-mail</label><input type="email" class="in " data-k="email" placeholder="" ></div></div>
+<label class="check note" style="margin-top:12px"><input type="checkbox" class="consenso"> Ho letto l’informativa privacy (sportandservicespadel.it/Privacy.html) e acconsento al trattamento dei dati per il tesseramento.</label>
+<div class="panel grid g2" style="margin-top:12px"><div class="f"><label class="lbl">Luogo</label><input type="text" class="in up" data-k="luogo_firma" placeholder="" ></div><div class="f"><label class="lbl">Data</label><input type="text" class="in " data-k="data_firma" placeholder="GG/MM/AAAA" ></div></div>
+<div class="signs"><div class="sign"><div class="ln"></div><div class="cap">Data</div></div><div class="sign"><div class="ln"></div><div class="cap">Firma del tesserato (o di chi esercita la responsabilità genitoriale)</div></div></div>
+<footer class="foot"><span><b>A.S.D. Sport &amp; Services</b> · Modulo tessera assicurativa CSAIN</span><span class="g">info@sportandservicespadel.it · 393.330.36.52</span></footer>
+</div></section><section class="page" id="p-msp" data-nome="Tessera MSP"><div class="inner"><header class="hdr">
+  <div class="logos"><img class="ss" src="img/logo-ss.png" alt="Sport &amp; Services Padel"><span class="sep"></span><span class="ente">MSP</span></div>
+  <div class="brand"><div class="name">A.S.D. Sport &amp; Services</div><div class="ed">Padel School · Stagione 2026 – 2027</div></div>
+  <div class="badge"><div class="t">Modulo tessera assicurativa</div><div class="m">Ente di Promozione Sportiva MSP</div></div>
+</header>
+<div class="title">Tessera assicurativa <span>MSP</span></div>
+<p class="sub">Tesseramento MSP Italia · copertura valida fino al 31 agosto 2027</p>
+<div class="sec">Dichiarazione</div>
+<p class="legal">Il/la sottoscritto/a richiede di tesserarsi presso l’Ente di Promozione Sportiva <b>MSP Italia</b> (Movimento Sportivo Popolare) e prende atto che la tessera assicurativa dà diritto a una copertura assicurativa <b>valida fino al 31/08/2027</b>. Dichiara di aver consultato le condizioni assicurative per il tesseramento base presenti sul sito di MSP Italia <b>www.mspitalia.it</b> e, con la firma della presente, si impegna a rinunciare a qualsiasi risarcimento eccedente il valore dei massimali della polizza base.</p>
+<div class="sec">Dati del tesserato</div>
+<div class="grid" style="grid-template-columns:1fr 1fr"><div class="f"><label class="lbl">Nome</label><input type="text" class="in up" data-k="nome" placeholder="" ></div><div class="f"><label class="lbl">Cognome</label><input type="text" class="in up" data-k="cognome" placeholder="" ></div></div>
+<div class="grid" style="grid-template-columns:2fr 1fr 1.2fr;margin-top:10px"><div class="f"><label class="lbl">Nato/a a</label><input type="text" class="in up" data-k="luogo_nascita" placeholder="" ></div><div class="f"><label class="lbl">Provincia</label><input type="text" class="in up" data-k="prov_nascita" placeholder="" ></div><div class="f"><label class="lbl">Il</label><input type="text" class="in " data-k="data_nascita" placeholder="GG/MM/AAAA" ></div></div>
+<div class="grid" style="grid-template-columns:2fr 1fr;margin-top:10px"><div class="f"><label class="lbl">Residente a</label><input type="text" class="in up" data-k="citta" placeholder="" ></div><div class="f"><label class="lbl">Provincia</label><input type="text" class="in up" data-k="prov" placeholder="" ></div></div>
+<div class="grid" style="grid-template-columns:3fr .8fr 1fr;margin-top:10px"><div class="f"><label class="lbl">Via</label><input type="text" class="in up" data-k="via" placeholder="" ></div><div class="f"><label class="lbl">N°</label><input type="text" class="in " data-k="civico" placeholder="" ></div><div class="f"><label class="lbl">CAP</label><input type="text" class="in " data-k="cap" placeholder="" ></div></div>
+<div class="sec">Documento di riconoscimento</div>
+<div class="grid g4"><div class="f"><label class="lbl">Tipo di documento</label><input type="text" class="in " data-k="doc_tipo" placeholder="Carta d’identità…" ></div><div class="f"><label class="lbl">Emesso da</label><input type="text" class="in " data-k="doc_ente" placeholder="" ></div><div class="f"><label class="lbl">Emesso il</label><input type="text" class="in " data-k="doc_data" placeholder="GG/MM/AAAA" ></div><div class="f"><label class="lbl">Scadenza il</label><input type="text" class="in " data-k="doc_scad" placeholder="GG/MM/AAAA" ></div></div>
+<div class="grid g2" style="margin-top:10px"><div class="f"><label class="lbl">Telefono</label><input type="tel" class="in " data-k="telefono" placeholder="" ></div><div class="f"><label class="lbl">E-mail</label><input type="email" class="in " data-k="email" placeholder="" ></div></div>
+<label class="check note" style="margin-top:12px"><input type="checkbox" class="consenso"> Ho letto l’informativa privacy (sportandservicespadel.it/Privacy.html) e acconsento al trattamento dei dati per il tesseramento.</label>
+<div class="panel grid g2" style="margin-top:12px"><div class="f"><label class="lbl">Luogo</label><input type="text" class="in up" data-k="luogo_firma" placeholder="" ></div><div class="f"><label class="lbl">Data</label><input type="text" class="in " data-k="data_firma" placeholder="GG/MM/AAAA" ></div></div>
+<div class="signs"><div class="sign"><div class="ln"></div><div class="cap">Data</div></div><div class="sign"><div class="ln"></div><div class="cap">Firma del tesserato (o di chi esercita la responsabilità genitoriale)</div></div></div>
+<footer class="foot"><span><b>A.S.D. Sport &amp; Services</b> · Modulo tessera assicurativa MSP</span><span class="g">info@sportandservicespadel.it · 393.330.36.52</span></footer>
+</div></section>
+</main>
+<script>
+function mostraEnte(){
+  var q=new URLSearchParams(location.search).get('solo');
+  var e=(document.querySelector('input[name=ente]:checked')||{}).value||'CSAIN';
+  if(q==='csain'||q==='msp'){ e=q.toUpperCase(); document.querySelector('input[name=ente][value='+e+']').checked=true;
+    document.getElementById('p-iscr').hidden=true; document.getElementById('chooser').hidden=true;
+    document.body.dataset.modulo='Tessera '+e; document.body.dataset.file='Modulo_Tessera_'+e+'_Sport_and_Services';
+    document.getElementById('tb-sub').textContent='Modulo tessera assicurativa '+e; document.title='Tessera assicurativa '+e+' — Sport & Services Padel'; }
+  document.getElementById('p-csain').hidden = e!=='CSAIN';
+  document.getElementById('p-msp').hidden = e!=='MSP';
+  document.querySelectorAll('#p-csain .badge .m,#p-msp .badge .m').forEach(function(m){ m.textContent = (q?'Modulo singolo':'Pagina 2 di 2')+' · Ente '+e; });
+}
+mostraEnte();
+</script>
+</body></html>
