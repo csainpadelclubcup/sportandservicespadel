@@ -22,7 +22,7 @@ function leggiRichieste() {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(20000)) return;
   try {
-    const ss = SpreadsheetApp.getActive();
+    const ss = SpreadsheetApp.openById('1bPhAiRhNm2f2ggXXfdMze2GtkSlMy__5vRJ-exjXS9I');
     const reg = registro_(ss);
     const giaViste = {};
     reg.getRange(2, 11, Math.max(reg.getLastRow() - 1, 1), 1).getValues().forEach(function (r) { if (r[0]) giaViste[r[0]] = true; });
