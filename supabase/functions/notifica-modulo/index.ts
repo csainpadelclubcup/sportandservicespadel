@@ -1,13 +1,19 @@
 // Invia una mail a info@sportandservicespadel.it per ogni modulo ricevuto sul sito.
-// La chiamata arriva dal database (tabella iscrizioni) con un'intestazione segreta.
+// Il database invia solo l'id del modulo appena salvato: la funzione rilegge il modulo
+// con la chiave di servizio e manda la mail una sola volta (colonna "notificata").
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 
 Deno.serve(async (req) => {
-  if (req.headers.get("x-segreto") !== Deno.env.get("WEBHOOK_SECRET")) return new Response("non autorizzato", { status: 401 });
-  const { record: r } = await req.json();
-  if (!r) return new Response("nessun dato", { status: 400 });
+  const URL = Deno.env.get("SUPABASE_URL")!, SK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const H = { apikey: SK, Authorization: "Bearer " + SK, "Content-Type": "application/json" };
+  let id = "";
+  try { id = String((await req.json()).id || ""); } catch (_) { /* */ }
+  if (!/^[0-9a-f-]{36}$/.test(id)) return new Response("id non valido", { status: 400 });
+  const q = await fetch(`${URL}/rest/v1/iscrizioni?id=eq.${id}&notificata=eq.false&select=*`, { headers: H });
+  const r = (await q.json())[0];
+  if (!r) return new Response("niente da inviare");
 
   const quando = new Date(r.creato || Date.now()).toLocaleString("it-IT", { timeZone: "Europe/Rome" });
   const righe = Object.entries(r.dati || {}).map(([k, v]) =>
@@ -37,6 +43,7 @@ Deno.serve(async (req) => {
       html,
     });
     await client.close();
+    await fetch(`${URL}/rest/v1/iscrizioni?id=eq.${id}`, { method: "PATCH", headers: H, body: JSON.stringify({ notificata: true }) });
     return new Response("ok");
   } catch (e) {
     try { await client.close(); } catch (_) { /* */ }
