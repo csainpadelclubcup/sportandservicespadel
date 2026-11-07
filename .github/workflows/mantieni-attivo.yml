@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: Interroga Supabase
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://hbmmlnyfiesmmbmxkmcp.supabase.co/rest/v1/schede?select=id&limit=1" \
-            -H "apikey: sb_publishable_TYJtDyl4jTCrVNPYCJ-B4w_00i41uID")
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "https://hbmmlnyfiesmmbmxkmcp.supabase.co/rest/v1/rpc/ping" \
+            -H "apikey: sb_publishable_TYJtDyl4jTCrVNPYCJ-B4w_00i41uID" -H "Content-Type: application/json" -d "{}")
           echo "Risposta Supabase: $code"
           test "$code" = "200"
       - name: Segno di vita mensile (evita che GitHub sospenda questa automazione)
