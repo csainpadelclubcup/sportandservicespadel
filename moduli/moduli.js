@@ -70,18 +70,18 @@
     return el.name || el.getAttribute('data-k') || el.placeholder || 'campo';
   }
   function raccogli() {
-    var out = {}, gruppi = {};
+    var out = [], visti = {};
+    function add(k, v) { if (visti[k]) return; visti[k] = 1; out.push({ c: k, v: v }); }
     visibili().forEach(function (p) {
       var sez = p.getAttribute('data-nome') || 'Modulo';
       $$(FIELDS, p).forEach(function (el) {
         if (el.closest('[data-noinvio]')) return;
-        if (el.type === 'radio') { if (el.checked) { var g = el.closest('.f'); var n = (g && $('.lbl', g) && $('.lbl', g).innerText.trim()) || el.name; gruppi[sez + ' · ' + n] = el.value; } return; }
-        if (el.type === 'checkbox') { out[sez + ' · ' + etichetta(el)] = el.checked ? 'sì' : 'no'; return; }
+        if (el.type === 'radio') { if (el.checked) { var g = el.closest('.f'); var n = (g && $('.lbl', g) && $('.lbl', g).innerText.trim()) || el.name; add(sez + ' · ' + n, el.value); } return; }
+        if (el.type === 'checkbox') { add(sez + ' · ' + (el.classList.contains('consenso') ? 'Consenso privacy' : etichetta(el)), el.checked ? 'sì' : 'no'); return; }
         var v = el.tagName === 'SELECT' ? (el.value ? el.options[el.selectedIndex].text : '') : el.value.trim();
-        if (v) out[sez + ' · ' + etichetta(el)] = v;
+        if (v) add(sez + ' · ' + etichetta(el), v);
       });
     });
-    Object.keys(gruppi).forEach(function (k) { out[k] = gruppi[k]; });
     return out;
   }
   function val(k) { var el = $('[data-k="' + k + '"]'); return el ? el.value.trim() : ''; }

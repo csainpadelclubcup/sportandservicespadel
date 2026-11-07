@@ -171,7 +171,7 @@ function carica(tutti){var m=document.getElementById('m'),ul=document.getElement
     if(!r.ok){m.className='msg err';m.textContent='Accesso non consentito.';return}
     if(!r.data.length){m.className='msg ok';m.textContent='Nessun modulo da gestire.';return}
     r.data.forEach(function(x){var li=document.createElement('li');
-      var righe=Object.keys(x.dati||{}).map(function(k){return '<tr><td style="padding:4px 10px 4px 0;color:#4F6177;vertical-align:top">'+esc(k)+'</td><td style="padding:4px 0"><b>'+esc(x.dati[k])+'</b></td></tr>'}).join('');
+      var cp=Array.isArray(x.dati)?x.dati.map(function(d){return [d.c,d.v]}):Object.keys(x.dati||{}).map(function(k){return [k,x.dati[k]]}); var righe=cp.map(function(d){return '<tr><td style="padding:4px 10px 4px 0;color:#4F6177;vertical-align:top">'+esc(d[0])+'</td><td style="padding:4px 0"><b>'+esc(d[1])+'</b></td></tr>'}).join('');
       li.innerHTML='<details class="box" style="padding:16px 18px"><summary style="cursor:pointer;font-size:17px"><b>'+esc(x.nome)+' '+esc(x.cognome)+'</b> · '+esc(x.tipo)+(x.ente?' · '+esc(x.ente):'')+' <span class="small">· '+new Date(x.creato).toLocaleString('it-IT')+(x.gestita?' · gestito':'')+'</span></summary>'+
         '<p class="small">'+esc(x.email||'')+' '+esc(x.telefono||'')+'</p><table style="border-collapse:collapse;font-size:15px">'+righe+'</table>'+
         (x.gestita?'':'<button class="bt" type="button" style="margin-top:14px" data-id="'+x.id+'">Segna come gestito</button>')+'</details>';
