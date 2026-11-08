@@ -312,7 +312,7 @@ function scegli(k){MOD=k;document.querySelectorAll('.mods button').forEach(funct
   $('titolo').textContent='Richiesta: '+MODS[k][0]+' · '+NOME_SPORT;$('descr').textContent=MODS[k][1];
   var w=finestra();['giorno','giorno2','tdal','tal','rd1','rd2','rd3'].forEach(function(i){$(i).min=w[0];$(i).max=w[1];if($(i).value&&($(i).value<w[0]||$(i).value>w[1]))$(i).value=''});
   $('w-quando').hidden=(k==='torneo');
-  $('avviso').innerHTML=(k==='torneo'?'Tornei: indica il periodo in cui vuoi giocare. Le date possono andare <b>da domani</b> fino a <b>massimo 6 mesi da oggi</b>: cioè dal <b>'+fmtA(w[0])+'</b> '+alA(w[1]).replace(/^(all’|al )(.*)$/,'$1<b>$2</b>')+'. È una richiesta: la conferma arriva sempre via WhatsApp o SMS.':(k==='corso'?'Corsi: richiesta <b>entro la domenica sera</b> per la settimana seguente. ':'Richiesta <b>almeno il giorno prima</b>. ')+'Puoi scegliere un giorno dal <b>'+fmt(w[0])+'</b> al <b>'+fmt(w[1])+'</b>. È una richiesta: la conferma arriva sempre via WhatsApp o SMS.');
+  $('avviso').innerHTML=(k==='torneo'?'Tornei: indica quando vuoi giocare, entro i prossimi 6 mesi. La conferma arriva sempre via WhatsApp o SMS.':(k==='corso'?'Corsi: richiesta <b>entro la domenica sera</b> per la settimana seguente. ':'Richiesta <b>almeno il giorno prima</b>. ')+'Puoi scegliere un giorno dal <b>'+fmt(w[0])+'</b> al <b>'+fmt(w[1])+'</b>. È una richiesta: la conferma arriva sempre via WhatsApp o SMS.');
   $('m').textContent='';altri();torneo()}
 function altri(){var f=rv('formula');$('w-altri').hidden=!(MOD==='lezione'&&f&&f!=='Singola')}
 document.querySelectorAll('input[name=formula]').forEach(function(r){r.onchange=altri});
