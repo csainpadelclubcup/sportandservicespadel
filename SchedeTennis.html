@@ -229,6 +229,8 @@ function modello(){ return MODELLO?Promise.resolve(MODELLO):fetch('schede/modell
 function mostraScheda(ifr, dati, modo){
   modello().then(function(t){
     var h=t.replace('/*__DATI__*/null', JSON.stringify(dati).replace(/</g,'\\u003c')).replace('/*__MODO__*/"giocatore"', JSON.stringify(modo));
+    // scheda Tennis: logo con la scritta TENNIS al posto di PADEL
+    h=h.replace(/const LOGO = "[^"]*"/,'const LOGO = "/assets/logo-scheda-tennis.png"').replace('alt="Logo Sport & Services Padel"','alt="Logo Sport & Services Tennis"');
     if(modo!=='maestro') h=h.replace('</head>','<style>.seg{display:none!important}</style></head>');
     ifr.onload=function(){ var fit=function(){ try{ ifr.style.height=(ifr.contentDocument.documentElement.scrollHeight+4)+'px' }catch(e){} }; fit(); setTimeout(fit,400); window.addEventListener('resize',fit) };
     ifr.srcdoc=h;
