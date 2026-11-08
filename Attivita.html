@@ -85,6 +85,17 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
 <style>
 .cards4{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
 .cards4 li{background:#F3F6F9;border-radius:20px;padding:22px 22px 20px}
+.cards4 .torneo-card{grid-column:1/-1;display:flex;flex-wrap:wrap;padding:0!important;overflow:hidden;background:#0B2545!important;color:#fff}
+.cards4 .torneo-card img{flex:1 1 340px;min-width:0;width:100%;height:clamp(240px,30vw,380px);object-fit:cover;object-position:center 58%;display:block}
+.cards4 .torneo-card .tc-txt{flex:1 1 340px;min-width:0;padding:clamp(24px,3.5vw,40px);box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.cards4 .torneo-card .n{background:#D4F04A;color:#0B2545}
+.cards4 .torneo-card .tc-badge{align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:#D4F04A;color:#0B2545;border-radius:999px;padding:4px 12px;margin-bottom:6px}
+.cards4 .torneo-card b{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(32px,4vw,46px);line-height:1;text-transform:uppercase;color:#fff}
+.cards4 .torneo-card p{color:#C9D6E6;font-size:17px;margin:8px 0 18px}
+.cards4 .torneo-card p strong{color:#fff}
+.tc-btns{display:flex;flex-wrap:wrap;gap:10px}
+.tc-btns a{background:#D4F04A;color:#0B2545;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px;min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center}
+.tc-btns a.g{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px #4A6A91}
 .cards4 .n{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:999px;background:#D4F04A;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;margin-bottom:10px}
 .cards4 b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:26px;line-height:1.05;text-transform:uppercase;margin-bottom:6px}
 .cards4 p{margin:0;color:#3F5168;font-size:16px}
@@ -209,7 +220,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <li><span class="n">2</span><b>Corso</b><p>Richiesta di partecipazione a un corso settimanale, da inviare entro la domenica sera per la settimana seguente.</p></li>
 <li><span class="n">3</span><b>Allenamento</b><p>Richiesta di una sessione di allenamento per migliorare colpi, gioco e condizione, da solo o con altri giocatori.</p></li>
 <li><span class="n">4</span><b>Partita</b><p>Richiesta di una partita: dicci quando, con chi e se ti mancano giocatori, la organizziamo noi.</p></li>
-<li style="background:#D4F04A"><span class="n" style="background:#0B2545;color:#D4F04A">5</span><b>Torneo</b> <span style="font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:#0B2545;color:#fff;border-radius:999px;padding:3px 10px;vertical-align:middle">Novità</span><p>Richiesta di partecipazione a un torneo: da solo o con un compagno, Rodeo (tutto in una giornata) o torneo normale, nel periodo che preferisci.</p></li>
+<li class="torneo-card"><img src="assets/1d4c7870c1b4ce2eb9514660c7f381d9.png" alt="Coppia mista vincitrice con la coppa in mano" loading="lazy"><div class="tc-txt"><span class="n">5</span> <span class="tc-badge">Novità</span><b>Torneo</b><p>Richiesta di partecipazione a un torneo di padel o di tennis: da solo o con un compagno, <strong>Rodeo</strong> (tutto in una giornata) o <strong>torneo normale</strong>, nel periodo che preferisci.</p><span class="tc-btns"><a href="AttivitaPadel.html?modulo=torneo">Torneo di padel</a><a class="g" href="AttivitaTennis.html?modulo=torneo">Torneo di tennis</a></span></div></li>
 </ul>
 </section>
 <section class="wrapx" style="padding-top:32px;padding-bottom:16px">
