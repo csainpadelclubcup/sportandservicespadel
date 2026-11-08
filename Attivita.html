@@ -83,7 +83,9 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
 </style>
 <script src="js/auth.js?v=3"></script>
 <style>
-.cards4{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
+.cards4{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:600px){.cards4{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1060px){.cards4{grid-template-columns:repeat(4,1fr)}}
 .cards4 li{background:#F3F6F9;border-radius:20px;padding:22px 22px 20px}
 .cards4 .torneo-card{grid-column:1/-1;display:flex;flex-wrap:wrap;padding:0!important;overflow:hidden;background:#0B2545!important;color:#fff}
 .cards4 .torneo-card img{flex:1 1 340px;min-width:0;width:100%;height:clamp(240px,30vw,380px);object-fit:cover;object-position:center 58%;display:block}
