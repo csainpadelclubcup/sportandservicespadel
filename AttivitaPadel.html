@@ -231,8 +231,22 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <label class="fld" id="w-altri" hidden>Nome e cognome degli altri partecipanti *<input id="altri" type="text" autocomplete="off"></label>
 </div>
 <div data-solo="corso">
+<fieldset class="fs fld"><legend>Situazione *</legend><div class="opt"><label><input type="radio" name="tipocorso" value="iscritto" checked> Sono già iscritto al corso</label><label><input type="radio" name="tipocorso" value="nuovo"> Vorrei iscrivermi al corso</label></div></fieldset>
 <label class="fld">Corso *<select id="corso"><option>Principianti</option><option>Intermedio</option><option>Avanzato</option><option>Agonistico</option><option>Bambini e ragazzi</option></select></label>
 <label class="fld">Nome e cognome di chi frequenta il corso (se diverso da te)<input id="partecipante" type="text" autocomplete="off"></label>
+<fieldset class="fs fld"><legend id="freq-leg">Frequenza del tuo corso *</legend><div class="opt"><label><input type="radio" name="freq" value="1" checked> 1 volta a settimana</label><label><input type="radio" name="freq" value="2"> 2 volte a settimana</label><label><input type="radio" name="freq" value="3"> 3 volte a settimana</label></div></fieldset>
+<div id="w-iscritto">
+<div class="sez">Giorni che preferisci la settimana prossima</div>
+<p class="small" id="c-nota" style="margin:0 0 12px"></p>
+<div class="grid2" id="cr1"><label class="fld">1° giorno *<input id="cg1" type="date"></label><label class="fld">dalle ore *<input id="co1" type="time" min="07:00" max="23:00" step="1800"></label></div>
+<div class="grid2" id="cr2"><label class="fld">2° giorno *<input id="cg2" type="date"></label><label class="fld">dalle ore *<input id="co2" type="time" min="07:00" max="23:00" step="1800"></label></div>
+<div class="grid2" id="cr3"><label class="fld">3° giorno *<input id="cg3" type="date"></label><label class="fld">dalle ore *<input id="co3" type="time" min="07:00" max="23:00" step="1800"></label></div>
+</div>
+<div id="w-nuovo" hidden>
+<div class="sez">Da quando vorresti iniziare il corso</div>
+<p class="small" style="margin:0 0 12px">Non serve indicare giorni e orari: ti contattiamo noi per concordarli. Indica solo il periodo in cui vorresti iniziare, entro i prossimi 6 mesi.</p>
+<div class="grid2"><label class="fld">Dal *<input id="cdal" type="date"></label><label class="fld">Al *<input id="cal" type="date"></label></div>
+</div>
 </div>
 <div data-solo="allenamento">
 <label class="fld">Numero di giocatori *<select id="ngioc"><option>1 (solo io)</option><option>2</option><option>3</option><option>4</option></select></label>
@@ -288,7 +302,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <label class="fld">Email<input id="email" type="email" readonly></label>
 </div>
 <label class="fld">Note<textarea id="note" placeholder="Altre informazioni utili"></textarea></label>
-<p class="small" style="margin:0 0 16px">Questa è una <b>richiesta</b>: riceverai la conferma con un messaggio WhatsApp o SMS. Il modulo va inviato almeno il giorno prima, per i prossimi 14 giorni al massimo; per i corsi entro la domenica sera; per i tornei puoi indicare un periodo da domani fino a massimo 6 mesi da oggi. I campi con * sono obbligatori.</p>
+<p class="small" style="margin:0 0 16px">Questa è una <b>richiesta</b>: riceverai la conferma con un messaggio WhatsApp o SMS. Lezioni, allenamenti e partite: da domani ed entro i prossimi 14 giorni. Corsi, se sei già iscritto: <b>entro domenica alle 12</b> per la settimana dopo (se non segnali nulla resta il tuo giorno fisso); per iscriverti a un corso indichi solo il periodo, entro 6 mesi. Tornei: entro i prossimi 6 mesi. I campi con * sono obbligatori.</p>
 <p id="m" class="msg"></p>
 <button id="b" class="bt" type="submit">Invia</button>
 </form>
@@ -301,7 +315,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 </div>
 </section>
 <script>
-var SPORT='padel', NOME_SPORT='Padel', MODS={"lezione": ["Lezione privata", "Richiesta di una lezione con il maestro: da solo (singola), in due o in tre. Scegli la formula, il giorno e l’orario che preferisci."], "corso": ["Corso", "Richiesta di partecipazione a un corso settimanale, da inviare entro la domenica sera per la settimana seguente."], "allenamento": ["Allenamento", "Richiesta di una sessione di allenamento per migliorare colpi, gioco e condizione, da solo o con altri giocatori."], "partita": ["Partita", "Richiesta di una partita: dicci quando, con chi e se ti mancano giocatori, la organizziamo noi."], "torneo": ["Torneo", "Richiesta di partecipazione a un torneo: dicci se sei solo o hai già un compagno, se preferisci un Rodeo (tutto in una giornata) o un torneo normale e in che periodo vuoi giocare."]}, MOD='lezione';
+var SPORT='padel', NOME_SPORT='Padel', MODS={"lezione": ["Lezione privata", "Richiesta di una lezione con il maestro: da solo (singola), in due o in tre. Scegli la formula, il giorno e l’orario che preferisci."], "corso": ["Corso", "Sei già iscritto? Entro domenica alle 12 segnala i giorni che preferisci per la settimana dopo: se non segnali nulla resta il tuo giorno fisso. Vuoi iscriverti? Indica il corso e da quando vorresti iniziare."], "allenamento": ["Allenamento", "Richiesta di una sessione di allenamento per migliorare colpi, gioco e condizione, da solo o con altri giocatori."], "partita": ["Partita", "Richiesta di una partita: dicci quando, con chi e se ti mancano giocatori, la organizziamo noi."], "torneo": ["Torneo", "Richiesta di partecipazione a un torneo: dicci se sei solo o hai già un compagno, se preferisci un Rodeo (tutto in una giornata) o un torneo normale e in che periodo vuoi giocare."]}, MOD='lezione';
 function $(i){return document.getElementById(i)}
 function v(i){return ($(i).value||'').trim()}
 function rv(n){var e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:''}
@@ -311,15 +325,23 @@ function piu(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
 function piuMesi(d,n){var x=new Date(d),g=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+n);var u=new Date(x.getFullYear(),x.getMonth()+1,0).getDate();x.setDate(Math.min(g,u));return x}
 function fmtA(s){var d=new Date(s+'T12:00:00');return d.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}
 function alA(s){var t=fmtA(s);return (/^(8|11) /.test(t)?'all’':'al ')+t}
-function finestra(){var o=oggiRoma(),min=piu(o,1),max=(MOD==='torneo'?piuMesi(o,6):piu(o,14));if(MOD==='corso'){var dow=(o.getDay()+6)%7;var lun=piu(o,7-dow);if(lun>min)min=lun}return [iso(min),iso(max)]}
+function finestra(){var o=oggiRoma(),min=piu(o,1),max=(MOD==='torneo'?piuMesi(o,6):piu(o,14));return [iso(min),iso(max)]}
+function oraRoma(){return +new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',hour:'2-digit',hour12:false}).format(new Date())}
+function settCorso(){var o=oggiRoma(),dow=(o.getDay()+6)%7,lun=piu(o,7-dow);if(dow===6&&oraRoma()>=12)lun=piu(lun,7);return [iso(lun),iso(piu(lun,6))]}
+function finNuovo(){var o=oggiRoma();return [iso(piu(o,1)),iso(piuMesi(o,6))]}
+function corsoUI(){var nu=rv('tipocorso')==='nuovo',n=+rv('freq')||1,w=settCorso(),x=finNuovo();$('w-iscritto').hidden=nu;$('w-nuovo').hidden=!nu;$('freq-leg').textContent=nu?'Quante volte a settimana vorresti giocare *':'Frequenza del tuo corso *';
+  for(var i=1;i<=3;i++){$('cr'+i).hidden=i>n;$('cg'+i).min=w[0];$('cg'+i).max=w[1]}['cdal','cal'].forEach(function(i){$(i).min=x[0];$(i).max=x[1]});
+  $('c-nota').innerHTML='Settimana da <b>'+fmt(w[0])+'</b> a <b>'+fmt(w[1])+'</b>. Segnala entro <b>domenica alle 12</b>: se non segnali nulla resta il tuo <b>giorno fisso assegnato</b>.';
+  if(MOD==='corso')$('avviso').innerHTML=nu?'Iscrizione a un corso: indica solo il periodo in cui vorresti iniziare, entro i prossimi 6 mesi. Ti contattiamo via WhatsApp o SMS.':'Già iscritto: entro <b>domenica alle 12</b> segnala i giorni che preferisci per la settimana dopo. Se non segnali nulla resta il tuo giorno fisso assegnato. La conferma arriva via WhatsApp o SMS.'}
+['tipocorso','freq'].forEach(function(n){document.querySelectorAll('input[name='+n+']').forEach(function(r){r.addEventListener('change',corsoUI)})});
 function fmt(s){if(!s)return'';var d=new Date(s+'T12:00:00');return d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}
 function scegli(k){MOD=k;document.querySelectorAll('.mods button').forEach(function(b){var on=b.dataset.m===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   document.querySelectorAll('[data-solo]').forEach(function(d){d.hidden=d.dataset.solo!==k});
   $('titolo').textContent='Richiesta: '+MODS[k][0]+' · '+NOME_SPORT;$('descr').textContent=MODS[k][1];
   var w=finestra();['giorno','giorno2','tdal','tal','rd1','rd2','rd3'].forEach(function(i){$(i).min=w[0];$(i).max=w[1];if($(i).value&&($(i).value<w[0]||$(i).value>w[1]))$(i).value=''});
-  $('w-quando').hidden=(k==='torneo');
+  $('w-quando').hidden=(k==='torneo'||k==='corso');
   $('avviso').innerHTML=(k==='torneo'?'Tornei: indica quando vuoi giocare, entro i prossimi 6 mesi. La conferma arriva sempre via WhatsApp o SMS.':(k==='corso'?'Le richieste per i corsi si inviano entro domenica sera per la settimana dopo. La conferma arriva sempre via WhatsApp o SMS.':'Indica quando vuoi giocare, da domani ed entro i prossimi 14 giorni. La conferma arriva sempre via WhatsApp o SMS.'));
-  $('m').textContent='';altri();torneo()}
+  $('m').textContent='';altri();torneo();corsoUI()}
 function altri(){var f=rv('formula');$('w-altri').hidden=!(MOD==='lezione'&&f&&f!=='Singola')}
 document.querySelectorAll('input[name=formula]').forEach(function(r){r.onchange=altri});
 function torneo(){var g=rv('garat');if($('w-iscr'))$('w-iscr').hidden=(g!=='Doppio');var dop=!$('w-iscr')||g==='Doppio';$('w-compagno').hidden=!(dop&&rv('iscr')==='Ho già un compagno');var ro=rv('formtorneo')==='Rodeo (tutto in una giornata)';$('w-rodeo').hidden=!ro;var pr=rv('disp')==='date';$('w-gen').hidden=pr;$('w-date').hidden=!pr}
@@ -327,6 +349,7 @@ function torneo(){var g=rv('garat');if($('w-iscr'))$('w-iscr').hidden=(g!=='Dopp
 function err(t){var m=$('m');m.className='msg err';m.textContent=t;m.scrollIntoView({block:'center',behavior:'smooth'});return false}
 function invia(e){e.preventDefault();var w=finestra(),g=v('giorno');
   if(MOD==='torneo')return inviaTorneo(w);
+  if(MOD==='corso')return inviaCorso();
   if(!g)return err('Scegli il giorno preferito.');
   if(g<w[0]||g>w[1])return err('Il giorno deve essere tra '+fmt(w[0])+' e '+fmt(w[1])+'.');
   if(v('giorno2')&&(v('giorno2')<w[0]||v('giorno2')>w[1]))return err('Anche la seconda scelta deve essere tra '+fmt(w[0])+' e '+fmt(w[1])+'.');
@@ -349,7 +372,7 @@ function invia(e){e.preventDefault();var w=finestra(),g=v('giorno');
   var b=$('b');b.disabled=true;b.textContent='Invio in corso…';$('m').textContent='';
   SSAuth.invia('richieste',riga).then(function(r){b.disabled=false;b.textContent='Invia';
     if(r.status===401){location.href='Account.html?next=Attivita'+NOME_SPORT+'.html';return}
-    if(!r.ok)return err('Invio non riuscito: controlla il giorno scelto (almeno il giorno prima, massimo 14 giorni; corsi entro domenica sera) e riprova.');
+    if(!r.ok)return err('Invio non riuscito: controlla il giorno scelto (almeno il giorno prima, massimo 14 giorni) e riprova.');
     $('f').hidden=true;$('ok').hidden=false;
     $('ok-t').textContent='Abbiamo ricevuto la tua richiesta di '+MODS[MOD][0].toLowerCase()+' di '+NOME_SPORT.toLowerCase()+' per '+fmt(g)+', '+v('da')+'–'+v('a')+'. Non è ancora una prenotazione: ti invieremo la conferma con un messaggio WhatsApp o SMS al numero '+v('tel')+'.';
     $('ok').scrollIntoView({block:'center',behavior:'smooth'});
@@ -384,7 +407,38 @@ function inviaTorneo(w){var dal=v('tdal'),al=v('tal'),ro=rv('formtorneo')==='Rod
     $('ok').scrollIntoView({block:'center',behavior:'smooth'});
   }).catch(function(){b.disabled=false;b.textContent='Invia';err('Connessione assente: riprova tra poco.')})
   return false}
-function nuova(){['tdal','tal','compagno','dispgen','rd1','ro1','rd2','ro2','rd3','ro3','giorno','da','a','giorno2','ora2','note','altri','partecipante','obiettivo','nomigioc'].forEach(function(i){$(i).value=''});$('ok').hidden=true;$('f').hidden=false;scegli(MOD)}
+function inviaCorso(){var nu=rv('tipocorso')==='nuovo',n=+rv('freq')||1,riga,giorno,testo;
+  var d=[];function add(c,x){if(x)d.push({c:c,v:x})}
+  add('Sport',NOME_SPORT);add('Modulo',nu?'Iscrizione a un corso':'Corso – giorni della settimana');
+  add('Situazione',nu?'Vorrei iscrivermi al corso':'Già iscritto al corso');add('Corso',v('corso'));add('Partecipante',v('partecipante'));
+  if(nu){var x=finNuovo(),dal=v('cdal'),al=v('cal');
+    if(!dal||!al)return err('Indica il periodo in cui vorresti iniziare (dal… al…).');
+    if(dal<x[0]||al>x[1])return err('Il periodo deve essere tra '+fmt(x[0])+' e '+fmt(x[1])+'.');
+    if(al<dal)return err('La data “Al” deve essere uguale o successiva a “Dal”.');
+    add('Frequenza desiderata',n+(n===1?' volta':' volte')+' a settimana');add('Vorrebbe iniziare','dal '+fmtA(dal)+' '+alA(al));giorno=dal;
+    testo='Abbiamo ricevuto la tua richiesta di iscrizione al corso '+v('corso')+' di '+NOME_SPORT.toLowerCase()+' (inizio dal '+fmtA(dal)+' '+alA(al)+').';
+  }else{var w=settCorso(),gg=[],ok={};
+    for(var i=1;i<=n;i++){var g=v('cg'+i),o=v('co'+i);
+      if(!g||!o)return err('Indica giorno e orario per '+(n===1?'il giorno':'tutti i '+n+' giorni')+' (frequenza '+n+' a settimana).');
+      if(g<w[0]||g>w[1])return err('I giorni devono essere nella settimana da '+fmt(w[0])+' a '+fmt(w[1])+'.');
+      if(ok[g])return err('Hai scelto due volte lo stesso giorno: scegli giorni diversi.');ok[g]=1;gg.push([g,o])}
+    gg.sort(function(a,b){return a[0]<b[0]?-1:1});giorno=gg[0][0];
+    add('Frequenza',n+(n===1?' volta':' volte')+' a settimana');add('Giorni preferiti',gg.map(function(x){return fmt(x[0])+' dalle '+x[1]}).join(' · '));
+    add('_giorni',gg.map(function(x){return x[0]+' '+x[1]}).join('|'));
+    testo='Abbiamo ricevuto i giorni che preferisci per il corso di '+NOME_SPORT.toLowerCase()+': '+gg.map(function(x){return fmt(x[0])+' dalle '+x[1]}).join(', ')+'.'}
+  if(!v('nome')||!v('cognome')||!v('tel'))return err('Completa nome, cognome e cellulare (serve per la conferma via WhatsApp o SMS).');
+  add('Livello',v('livello'));add('Note',v('note'));
+  riga={sport:SPORT,modulo:nu?'corso_iscrizione':'corso',nome:v('nome'),cognome:v('cognome'),telefono:v('tel'),giorno:giorno,ora_da:nu?null:gg[0][1],ora_a:null,superficie:null,note:v('note')||null,dati:d};
+  var b=$('b');b.disabled=true;b.textContent='Invio in corso…';$('m').textContent='';
+  SSAuth.invia('richieste',riga).then(function(r){b.disabled=false;b.textContent='Invia';
+    if(r.status===401){location.href='Account.html?next=Attivita'+NOME_SPORT+'.html';return}
+    if(!r.ok)return err(nu?'Invio non riuscito: controlla il periodo (da domani a massimo 6 mesi) e riprova.':'Invio non riuscito: i giorni vanno segnalati entro domenica alle 12 per la settimana dopo. Controlla le date e riprova.');
+    $('f').hidden=true;$('ok').hidden=false;
+    $('ok-t').textContent=testo+' Non è ancora una conferma: ti invieremo un messaggio WhatsApp o SMS al numero '+v('tel')+'.';
+    $('ok').scrollIntoView({block:'center',behavior:'smooth'});
+  }).catch(function(){b.disabled=false;b.textContent='Invia';err('Connessione assente: riprova tra poco.')})
+  return false}
+function nuova(){['cg1','co1','cg2','co2','cg3','co3','cdal','cal','tdal','tal','compagno','dispgen','rd1','ro1','rd2','ro2','rd3','ro3','giorno','da','a','giorno2','ora2','note','altri','partecipante','obiettivo','nomigioc'].forEach(function(i){$(i).value=''});$('ok').hidden=true;$('f').hidden=false;scegli(MOD)}
 (function(){var s=SSAuth.sessione();if(!s){$('no-login').hidden=false;return}
   $('si-login').hidden=false;$('chi').textContent=s.email||'';$('email').value=s.email||'';
   var q=new URLSearchParams(location.search).get('modulo');scegli(MODS[q]?q:'lezione');

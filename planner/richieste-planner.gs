@@ -31,8 +31,8 @@ function leggiRichieste() {
     threads.forEach(function (th) {
       let fatto = true;
       th.getMessages().forEach(function (m) {
-        const riga = (m.getPlainBody().match(/PLANNER\|[^\r\n]+/) || [])[0];
-        if (!riga) return;
+        // una mail può avere più righe PLANNER (corso con 2 o 3 giorni scelti)
+        (m.getPlainBody().match(/PLANNER\|[^\r\n]+/g) || []).forEach(function (riga) {
         const p = riga.split('|'); // PLANNER|giorno|ora|sport|richiesta|nome|tel|superficie|id
         const r = { giorno: p[1], ora: p[2], sport: p[3], tipo: p[4], nome: p[5], tel: p[6], sup: p[7], id: p[8], ricevuta: m.getDate() };
         if (/^PROVA /.test(r.nome)) return; // mail di prova del sito
@@ -45,6 +45,7 @@ function leggiRichieste() {
           aggiornaEsito_(reg, r.id, esito.testo);
         }
         if (!esito.finito) fatto = false;
+        });
       });
       if (fatto) th.addLabel(lab);
     });
