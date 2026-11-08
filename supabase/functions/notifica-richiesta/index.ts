@@ -5,7 +5,7 @@ import nodemailer from "npm:nodemailer@6.9.16";
 
 const A = "gianluca.micarelli@gmail.com";
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
-const MOD: Record<string, string> = { lezione: "Lezione privata", corso: "Corso", allenamento: "Allenamento", partita: "Partita" };
+const MOD: Record<string, string> = { lezione: "Lezione privata", corso: "Corso", allenamento: "Allenamento", partita: "Partita", torneo: "Torneo" };
 
 Deno.serve(async (req) => {
   const URL = Deno.env.get("SUPABASE_URL")!, SK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -20,15 +20,20 @@ Deno.serve(async (req) => {
   const sport = r.sport === "padel" ? "Padel" : "Tennis";
   const modulo = MOD[r.modulo] || r.modulo;
   const formula = (r.dati || []).find((x: { c: string }) => x.c === "Formula")?.v;
-  const giorno = new Date(r.giorno + "T12:00:00Z").toLocaleDateString("it-IT", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Rome" });
-  const ora = `${String(r.ora_da || "").slice(0, 5)}–${String(r.ora_a || "").slice(0, 5)}`;
+  const dato = (k: string) => (r.dati || []).find((x: { c: string }) => x.c === k)?.v;
+  const torneo = r.modulo === "torneo";
+  const giornoData = new Date(r.giorno + "T12:00:00Z").toLocaleDateString("it-IT", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Rome" });
+  // per i tornei al posto di giorno e ora si mostrano periodo e tipo di torneo
+  const giorno = torneo ? String(dato("Periodo") || giornoData) : giornoData;
+  const ora = torneo ? String(dato("Tipo di torneo") || "") : `${String(r.ora_da || "").slice(0, 5)}–${String(r.ora_a || "").slice(0, 5)}`;
   const quando = new Date(r.creato || Date.now()).toLocaleString("it-IT", { timeZone: "Europe/Rome" });
   const coppie: [string, unknown][] = (r.dati || []).map((x: { c: string; v: unknown }) => [x.c, x.v]);
   const righe = coppie.map(([k, v]) =>
     `<tr><td style="padding:6px 12px 6px 0;color:#5A6B80;vertical-align:top;border-bottom:1px solid #E3E8EE">${esc(k)}</td><td style="padding:6px 0;border-bottom:1px solid #E3E8EE"><b>${esc(v)}</b></td></tr>`).join("");
   const titolo = `${modulo}${formula ? " " + String(formula).toLowerCase() : ""} · ${sport}`;
   // riga fissa, utile per aggiornare il planner in automatico
-  const planner = `PLANNER|${r.giorno}|${ora}|${sport}|${modulo}${formula ? " " + formula : ""}|${r.nome} ${r.cognome}|${r.telefono || ""}|${r.superficie || ""}|${r.id}`;
+  // i tornei non entrano nel planner delle lezioni (nessuna riga PLANNER)
+  const planner = torneo ? "" : `PLANNER|${r.giorno}|${ora}|${sport}|${modulo}${formula ? " " + formula : ""}|${r.nome} ${r.cognome}|${r.telefono || ""}|${r.superficie || ""}|${r.id}`;
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;background:#F3F5F8;padding:20px">
 <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden">
 <div style="background:#0B2545;color:#fff;padding:16px 22px;font-weight:bold;letter-spacing:1px">SPORT &amp; SERVICES · NUOVA RICHIESTA ATTIVITÀ</div>

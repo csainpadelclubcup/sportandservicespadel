@@ -211,7 +211,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 </div>
 <div id="si-login" hidden>
 <div class="mods" role="tablist" aria-label="Scegli il modulo">
-<button type="button" role="tab" data-m="lezione" onclick="scegli(&quot;lezione&quot;)">1. Lezione privata</button><button type="button" role="tab" data-m="corso" onclick="scegli(&quot;corso&quot;)">2. Corso</button><button type="button" role="tab" data-m="allenamento" onclick="scegli(&quot;allenamento&quot;)">3. Allenamento</button><button type="button" role="tab" data-m="partita" onclick="scegli(&quot;partita&quot;)">4. Partita</button>
+<button type="button" role="tab" data-m="lezione" onclick="scegli(&quot;lezione&quot;)">1. Lezione privata</button><button type="button" role="tab" data-m="corso" onclick="scegli(&quot;corso&quot;)">2. Corso</button><button type="button" role="tab" data-m="allenamento" onclick="scegli(&quot;allenamento&quot;)">3. Allenamento</button><button type="button" role="tab" data-m="partita" onclick="scegli(&quot;partita&quot;)">4. Partita</button><button type="button" role="tab" data-m="torneo" onclick="scegli(&quot;torneo&quot;)">5. Torneo</button>
 </div>
 <form id="f" class="box" onsubmit="return invia(event)" novalidate>
 <h2 class="h2x" id="titolo">Lezione privata</h2>
@@ -235,8 +235,30 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <fieldset class="fs fld"><legend>Giocatori *</legend><div class="opt"><label><input type="radio" name="giocatori" value="Ho già tutti i giocatori" required checked> Ho già tutti i giocatori</label><label><input type="radio" name="giocatori" value="Cerco avversari"> Cerco avversari</label><label><input type="radio" name="giocatori" value="Cerco un compagno"> Cerco un compagno</label><label><input type="radio" name="giocatori" value="Cerco tutti i giocatori"> Cerco tutti i giocatori</label></div></fieldset>
 <label class="fld">Nomi dei giocatori che hai già<input id="nomigioc" type="text" autocomplete="off"></label>
 </div>
+
+<div data-solo="torneo">
+<fieldset class="fs fld"><legend>Gara *</legend><div class="opt"><label><input type="radio" name="garat" value="Singolare" checked> Singolare</label><label><input type="radio" name="garat" value="Doppio"> Doppio</label></div></fieldset>
+<fieldset class="fs fld" id="w-iscr" hidden><legend>Iscrizione al doppio *</legend><div class="opt"><label><input type="radio" name="iscr" value="Sono solo (cerco un compagno)" checked> Sono solo (cerco un compagno)</label><label><input type="radio" name="iscr" value="Ho già un compagno"> Ho già un compagno</label></div></fieldset>
+<label class="fld" id="w-compagno" hidden>Nome e cognome del compagno *<input id="compagno" type="text" autocomplete="off"></label>
+<fieldset class="fs fld"><legend>Tipo di torneo *</legend><div class="opt"><label><input type="radio" name="formtorneo" value="Rodeo (tutto in una giornata)" checked> Rodeo (tutto in una giornata)</label><label><input type="radio" name="formtorneo" value="Torneo normale"> Torneo normale</label></div></fieldset>
+<div class="sez">Periodo in cui vuoi giocare</div>
+<div class="grid2">
+<label class="fld">Dal *<input id="tdal" type="date"></label>
+<label class="fld">Al *<input id="tal" type="date"></label>
+</div>
+<div id="w-rodeo">
+<fieldset class="fs fld"><legend>Giorni in cui sei disponibile per il Rodeo *</legend><div class="opt"><label><input type="radio" name="disp" value="generica" checked> Indicazione generica</label><label><input type="radio" name="disp" value="date"> Date e orari precisi</label></div></fieldset>
+<label class="fld" id="w-gen">Quando sei disponibile *<input id="dispgen" type="text" placeholder="Es. nei festivi dalle 10 di mattina; il sabato pomeriggio"></label>
+<div id="w-date" hidden>
+<div class="grid2"><label class="fld">1ª data *<input id="rd1" type="date"></label><label class="fld">dalle ore *<input id="ro1" type="time" step="1800"></label></div>
+<div class="grid2"><label class="fld">2ª data<input id="rd2" type="date"></label><label class="fld">dalle ore<input id="ro2" type="time" step="1800"></label></div>
+<div class="grid2"><label class="fld">3ª data<input id="rd3" type="date"></label><label class="fld">dalle ore<input id="ro3" type="time" step="1800"></label></div>
+</div>
+</div>
+</div>
 <label class="fld">Il tuo livello<select id="livello"><option value="">—</option><option>Principiante</option><option>Intermedio</option><option>Avanzato</option><option>Agonista</option></select></label>
 
+<div id="w-quando">
 <div class="sez">Quando</div>
 <div class="grid2">
 <label class="fld">Giorno preferito *<input id="giorno" type="date" required></label>
@@ -248,6 +270,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <label class="fld">Seconda scelta: orario<input id="ora2" type="text" placeholder="Es. 18:00–19:30"></label>
 </div>
 <fieldset class="fs fld"><legend>Superficie di gioco *</legend><div class="opt"><label><input type="radio" name="superficie" value="Terra rossa" required> Terra rossa</label><label><input type="radio" name="superficie" value="Erba sintetica"> Erba sintetica</label><label><input type="radio" name="superficie" value="Cemento (Greenset)"> Cemento (Greenset)</label><label><input type="radio" name="superficie" value="Indifferente"> Indifferente</label></div></fieldset>
+</div>
 
 <div class="sez">I tuoi dati</div>
 <div class="grid2">
@@ -257,7 +280,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <label class="fld">Email<input id="email" type="email" readonly></label>
 </div>
 <label class="fld">Note<textarea id="note" placeholder="Altre informazioni utili"></textarea></label>
-<p class="small" style="margin:0 0 16px">Questa è una <b>richiesta</b>: riceverai la conferma con un messaggio WhatsApp o SMS. Il modulo va inviato almeno il giorno prima, per i prossimi 14 giorni al massimo; per i corsi entro la domenica sera. I campi con * sono obbligatori.</p>
+<p class="small" style="margin:0 0 16px">Questa è una <b>richiesta</b>: riceverai la conferma con un messaggio WhatsApp o SMS. Il modulo va inviato almeno il giorno prima, per i prossimi 14 giorni al massimo; per i corsi entro la domenica sera; per i tornei puoi indicare un periodo fino a 12 mesi. I campi con * sono obbligatori.</p>
 <p id="m" class="msg"></p>
 <button id="b" class="bt" type="submit">Invia</button>
 </form>
@@ -270,25 +293,29 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 </div>
 </section>
 <script>
-var SPORT='tennis', NOME_SPORT='Tennis', MODS={"lezione": ["Lezione privata", "Richiesta di una lezione con il maestro: da solo (singola), in due o in tre. Scegli la formula, il giorno e l’orario che preferisci."], "corso": ["Corso", "Richiesta di partecipazione a un corso settimanale, da inviare entro la domenica sera per la settimana seguente."], "allenamento": ["Allenamento", "Richiesta di una sessione di allenamento per migliorare colpi, gioco e condizione, da solo o con altri giocatori."], "partita": ["Partita", "Richiesta di una partita: dicci quando, con chi e se ti mancano giocatori, la organizziamo noi."]}, MOD='lezione';
+var SPORT='tennis', NOME_SPORT='Tennis', MODS={"lezione": ["Lezione privata", "Richiesta di una lezione con il maestro: da solo (singola), in due o in tre. Scegli la formula, il giorno e l’orario che preferisci."], "corso": ["Corso", "Richiesta di partecipazione a un corso settimanale, da inviare entro la domenica sera per la settimana seguente."], "allenamento": ["Allenamento", "Richiesta di una sessione di allenamento per migliorare colpi, gioco e condizione, da solo o con altri giocatori."], "partita": ["Partita", "Richiesta di una partita: dicci quando, con chi e se ti mancano giocatori, la organizziamo noi."], "torneo": ["Torneo", "Richiesta di partecipazione a un torneo: dicci se sei solo o hai già un compagno, se preferisci un Rodeo (tutto in una giornata) o un torneo normale e in che periodo vuoi giocare."]}, MOD='lezione';
 function $(i){return document.getElementById(i)}
 function v(i){return ($(i).value||'').trim()}
 function rv(n){var e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:''}
 function oggiRoma(){var p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());return new Date(p+'T12:00:00')}
 function iso(d){return d.toISOString().slice(0,10)}
 function piu(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
-function finestra(){var o=oggiRoma(),min=piu(o,1),max=piu(o,14);if(MOD==='corso'){var dow=(o.getDay()+6)%7;var lun=piu(o,7-dow);if(lun>min)min=lun}return [iso(min),iso(max)]}
+function finestra(){var o=oggiRoma(),min=piu(o,1),max=piu(o,MOD==='torneo'?365:14);if(MOD==='corso'){var dow=(o.getDay()+6)%7;var lun=piu(o,7-dow);if(lun>min)min=lun}return [iso(min),iso(max)]}
 function fmt(s){if(!s)return'';var d=new Date(s+'T12:00:00');return d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}
 function scegli(k){MOD=k;document.querySelectorAll('.mods button').forEach(function(b){var on=b.dataset.m===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   document.querySelectorAll('[data-solo]').forEach(function(d){d.hidden=d.dataset.solo!==k});
   $('titolo').textContent='Richiesta: '+MODS[k][0]+' · '+NOME_SPORT;$('descr').textContent=MODS[k][1];
-  var w=finestra();['giorno','giorno2'].forEach(function(i){$(i).min=w[0];$(i).max=w[1];if($(i).value&&($(i).value<w[0]||$(i).value>w[1]))$(i).value=''});
-  $('avviso').innerHTML=(k==='corso'?'Corsi: richiesta <b>entro la domenica sera</b> per la settimana seguente. ':'Richiesta <b>almeno il giorno prima</b>. ')+'Puoi scegliere un giorno dal <b>'+fmt(w[0])+'</b> al <b>'+fmt(w[1])+'</b>. È una richiesta: la conferma arriva sempre via WhatsApp o SMS.';
-  $('m').textContent='';altri()}
+  var w=finestra();['giorno','giorno2','tdal','tal','rd1','rd2','rd3'].forEach(function(i){$(i).min=w[0];$(i).max=w[1];if($(i).value&&($(i).value<w[0]||$(i).value>w[1]))$(i).value=''});
+  $('w-quando').hidden=(k==='torneo');
+  $('avviso').innerHTML=(k==='torneo'?'Tornei: indica il periodo in cui vuoi giocare, dal <b>'+fmt(w[0])+'</b> al massimo fino al <b>'+fmt(w[1])+'</b>. È una richiesta: la conferma arriva sempre via WhatsApp o SMS.':(k==='corso'?'Corsi: richiesta <b>entro la domenica sera</b> per la settimana seguente. ':'Richiesta <b>almeno il giorno prima</b>. ')+'Puoi scegliere un giorno dal <b>'+fmt(w[0])+'</b> al <b>'+fmt(w[1])+'</b>. È una richiesta: la conferma arriva sempre via WhatsApp o SMS.');
+  $('m').textContent='';altri();torneo()}
 function altri(){var f=rv('formula');$('w-altri').hidden=!(MOD==='lezione'&&f&&f!=='Singola')}
 document.querySelectorAll('input[name=formula]').forEach(function(r){r.onchange=altri});
+function torneo(){var g=rv('garat');if($('w-iscr'))$('w-iscr').hidden=(g!=='Doppio');var dop=!$('w-iscr')||g==='Doppio';$('w-compagno').hidden=!(dop&&rv('iscr')==='Ho già un compagno');var ro=rv('formtorneo')==='Rodeo (tutto in una giornata)';$('w-rodeo').hidden=!ro;var pr=rv('disp')==='date';$('w-gen').hidden=pr;$('w-date').hidden=!pr}
+['garat','iscr','formtorneo','disp'].forEach(function(n){document.querySelectorAll('input[name='+n+']').forEach(function(r){r.addEventListener('change',torneo)})});
 function err(t){var m=$('m');m.className='msg err';m.textContent=t;m.scrollIntoView({block:'center',behavior:'smooth'});return false}
 function invia(e){e.preventDefault();var w=finestra(),g=v('giorno');
+  if(MOD==='torneo')return inviaTorneo(w);
   if(!g)return err('Scegli il giorno preferito.');
   if(g<w[0]||g>w[1])return err('Il giorno deve essere tra '+fmt(w[0])+' e '+fmt(w[1])+'.');
   if(v('giorno2')&&(v('giorno2')<w[0]||v('giorno2')>w[1]))return err('Anche la seconda scelta deve essere tra '+fmt(w[0])+' e '+fmt(w[1])+'.');
@@ -317,7 +344,35 @@ function invia(e){e.preventDefault();var w=finestra(),g=v('giorno');
     $('ok').scrollIntoView({block:'center',behavior:'smooth'});
   }).catch(function(){b.disabled=false;b.textContent='Invia';err('Connessione assente: riprova tra poco.')})
   return false}
-function nuova(){['giorno','da','a','giorno2','ora2','note','altri','partecipante','obiettivo','nomigioc'].forEach(function(i){$(i).value=''});$('ok').hidden=true;$('f').hidden=false;scegli(MOD)}
+function inviaTorneo(w){var dal=v('tdal'),al=v('tal'),ro=rv('formtorneo')==='Rodeo (tutto in una giornata)',dop=!$('w-iscr')||rv('garat')==='Doppio';
+  if(!dal||!al)return err('Indica il periodo in cui vuoi giocare (dal… al…).');
+  if(dal<w[0]||al>w[1])return err('Il periodo deve essere tra '+fmt(w[0])+' e '+fmt(w[1])+'.');
+  if(al<dal)return err('La data “Al” deve essere uguale o successiva a “Dal”.');
+  if(dop&&rv('iscr')==='Ho già un compagno'&&!v('compagno'))return err('Scrivi nome e cognome del compagno.');
+  var dd=[];
+  if(ro){if(rv('disp')==='date'){if(!v('rd1')||!v('ro1'))return err('Indica almeno una data con l’orario per il Rodeo.');
+      for(var i=1;i<=3;i++){var x=v('rd'+i);if(!x)continue;if(x<dal||x>al)return err('Le date del Rodeo devono essere dentro il periodo indicato.');dd.push(fmt(x)+(v('ro'+i)?' dalle '+v('ro'+i):''))}}
+    else if(!v('dispgen'))return err('Scrivi quando sei disponibile per il Rodeo (es. nei festivi dalle 10).')}
+  if(!v('nome')||!v('cognome')||!v('tel'))return err('Completa nome, cognome e cellulare (serve per la conferma via WhatsApp o SMS).');
+  var d=[];function add(c,x){if(x)d.push({c:c,v:x})}
+  add('Sport',NOME_SPORT);add('Modulo','Torneo');
+  if($('w-iscr'))add('Gara',rv('garat'));
+  if(dop){add('Iscrizione',rv('iscr'));if(rv('iscr')==='Ho già un compagno')add('Compagno',v('compagno'))}
+  add('Tipo di torneo',rv('formtorneo'));
+  add('Periodo','dal '+fmt(dal)+' al '+fmt(al));
+  if(ro)add('Disponibilità Rodeo',rv('disp')==='date'?dd.join(' · '):v('dispgen'));
+  add('Livello',v('livello'));add('Note',v('note'));
+  var riga={sport:SPORT,modulo:'torneo',nome:v('nome'),cognome:v('cognome'),telefono:v('tel'),giorno:dal,ora_da:null,ora_a:null,superficie:null,note:v('note')||null,dati:d};
+  var b=$('b');b.disabled=true;b.textContent='Invio in corso…';$('m').textContent='';
+  SSAuth.invia('richieste',riga).then(function(r){b.disabled=false;b.textContent='Invia';
+    if(r.status===401){location.href='Account.html?next=Attivita'+NOME_SPORT+'.html';return}
+    if(!r.ok)return err('Invio non riuscito: controlla il periodo (da domani a massimo 12 mesi) e riprova.');
+    $('f').hidden=true;$('ok').hidden=false;
+    $('ok-t').textContent='Abbiamo ricevuto la tua richiesta di partecipazione a un torneo di '+NOME_SPORT.toLowerCase()+' ('+rv('formtorneo').split(' (')[0]+') per il periodo dal '+fmt(dal)+' al '+fmt(al)+'. Non è ancora un’iscrizione: ti invieremo la conferma con un messaggio WhatsApp o SMS al numero '+v('tel')+'.';
+    $('ok').scrollIntoView({block:'center',behavior:'smooth'});
+  }).catch(function(){b.disabled=false;b.textContent='Invia';err('Connessione assente: riprova tra poco.')})
+  return false}
+function nuova(){['tdal','tal','compagno','dispgen','rd1','ro1','rd2','ro2','rd3','ro3','giorno','da','a','giorno2','ora2','note','altri','partecipante','obiettivo','nomigioc'].forEach(function(i){$(i).value=''});$('ok').hidden=true;$('f').hidden=false;scegli(MOD)}
 (function(){var s=SSAuth.sessione();if(!s){$('no-login').hidden=false;return}
   $('si-login').hidden=false;$('chi').textContent=s.email||'';$('email').value=s.email||'';
   var q=new URLSearchParams(location.search).get('modulo');scegli(MODS[q]?q:'lezione');
