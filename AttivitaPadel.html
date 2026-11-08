@@ -241,6 +241,7 @@ fieldset.fs legend{font-weight:600;font-size:15px;padding:0;margin:0 0 6px}
 <fieldset class="fs fld"><legend>Iscrizione *</legend><div class="opt"><label><input type="radio" name="iscr" value="Sono solo (cerco un compagno)" checked> Sono solo (cerco un compagno)</label><label><input type="radio" name="iscr" value="Ho già un compagno"> Ho già un compagno</label></div></fieldset>
 <label class="fld" id="w-compagno" hidden>Nome e cognome del compagno *<input id="compagno" type="text" autocomplete="off"></label>
 <fieldset class="fs fld"><legend>Tipo di torneo *</legend><div class="opt"><label><input type="radio" name="formtorneo" value="Rodeo (tutto in una giornata)" checked> Rodeo (tutto in una giornata)</label><label><input type="radio" name="formtorneo" value="Torneo normale"> Torneo normale</label></div></fieldset>
+<fieldset class="fs fld"><legend>Campi *</legend><div class="opt"><label><input type="radio" name="campit" value="Indoor (campi coperti)"> Indoor (campi coperti)</label><label><input type="radio" name="campit" value="Open (campi all’aperto)"> Open (campi all’aperto)</label><label><input type="radio" name="campit" value="Indifferente"> Indifferente</label></div></fieldset>
 <div class="sez">Periodo in cui vuoi giocare</div>
 <div class="grid2">
 <label class="fld">Dal *<input id="tdal" type="date"></label>
@@ -353,16 +354,17 @@ function inviaTorneo(w){var dal=v('tdal'),al=v('tal'),ro=rv('formtorneo')==='Rod
   if(ro){if(rv('disp')==='date'){if(!v('rd1')||!v('ro1'))return err('Indica almeno una data con l’orario per il Rodeo.');
       for(var i=1;i<=3;i++){var x=v('rd'+i);if(!x)continue;if(x<dal||x>al)return err('Le date del Rodeo devono essere dentro il periodo indicato.');dd.push(fmt(x)+(v('ro'+i)?' dalle '+v('ro'+i):''))}}
     else if(!v('dispgen'))return err('Scrivi quando sei disponibile per il Rodeo (es. nei festivi dalle 10).')}
+  if(!rv('campit'))return err('Scegli i campi: Indoor, Open o Indifferente.');
   if(!v('nome')||!v('cognome')||!v('tel'))return err('Completa nome, cognome e cellulare (serve per la conferma via WhatsApp o SMS).');
   var d=[];function add(c,x){if(x)d.push({c:c,v:x})}
   add('Sport',NOME_SPORT);add('Modulo','Torneo');
   if($('w-iscr'))add('Gara',rv('garat'));
   if(dop){add('Iscrizione',rv('iscr'));if(rv('iscr')==='Ho già un compagno')add('Compagno',v('compagno'))}
-  add('Tipo di torneo',rv('formtorneo'));
+  add('Tipo di torneo',rv('formtorneo'));add('Campi',rv('campit'));
   add('Periodo','dal '+fmt(dal)+' al '+fmt(al));
   if(ro)add('Disponibilità Rodeo',rv('disp')==='date'?dd.join(' · '):v('dispgen'));
   add('Livello',v('livello'));add('Note',v('note'));
-  var riga={sport:SPORT,modulo:'torneo',nome:v('nome'),cognome:v('cognome'),telefono:v('tel'),giorno:dal,ora_da:null,ora_a:null,superficie:null,note:v('note')||null,dati:d};
+  var riga={sport:SPORT,modulo:'torneo',nome:v('nome'),cognome:v('cognome'),telefono:v('tel'),giorno:dal,ora_da:null,ora_a:null,superficie:rv('campit'),note:v('note')||null,dati:d};
   var b=$('b');b.disabled=true;b.textContent='Invio in corso…';$('m').textContent='';
   SSAuth.invia('richieste',riga).then(function(r){b.disabled=false;b.textContent='Invia';
     if(r.status===401){location.href='Account.html?next=Attivita'+NOME_SPORT+'.html';return}
