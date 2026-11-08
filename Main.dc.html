@@ -6,6 +6,13 @@
 <script src="./vendor/react.js"></script>
 <script src="./vendor/react-dom.js"></script>
 <script src="./support.js"></script>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0B2545">
+<link rel="apple-touch-icon" href="/app/icona-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sport&amp;Services">
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})</script>
 </head>
 <body>
 <x-dc>
@@ -245,6 +252,18 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
 </div>
 </section>
 
+<section aria-label="Scarica l’app" style="max-width: 1240px; margin: 0 auto; padding: 72px 24px 0">
+<div style="background: #0B2545; color: #FFFFFF; border-radius: 28px; padding: clamp(28px, 4vw, 48px); box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 24px 40px; align-items: center">
+<img src="app/icona-512.png" alt="Icona dell’app Sport &amp; Services Padel" loading="lazy" style="width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 10px 28px rgba(0,0,0,.35); flex: none; display: block">
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-weight: 700; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: #D4F04A">Novità · App gratuita</p>
+<h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(34px, 4.6vw, 56px); line-height: 1; text-transform: uppercase">Sport &amp; Services sul tuo telefono</h2>
+<p style="margin: 0; font-size: 18px; color: #C9D6E6">Installa l’app su iPhone o Android: lezioni, tornei, schede tecniche e iscrizioni a portata di tocco, sempre aggiornate.</p>
+</div>
+<a href="App.html" style="background: #D4F04A; color: #0B2545; text-decoration: none; font-weight: 700; font-size: 17px; padding: 16px 28px; border-radius: 999px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; flex: none">Scarica l’app</a>
+</div>
+</section>
+
 <section aria-label="Schede tecniche" style="max-width: 1240px; margin: 0 auto; padding: 72px 24px 0">
 <div style="background: #0B2545; color: #FFFFFF; border-radius: 28px; overflow: hidden; display: flex; flex-wrap: wrap">
 <img src="./assets/clinic-padel-maestro-v2.jpg" alt="Clinic di padel: il maestro spiega a un gruppo di allievi in campo" loading="lazy" style="flex: 1 1 360px; min-width: 0; width: 100%; min-height: 220px; max-height: 420px; object-fit: cover; display: block">
@@ -294,6 +313,7 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
 <a href="Eventi.dc.html" style="color: #FFFFFF">Eventi</a>
 <a href="VacanzePadel.dc.html" style="color: #FFFFFF">Vacanze Padel</a>
 <a href="PadelSchool.dc.html" style="color: #FFFFFF">Padel School</a>
+<a href="App.html" style="color: #D4F04A; font-weight: 700">Scarica l’app</a>
 </div>
 <div style="display: flex; flex-direction: column; gap: 8px">
 <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: {{accent}}">Contatti</div>

@@ -1,0 +1,23 @@
+{
+  "name": "Sport & Services Padel",
+  "short_name": "Sport&Services",
+  "description": "Lezioni, corsi, tornei, schede tecniche e iscrizioni dell'A.S.D. Sport & Services: tennis e padel a Roma.",
+  "lang": "it",
+  "id": "/",
+  "start_url": "/Main.dc.html?app=1",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B2545",
+  "theme_color": "#0B2545",
+  "icons": [
+    { "src": "/app/icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icona-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Attività Padel", "url": "/AttivitaPadel.html", "icons": [{ "src": "/app/icona-192.png", "sizes": "192x192" }] },
+    { "name": "Attività Tennis", "url": "/AttivitaTennis.html", "icons": [{ "src": "/app/icona-192.png", "sizes": "192x192" }] },
+    { "name": "Richiedi un torneo", "url": "/AttivitaPadel.html?modulo=torneo", "icons": [{ "src": "/app/icona-192.png", "sizes": "192x192" }] }
+  ]
+}
