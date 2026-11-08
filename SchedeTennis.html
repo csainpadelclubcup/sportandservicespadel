@@ -174,7 +174,7 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
 </header>
 <section><img src="assets/6cc686b2048db770faf7adfa56ad453b.png" alt="Pallina gialla vicino alla rete" style="width: 100%; height: clamp(160px, 34vw, 480px); object-fit: cover; object-position: center; display: block"></section>
 <section class="wrapx" style="padding-top:56px;padding-bottom:16px">
-<p class="eb">Padel School · Area allievi</p>
+<p class="eb">Tennis School · Area allievi</p>
 <h1 class="h1x">Schede tecniche Tennis</h1>
 <p class="lead">Ogni allievo ha la sua scheda personale: il maestro la aggiorna durante la stagione per mostrarti come stai crescendo e su cosa lavorare.</p>
 <p class="small" style="margin-top:10px">Cerchi le schede di Padel? <a href="SchedePadel.html">Vai alle schede tecniche Padel</a></p>
@@ -230,7 +230,7 @@ function mostraScheda(ifr, dati, modo){
   modello().then(function(t){
     var h=t.replace('/*__DATI__*/null', JSON.stringify(dati).replace(/</g,'\\u003c')).replace('/*__MODO__*/"giocatore"', JSON.stringify(modo));
     // scheda Tennis: logo con la scritta TENNIS al posto di PADEL
-    h=h.replace(/const LOGO = "[^"]*"/,'const LOGO = "/assets/logo-scheda-tennis.png"').replace('alt="Logo Sport & Services Padel"','alt="Logo Sport & Services Tennis"');
+    h=h.replace(/const LOGO = "[^"]*"/,'const LOGO = "/assets/logo-scheda-tennis.png"').replace('alt="Logo Sport & Services Padel"','alt="Logo Sport & Services Tennis"').split('Padel School').join('Tennis School');
     if(modo!=='maestro') h=h.replace('</head>','<style>.seg{display:none!important}</style></head>');
     ifr.onload=function(){ var fit=function(){ try{ ifr.style.height=(ifr.contentDocument.documentElement.scrollHeight+4)+'px' }catch(e){} }; fit(); setTimeout(fit,400); window.addEventListener('resize',fit) };
     ifr.srcdoc=h;
