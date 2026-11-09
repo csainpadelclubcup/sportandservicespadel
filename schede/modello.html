@@ -207,7 +207,7 @@ function render(){
     <div><div class="eyebrow">Padel School · Stagione ${esc(S.stagione)}</div>
     <h1>${esc(nome)}</h1>
     <p class="sub"><span class="solo-maestro">Scheda allievo – versione maestro</span><span class="solo-giocatore">Il tuo percorso di crescita</span></p>
-    <div class="stats"><span class="chip">${esc(A.Corso||"")}</span>
+    <div class="stats">${A["Attività frequentata"]?`<span class="chip"><b>Attività frequentata:</b>&nbsp;${esc(A["Attività frequentata"])}</span>`:""}${A.Corso?`<span class="chip">${esc(A.Corso)}</span>`:""}${A["Lezione privata"]?`<span class="chip">${esc(A["Lezione privata"])}</span>`:""}
       <span class="chip solo-maestro">Presenze ${nPres}/${nSvolte}</span>
       <span class="chip">Aggiornata il ${esc(S.aggiornata)}</span></div></div></div>`;
 
