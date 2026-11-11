@@ -18,9 +18,11 @@
 
   // adatta i fogli A4 alla larghezza dello schermo
   function fit() {
-    var w = Math.min(window.innerWidth - 16, 794);
+    var vw = Math.min(window.innerWidth, document.documentElement.clientWidth);
+    var w = Math.min(vw - 16, 794);
     var z = w / 794;
-    $$('.page').forEach(function (p) { p.style.zoom = z < 1 ? z : ''; });
+    // su smartphone (≤760px) il foglio si adatta da solo con il CSS; lo zoom serve solo per tablet e schermi medi
+    $$('.page').forEach(function (p) { p.style.zoom = (vw > 760 && z < 1) ? z : ''; });
   }
   window.addEventListener('resize', fit);
   document.addEventListener('DOMContentLoaded', fit);

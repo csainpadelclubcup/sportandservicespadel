@@ -125,3 +125,51 @@ input[type=radio],input[type=checkbox]{accent-color:var(--navy);width:15px;heigh
 }
 body.capturing ::placeholder{color:transparent!important}
 body.capturing .page{box-shadow:none}
+
+/* ---- Smartphone: i fogli A4 diventano pagine che si adattano allo schermo (non per stampa e PDF) ---- */
+@media screen and (max-width:760px){
+  html{-webkit-text-size-adjust:100%}
+  .page{zoom:1!important}
+  body:not(.capturing) .pages{padding:12px 0 40px;gap:14px;align-items:stretch}
+  body:not(.capturing) .page{width:auto;height:auto;margin:0 10px;padding:16px 14px 16px 18px;overflow:visible}
+  body:not(.capturing) .page::before{width:3mm}
+  body:not(.capturing) .page::after{left:3mm}
+  body:not(.capturing) .inner{padding-left:3mm}
+  body:not(.capturing) .hdr{flex-wrap:wrap;gap:10px}
+  body:not(.capturing) .brand .name{font-size:23px}
+  body:not(.capturing) .brand .ed{font-size:12px;letter-spacing:.1em}
+  body:not(.capturing) .badge{text-align:left;width:100%}
+  body:not(.capturing) .badge .t{max-width:none}
+  body:not(.capturing) .badge .m{font-size:11px}
+  body:not(.capturing) .title{font-size:31px}
+  body:not(.capturing) .sub{font-size:15px}
+  body:not(.capturing) .sec{font-size:17px}
+  body:not(.capturing) .grid{gap:12px}
+  body:not(.capturing) .g2,body:not(.capturing) .g3,body:not(.capturing) .g4{grid-template-columns:1fr}
+  body:not(.capturing) .g4.mob2{grid-template-columns:1fr 1fr}
+  body:not(.capturing) .grid>*{grid-column:auto!important}
+  body:not(.capturing) .lbl{font-size:12px}
+  body:not(.capturing) .in{font-size:16px;min-height:44px;padding:8px 4px}
+  body:not(.capturing) textarea.in{min-height:84px}
+  body:not(.capturing) .radios{font-size:16px;gap:10px 18px}
+  body:not(.capturing) .radios label,body:not(.capturing) .check{min-height:36px}
+  body:not(.capturing) input[type=radio],body:not(.capturing) input[type=checkbox]{width:22px;height:22px;flex:none}
+  body:not(.capturing) .price{flex-wrap:wrap;gap:8px 12px}
+  body:not(.capturing) .price .d{flex:1 1 200px;font-size:15px}
+  body:not(.capturing) .price .d small{font-size:13px}
+  body:not(.capturing) .price .p{font-size:28px}
+  body:not(.capturing) .legal{font-size:15px;text-align:left}
+  body:not(.capturing) .note{font-size:13.5px}
+  body:not(.capturing) .callout{font-size:15px!important}
+  body:not(.capturing) .panel{flex-wrap:wrap}
+  body:not(.capturing) .panel .note{text-align:left!important}
+  body:not(.capturing) .signs{grid-template-columns:1fr;gap:26px}
+  body:not(.capturing) .sign .cap{font-size:11px}
+  body:not(.capturing) .foot{flex-wrap:wrap;font-size:10.5px}
+  .site-bar .in{padding:8px 12px}
+  .site-bar .brand img{width:44px;height:44px}
+  .site-bar .brand b{font-size:16px}
+  .toolbar{padding:8px 10px;gap:6px}
+  .toolbar .btn{flex:1 1 auto;padding:0 14px}
+  .chooser{width:calc(100% - 20px)}
+}
