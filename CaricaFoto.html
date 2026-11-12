@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Carica foto delle schede — Sport &amp; Services Padel</title>
+<style>
+body{margin:0;background:#F3F6F9;font:16px/1.5 Barlow,system-ui,sans-serif;color:#0B2545}
+main{max-width:640px;margin:0 auto;padding:28px 18px}
+h1{font-size:26px;margin:0 0 6px}
+.box{background:#fff;border:1px solid #D5DDE6;border-radius:14px;padding:18px;margin-top:16px}
+label{display:block;font-weight:600;margin:0 0 6px}
+select,input[type=file]{width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1px solid #D5DDE6;border-radius:10px;background:#fff}
+button{background:#0B2545;color:#fff;border:0;border-radius:999px;padding:12px 24px;font:inherit;font-weight:700;cursor:pointer;margin-top:14px}
+button:disabled{opacity:.5}
+ul{padding-left:20px;margin:10px 0 0}
+.ok{color:#1B7A3A}.ko{color:#B3261E}
+a{color:#0B2545}
+</style>
+</head>
+<body>
+<main>
+<h1>Carica foto delle schede</h1>
+<p>Pagina riservata al maestro. Scegli la scheda, seleziona le foto e premi “Carica”. Le foto restano private: le vedono solo tu e l’allievo che ha sbloccato la sua scheda.</p>
+<div id="stop" class="box" hidden>Per usare questa pagina devi entrare con l’account del maestro. <a href="Account.html?next=CaricaFoto.html">Accedi</a></div>
+<div id="app" class="box" hidden>
+  <label for="sc">Scheda</label>
+  <select id="sc"></select>
+  <label for="fl" style="margin-top:14px">Foto</label>
+  <input id="fl" type="file" accept="image/*" multiple>
+  <button id="go" type="button">Carica</button>
+  <ul id="log"></ul>
+</div>
+<p><a href="SchedePadel.html">← Schede tecniche Padel</a> · <a href="SchedeTennis.html">Schede tecniche Tennis</a></p>
+</main>
+<script src="js/auth.js"></script>
+<script>
+var SB='https://hbmmlnyfiesmmbmxkmcp.supabase.co', KEY='sb_publishable_TYJtDyl4jTCrVNPYCJ-B4w_00i41uID';
+var $=function(i){return document.getElementById(i)};
+function riga(t,c){ var li=document.createElement('li'); li.textContent=t; if(c) li.className=c; $('log').appendChild(li) }
+SSAuth.token().then(function(t){
+  var s=SSAuth.sessione();
+  if(!t||!s||(s.email||'').toLowerCase()!=='gianluca.micarelli@gmail.com'){ $('stop').hidden=false; return }
+  $('app').hidden=false;
+  SSAuth.db('schede?select=id,nome,sport&order=sport,nome').then(function(r){
+    (r.data||[]).forEach(function(x){ var o=document.createElement('option'); o.value=x.id; o.textContent=x.nome+' ('+x.sport+')'; $('sc').appendChild(o) });
+    if(!(r.data||[]).length) riga('Nessuna scheda trovata.','ko');
+  });
+  $('go').onclick=function(){
+    var fl=[].slice.call($('fl').files), id=$('sc').value;
+    if(!id||!fl.length){ riga('Scegli la scheda e almeno una foto.','ko'); return }
+    $('go').disabled=true; $('log').innerHTML='';
+    fl.reduce(function(p,f){ return p.then(function(){
+      return SSAuth.token().then(function(tk){
+        return fetch(SB+'/storage/v1/object/schede-foto/'+id+'/'+encodeURIComponent(f.name),{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tk,'x-upsert':'true','Content-Type':f.type||'image/jpeg'},body:f})
+          .then(function(r){ riga(f.name+(r.ok?' — caricata':' — errore '+r.status),r.ok?'ok':'ko') }).catch(function(){ riga(f.name+' — errore di rete','ko') });
+      });
+    }) }, Promise.resolve()).then(function(){ $('go').disabled=false; $('fl').value='' });
+  };
+});
+</script>
+</body>
+</html>
