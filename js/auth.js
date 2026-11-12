@@ -85,6 +85,12 @@
     funzione: function (nome, body) {
       return Auth.token().then(function (t) { if (!t) return { ok: false, status: 401, data: null }; return req('/functions/v1/' + nome, { method: 'POST', token: t, body: body }); });
     },
+    // indirizzi temporanei delle foto private di una scheda: restituisce {nomefile: url}
+    fotoUrl: function (schedaId, nomi) {
+      if (!nomi || !nomi.length) return Promise.resolve({});
+      return Auth.token().then(function (t) { if (!t) return {}; return req('/storage/v1/object/sign/schede-foto', { method: 'POST', token: t, body: { expiresIn: 3600, paths: nomi.map(function (n) { return schedaId + '/' + n; }) } }).then(function (r) {
+        var o = {}; if (r.ok && Array.isArray(r.data)) r.data.forEach(function (x) { if (x.signedURL) o[x.path.split('/').slice(1).join('/')] = SB + '/storage/v1' + x.signedURL; }); return o; }); });
+    },
     // dati del profilo (nome, cognome, telefono) salvati alla registrazione
     profilo: function () {
       return Auth.token().then(function (t) { if (!t) return null; return req('/auth/v1/user', { token: t }).then(function (r) { return r.ok ? (r.data.user_metadata || {}) : null; }); });
