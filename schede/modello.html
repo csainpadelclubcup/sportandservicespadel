@@ -226,7 +226,7 @@ function area(n, nome, items, tag){
   const cards=items.map(x=>{
     const v=typeof x.voto==="number";
     const prima = colpi ? (x.foto||[])[0] : null;
-    const cornice = prima ? `<figure class="fotocolpo" onclick="ingrandisci(this)"><img src="${fsrc(prima)}" alt="${esc(x.voce)}" loading="lazy" onerror="fotoMancante(this)">
+    const cornice = prima ? `<figure class="fotocolpo" onclick="ingrandisci(this)"><img src="${fsrc(prima)}" alt="${esc(x.voce)}" onerror="fotoMancante(this)">
       <figcaption><span class="lbl">Colpo</span><h3>${esc(x.voce)}</h3></figcaption>
       ${v?`<span class="voto-tondo">${num(x.voto)}<small>/10</small></span>`:""}</figure>` : "";
     const foto=(x.foto||[]).slice(colpi?1:0).map(f=>`<img src="${fsrc(f)}" alt="${esc(x.voce)}" onerror="this.remove()">`).join("");
