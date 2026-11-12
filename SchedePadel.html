@@ -216,6 +216,15 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
   </form>
   <p id="m" class="msg" style="color:#FFD4CF"></p>
   <ul id="res" class="res"></ul>
+  <div id="sblocca" hidden style="margin-top:18px;border-top:1px solid #2C4A73;padding-top:18px">
+    <p style="color:#C9D6E6;margin:0 0 12px">Per aprire la tua scheda ti mandiamo un codice di 6 cifre alla mail che hai dato al maestro. Controlliamo nome, cognome e data di nascita con cui ti sei registrato.</p>
+    <button class="bt" id="sb-b" type="button" onclick="richiediCodice()" style="background:#D4F04A;color:#0B2545">Invia il codice</button>
+    <form id="sb-f" class="search" hidden onsubmit="return verificaCodice(event)" style="margin-top:12px">
+      <input id="sb-c" inputmode="numeric" maxlength="6" placeholder="Codice di 6 cifre" aria-label="Codice di 6 cifre" autocomplete="one-time-code">
+      <button class="bt" type="submit" style="background:#D4F04A;color:#0B2545">Apri la scheda</button>
+    </form>
+    <p id="sb-m" class="msg" style="color:#C9D6E6"></p>
+  </div>
   <p class="small" style="color:#9FB3CB;margin-top:16px">Sei entrato come <b id="chi"></b>. <a href="Account.html" style="color:#D4F04A">Il mio account</a></p>
 </div>
 </div>
@@ -237,6 +246,21 @@ function mostraScheda(ifr, dati, modo){
 mostraScheda(document.getElementById('fs'), FS, 'giocatore');
 var ADMIN=false;
 function esc(s){return String(s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function sbMsg(t){ document.getElementById('sb-m').textContent=t }
+function richiediCodice(){ var b=document.getElementById('sb-b'); b.disabled=true; sbMsg('Un momento…');
+  SSAuth.funzione('scheda-codice',{azione:'richiedi'}).then(function(r){ b.disabled=false; var d=r.data||{};
+    if(r.status===401){ location.href='Account.html?next='+location.pathname.split('/').pop(); return }
+    if(d.errore==='manca_data'||d.errore==='manca_nome') return sbMsg('Nel tuo account mancano nome, cognome o data di nascita. Scrivi a info@sportandservicespadel.it.');
+    if(d.errore==='attendi') return sbMsg('Hai appena chiesto un codice: aspetta un minuto e riprova.');
+    if(d.errore==='senza_mail') return sbMsg('La tua scheda non ha una mail. Scrivi a info@sportandservicespadel.it.');
+    if(d.errore||!r.ok) return sbMsg('Non sono riuscito a mandare il codice, riprova tra poco.');
+    if(!d.trovata) return sbMsg('Non troviamo una scheda con questo nome e questa data di nascita. Controlla i dati del tuo account oppure scrivi a info@sportandservicespadel.it.');
+    document.getElementById('sb-f').hidden=false; document.getElementById('sb-c').focus();
+    sbMsg('Ti abbiamo mandato un codice a '+d.mail.join(' e ')+'. Controlla la posta (anche lo spam) e scrivilo qui sopra. Vale 15 minuti. Se non riconosci la mail, scrivi a info@sportandservicespadel.it.'); }) }
+function verificaCodice(e){ e.preventDefault(); sbMsg('Controllo…');
+  SSAuth.funzione('scheda-codice',{azione:'verifica',codice:document.getElementById('sb-c').value.trim()}).then(function(r){ var d=r.data||{};
+    if(d.ok){ document.getElementById('sblocca').hidden=true; document.getElementById('q').value=''; cerca({preventDefault:function(){}}); return }
+    sbMsg(d.errore==='scaduto'?'Il codice è scaduto: premi di nuovo “Invia il codice”.':d.errore==='troppi'?'Troppi tentativi: premi di nuovo “Invia il codice”.':'Codice non corretto, riprova.') }); return false }
 function cerca(e){ e.preventDefault(); var q=document.getElementById('q').value.trim(); var m=document.getElementById('m'), ul=document.getElementById('res'); m.textContent=''; ul.innerHTML='';
   var filtro='sport=eq.'+SPORT+'&select=id,nome,aggiornata,dati,email&order=nome';
   if(q) filtro+='&nome=ilike.'+encodeURIComponent('*'+q.replace(/[*,()]/g,' ')+'*');
@@ -244,7 +268,7 @@ function cerca(e){ e.preventDefault(); var q=document.getElementById('q').value.
     if(r.status===401){ location.href='Account.html?next=SchedePadel.html'; return }
     if(!r.ok){ m.textContent='Ricerca non riuscita, riprova.'; return }
     var d=r.data||[];
-    if(!d.length){ m.textContent=q?'Nessuna scheda trovata con questo nome per il tuo account. Controlla di aver scritto bene nome e cognome, oppure chiedi al maestro.':'Per il tuo account non c’è ancora una scheda Padel.'; return }
+    if(!d.length){ if(!ADMIN){ document.getElementById('sblocca').hidden=false; m.textContent=''; return } m.textContent=q?'Nessuna scheda trovata con questo nome per il tuo account. Controlla di aver scritto bene nome e cognome, oppure chiedi al maestro.':'Per il tuo account non c’è ancora una scheda Padel.'; return }
     d.forEach(function(x){ var li=document.createElement('li'); var b=document.createElement('button'); b.type='button';
       b.innerHTML='<span><b>'+esc(x.nome)+'</b></span><span class="small">aggiornata il '+new Date(x.aggiornata).toLocaleDateString('it-IT')+'</span>';
       b.onclick=function(){ document.getElementById('vista').hidden=false; mostraScheda(document.getElementById('sc'), x.dati, ADMIN?'maestro':'giocatore'); document.getElementById('vista').scrollIntoView({behavior:'smooth'}) };

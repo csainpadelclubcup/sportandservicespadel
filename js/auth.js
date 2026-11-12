@@ -81,6 +81,10 @@
     invia: function (tabella, riga) {
       return Auth.token().then(function (t) { if (!t) return { ok: false, status: 401, data: null }; return req('/rest/v1/' + tabella, { method: 'POST', token: t, body: riga, headers: { Prefer: 'return=minimal' } }); });
     },
+    // chiamata a una funzione del sito (es. invio del codice per aprire la scheda)
+    funzione: function (nome, body) {
+      return Auth.token().then(function (t) { if (!t) return { ok: false, status: 401, data: null }; return req('/functions/v1/' + nome, { method: 'POST', token: t, body: body }); });
+    },
     // dati del profilo (nome, cognome, telefono) salvati alla registrazione
     profilo: function () {
       return Auth.token().then(function (t) { if (!t) return null; return req('/auth/v1/user', { token: t }).then(function (r) { return r.ok ? (r.data.user_metadata || {}) : null; }); });

@@ -219,6 +219,7 @@ section[style*="padding: 96px"],section[style*="padding: 72px"],section[style*="
       <label class="fld">Nome<input id="r-nome" autocomplete="given-name" required></label>
       <label class="fld">Cognome<input id="r-cognome" autocomplete="family-name" required></label>
     </div>
+    <label class="fld">Data di nascita <span class="small" style="font-weight:400">(serve per aprire la tua scheda tecnica: scrivi nome, cognome e data come sono sulla scheda)</span><input id="r-nasc" type="date" autocomplete="bday" required max="2030-01-01"></label>
     <label class="fld">Email<input id="r-email" type="email" autocomplete="email" required></label>
     <label class="fld">Telefono <span class="small" style="font-weight:400">(facoltativo)</span><input id="r-tel" type="tel" autocomplete="tel"></label>
     <label class="fld">Password (almeno 8 caratteri)<input id="r-pwd" type="password" autocomplete="new-password" minlength="8" required></label>
@@ -241,7 +242,7 @@ function accedi(e){e.preventDefault();var b=$('b-acc');b.disabled=true;msg('m-ac
     if(!r.ok){msg('m-acc',A.errore(r));return}
     var n=prossima(); if(n){location.href=n;return} mostra();});return false}
 function registrati(e){e.preventDefault();var b=$('b-reg');b.disabled=true;msg('m-reg','');
-  var d={nome:$('r-nome').value.trim(),cognome:$('r-cognome').value.trim(),telefono:$('r-tel').value.trim(),consenso_privacy:$('r-privacy').checked,consenso_marketing:$('r-mkt').checked};
+  var d={nome:$('r-nome').value.trim(),cognome:$('r-cognome').value.trim(),data_nascita:$('r-nasc').value,telefono:$('r-tel').value.trim(),consenso_privacy:$('r-privacy').checked,consenso_marketing:$('r-mkt').checked};
   A.registrati($('r-email').value.trim(),$('r-pwd').value,d).then(function(r){b.disabled=false;
     if(!r.ok){msg('m-reg',A.errore(r));return}
     if(r.data&&r.data.user&&r.data.user.identities&&r.data.user.identities.length===0){msg('m-reg','Esiste già un account con questa email: usa "Accedi".');return}
