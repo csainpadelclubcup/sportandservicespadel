@@ -163,7 +163,67 @@ main{padding:12px}
   .tile svg{width:40px;height:40px;padding:14px}
   .tile b{font-size:20px}
 }
+.wiz{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.wiz span{flex:1;min-width:84px;text-align:center;font-size:12px;font-weight:700;padding:7px 4px;border-radius:8px;background:var(--tint);color:var(--muted);border-bottom:3px solid transparent}
+.wiz span.on{background:var(--navy);color:var(--gold)}
+.wiz span.ok{color:var(--ok);border-bottom-color:var(--ok)}
+.voce{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--paper)}
+.voce h4{margin:0 0 6px;font-family:var(--display);color:var(--navy);font-size:16px}
+.voce .riga{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:start}
+.voce label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.voce input,.voce select,.voce textarea{width:100%}
+.voce textarea{min-height:64px}
+@media (min-width:1100px){.tiles{grid-template-columns:repeat(6,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* pagina A4 */
+.sheetwrap{overflow-x:auto}
+.sheet{background:#fff;width:210mm;min-height:297mm;margin:0 auto 16px;box-shadow:0 4px 18px rgba(28,36,64,.22);position:relative;overflow:hidden;font-size:11px;line-height:1.35;color:#1E2624;padding-bottom:18mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet .hd{background:linear-gradient(120deg,#1C2440,#304143);color:#F6F2E8;padding:10mm 12mm 8mm;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5mm solid #C2A970}
+.sheet .hd.s{padding:7mm 12mm 5mm}
+.sheet .lg{font-family:var(--display);letter-spacing:.14em;text-transform:uppercase;color:#C2A970;font-size:22px}
+.sheet .sb{font-size:10px;opacity:.85;letter-spacing:.06em}
+.sheet .tp{font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.04em}
+.sheet .id{display:flex;gap:7mm;padding:8mm 12mm 3mm;align-items:center}
+.sheet .ph{width:38mm;height:38mm;border-radius:50%;border:1.2mm solid #C2A970;object-fit:cover;background:#E9ECE6;display:grid;place-items:center;font-family:var(--display);font-size:40px;color:#1C2440;overflow:hidden;flex:none}
+.sheet .nm{font-family:var(--display);font-size:30px;color:#1C2440;text-transform:uppercase;line-height:1.05}
+.sheet .ch{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.sheet .ch span{background:#F4F5F1;border:1px solid #DCE1DC;border-radius:99px;padding:2px 9px;font-size:10.5px}
+.sheet .md{margin-left:auto;text-align:center;border:1.2mm solid #1C2440;border-radius:50%;width:27mm;height:27mm;display:grid;place-items:center;flex:none}
+.sheet .md b{font-family:var(--display);font-size:28px;color:#1C2440;line-height:1}
+.sheet .md small{font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:#5E6B67}
+.sheet .gr{display:grid;grid-template-columns:1fr 1fr;gap:6mm;padding:3mm 12mm 6mm}
+.sheet .col{display:grid;gap:5mm;align-content:start}
+.sheet .ar{border:1px solid #DCE1DC;border-radius:3mm;padding:3mm 4mm;background:#FFFEFB;break-inside:avoid}
+.sheet .ar h3{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:#1C2440;text-transform:uppercase;border-bottom:1.5px solid #C2A970;padding-bottom:2px;margin-bottom:5px}
+.sheet .ar h3 b{font-size:17px}
+.sheet .br{display:grid;grid-template-columns:36mm 1fr 8mm;gap:2.5mm;align-items:center;margin:3.5px 0;line-height:1.15}
+.sheet .br i{display:block;height:7px;background:#ECEFEA;border-radius:4px;overflow:hidden}
+.sheet .br u{display:block;height:100%;border-radius:4px}
+.sheet .br em{font-style:normal;font-weight:700;text-align:right}
+.sheet .lg2{display:flex;gap:10px;justify-content:center;font-size:9.5px;color:#5E6B67}
+.sheet .lg2 i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.sheet .ft{position:absolute;left:0;right:0;bottom:0;background:#1C2440;color:#CFC9B8;padding:4mm 12mm;font-size:9.5px;display:flex;justify-content:space-between;gap:8px}
+.sheet .p2{padding:8mm 12mm 0}
+.sheet .due{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.sheet .bx{border-left:1.6mm solid #1C2440;background:#F6F7F3;border-radius:0 3mm 3mm 0;padding:3mm 4mm;margin-bottom:5mm;break-inside:avoid}
+.sheet .bx.ok{border-left-color:#2E7D5B} .sheet .bx.warn{border-left-color:#C9792B}
+.sheet .bx h4,.sheet .ct{font-family:var(--display);font-size:14px;text-transform:uppercase;color:#1C2440;margin:0 0 4px;letter-spacing:.04em}
+.sheet .bx ul{margin:0;padding-left:15px} .sheet .bx li{margin:2px 0}
+.sheet .lv{display:grid;grid-template-columns:1fr 1fr;gap:3mm 6mm} .sheet .lv b{color:#1C2440;font-size:11px}
+.sheet .ct{margin:2mm 0 3mm;border-bottom:1.5px solid #C2A970;padding-bottom:2px}
+.sheet .cm{margin-bottom:3mm} .sheet .cm h5{margin:0 0 2px;font-size:11.5px;color:#C2A970;text-transform:uppercase;letter-spacing:.08em}
+.sheet .cm p{margin:2px 0;font-size:10.5px}
+@media (max-width:820px){.sheet{zoom:.42}}
+@media print{
+  @page{size:A4;margin:0}
+  html,body{background:#fff}
+  .top,.noprint,.hint{display:none!important}
+  main{max-width:none;padding:0;margin:0}
+  #view,#view.panel{padding:0;background:transparent;box-shadow:none}
+  .sheetwrap{overflow:visible}
+  .sheet{zoom:1!important;margin:0;box-shadow:none;page-break-after:always;break-after:page}
+  .sheet:last-child{page-break-after:auto;break-after:auto}
+}
 </style>
 </head>
 <body>
@@ -176,6 +236,7 @@ main{padding:12px}
     <button data-v="allievi">Allievi</button>
     <button data-v="promozioni">Promozioni</button>
     <button data-v="allenamenti">Allenamenti</button>
+    <button data-v="schede">Schede tecniche</button>
   </nav>
 </div>
 <main><div id="view" class="panel"><p class="msg info">Caricamento…</p></div></main>
@@ -186,7 +247,8 @@ const ID = {
   planner: "1bPhAiRhNm2f2ggXXfdMze2GtkSlMy__5vRJ-exjXS9I",
   giocatori: "1L2Oep0BkpWDtTnE7LytvJbrEAWX8iqDrSTUKN_c2WOU",
   allievi: "1WGzxuiLBRkiylw3IK5RZozSQ9eCZ8Q07_DAprCcOBp0",
-  comandi: "1z_BDwRZxgsJ74TkrINPsO0_qnoBT_U_eg4YOYBZ38XI"
+  comandi: "1z_BDwRZxgsJ74TkrINPsO0_qnoBT_U_eg4YOYBZ38XI",
+  schede: "1w29CQ1eL0zvP9Q4yaeQCvMsvmI7yBp3iN9uNe2N1PgI"
 };
 const GG = ["dom","lun","mar","mer","gio","ven","sab"];
 const GIORNI = ["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
@@ -223,7 +285,7 @@ async function api(body, pw){
 }
 function dividi(r){ const i = r.lastIndexOf("!"); return {tab: r.slice(0,i).replace(/^'|'$/g,"").replace(/''/g,"'"), range: r.slice(i+1)}; }
 async function leggi(id, range){ const d = dividi(range); return api({op:"read", file:KEY[id], tab:d.tab, range:d.range}); }
-async function scrivi(id, range, values){ const d = dividi(range); return api({op:"write", file:KEY[id], tab:d.tab, range:d.range, values}); }
+async function scrivi(id, range, values){ const d = dividi(range); if (/^[A-Z]+\d+$/.test(d.range)) d.range = d.range+":"+d.range; return api({op:"write", file:KEY[id], tab:d.tab, range:d.range, values}); }
 
 /* ===================== PLANNER ===================== */
 async function caricaPlanner(){
@@ -271,7 +333,7 @@ async function vistaPlanner(refresh){
   if (pvista==="15") h += '<div class="days">'+giorni.map(g=>cardGiorno(g,false)).join("")+'</div>';
   if (pvista==="giorno"){ const g = giorni.find(x=>x.data.getTime()===giornoSel); if(g) h += '<div style="max-width:520px">'+cardGiorno(g,true)+'</div>'; }
   if (pvista==="settimana") h += '<div class="week">'+giorni.slice(settimana*7, settimana*7+7).map(g=>cardGiorno(g,false)).join("")+'</div>';
-  h += '<p class="hint">Il planner copre '+giorni.length+' giorni e si rinnova ogni mattina alle 6:39. Per aggiungere o spostare una lezione dettala a Claude nel progetto School Sport &amp; Services: aggiorna planner e calendario insieme.</p>';
+  h += '<p class="hint">Il planner copre '+giorni.length+' giorni e si rinnova ogni mattina alle 6:39. Per aggiungere o spostare una lezione dettala a Claude nel progetto: aggiorna planner e calendario insieme.</p>';
   v.innerHTML = h;
   v.querySelectorAll("[data-pv]").forEach(b=>b.onclick=()=>{pvista=b.dataset.pv; vistaPlanner();});
   v.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{settimana=+b.dataset.w; vistaPlanner();});
@@ -424,6 +486,380 @@ function formComando(k, i){
 }
 
 
+/* ===================== SCHEDE TECNICHE ===================== */
+const SCH_DOCS = ["Certificato medico","Tesseramento","Scheda di iscrizione compilata","Scheda per tesseramento CSAIN compilata"];
+const SCH_AREE = ["Tecnica","Atletica","Tattica","Mentale"];
+const AN_STEPS = [
+  {t:"Nome", f:[["Cognome",1,"text"],["Nome",2,"text"]]},
+  {t:"Anagrafica", f:[["Sesso",3,"sesso"],["Data di nascita",4,"date"],["Luogo di nascita",5,"text"],["Codice fiscale",6,"text"]]},
+  {t:"Contatti", f:[["Indirizzo",7,"text"],["Telefono",8,"tel"],["Email",9,"email"],["Note",11,"text"]]}
+];
+const SC_STEPS = ["Dati","Tecnica","Atletica","Tattica","Mentale","Valutazioni finali","Documenti"];
+const cc = (r,i) => (r && r[i] != null ? String(r[i]) : "");
+const nVoto = s => { const x = parseFloat(String(s==null?"":s).replace(",",".")); return isNaN(x) ? "" : x; };
+const aggOggi = () => { const d = new Date(); return d.getDate()+" "+MESI[d.getMonth()]+" "+d.getFullYear(); };
+const uuid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0; return (c==="x"?r:(r&3|8)).toString(16);});
+const righeTxt = s => String(s||"").split("\n").map(x=>x.trim()).filter(Boolean);
+let SCH = null;
+let schUI = {v:"lista", pid:null, sid:null, step:0, draft:null, q:""};
+const schSegnati = new Set();
+let schVi = 0;
+
+async function schCarica(forza){
+  if (SCH && !forza) return SCH;
+  const g = r => leggi(ID.schede, r);
+  const [an,sc,vo,si,dc,vc] = await Promise.all([g("ANAGRAFICA!A1:L400"), g("SCHEDE!A1:O400"), g("VOTI!A1:H3000"), g("VALUTAZIONI!A1:I400"), g("DOCUMENTI!A1:G1500"), g("VOCI!A1:C300")]);
+  SCH = {an,sc,vo,si,dc,vc};
+  return SCH;
+}
+const schPers = () => SCH.an.slice(1).map((r,i)=>({r,row:i+2})).filter(x=>cc(x.r,0));
+const schDi = pid => SCH.sc.slice(1).map((r,i)=>({r,row:i+2})).filter(x=>cc(x.r,0) && cc(x.r,1)===pid);
+const wizBar = (labels, step) => '<div class="wiz">'+labels.map((l,i)=>'<span class="'+(i===step?'on':i<step?'ok':'')+'">'+(i+1)+'. '+esc(l)+'</span>').join("")+'</div>';
+const pillSport = s => '<span class="pill '+(s==="Tennis"?'tennis':'padel')+'">'+esc(s)+'</span>';
+
+async function schColonna(tab, dati, colIdx, sid, valore){
+  const idx = []; dati.forEach((r,i)=>{ if (i>0 && cc(r,0)===sid) idx.push(i+1); });
+  let i = 0;
+  while (i < idx.length){
+    let j = i; while (j+1 < idx.length && idx[j+1]===idx[j]+1) j++;
+    const L = lettera(colIdx+1);
+    await scrivi(ID.schede, tab+"!"+L+idx[i]+":"+L+idx[j], idx.slice(i,j+1).map(()=>[valore]));
+    i = j+1;
+  }
+}
+async function schSegna(sid, nome, sport){
+  if (schSegnati.has(sid)) return; schSegnati.add(sid);
+  const al = await leggi(ID.schede, "ALLINEAMENTO!A1:C300"), n = al.length+1;
+  const t = new Date(), ora = dmy(t)+" "+String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");
+  await scrivi(ID.schede, "ALLINEAMENTO!A"+n+":C"+n, [[ora, "Da allineare", "Modifiche dal Planner: "+nome+" – scheda "+sport.toLowerCase()+" (ID "+sid+")"]]);
+}
+async function schEtichetta(pid){
+  const p = schPers().find(x=>cc(x.r,0)===pid); if(!p) return;
+  const lab = [...new Set(schDi(pid).map(x=>cc(x.r,3)))].sort().join(" + ");
+  await scrivi(ID.schede, "ANAGRAFICA!K"+p.row, [[lab]]);
+}
+
+/* ---------- elenco ---------- */
+async function vistaSchede(refresh, msg){
+  const v = $("#view");
+  if (!SCH || refresh){ v.innerHTML = '<p class="msg info">Leggo il database schede…</p>'; await schCarica(true); }
+  if (schUI.v==="menu") return schMenu(msg);
+  if (schUI.v==="stampa") return schStampa(schUI.sid);
+  if (schUI.v==="persona") return schPersona(msg);
+  if (schUI.v==="wizAn") return schWizAn();
+  if (schUI.v==="wizSc") return schWizSc();
+  return schLista(msg);
+}
+function schLista(msg){
+  const v = $("#view"), q = schUI.q.toLowerCase(), stampa = schUI.mode==="stampa" || schUI.mode==="cerca", cerca = schUI.mode==="cerca";
+  const tutte = schPers();
+  const pers = tutte.filter(({r})=>!q || r.join(" ").toLowerCase().includes(q)).sort((a,b)=>(cc(a.r,1)+cc(a.r,2)).localeCompare(cc(b.r,1)+cc(b.r,2),"it"));
+  let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><button class="btn sec" id="menu">‹ Schede</button><h2 style="margin-right:auto">'+(cerca?'Cerca un allievo':stampa?'Stampa: scegli la scheda':'Modifica: scegli l\'allievo')+' <small style="color:var(--muted);font-size:16px">('+tutte.length+')</small></h2>'+
+    '<input id="cerca" placeholder="Cerca allievo…" value="'+esc(schUI.q)+'" aria-label="Cerca">'+(stampa?'':'<button class="btn" id="nuovo">Nuovo allievo</button>')+'<button class="btn sec" id="aggiorna">Aggiorna</button></div>'+
+    '<div class="tbl"><table style="font-size:18px"><thead><tr><th>Allievo</th><th>Schede</th></tr></thead><tbody>';
+  if (!pers.length) h += '<tr><td colspan="2" class="vuoto">'+(tutte.length?'Nessun allievo con questa ricerca.':'Nessun allievo: premi Nuovo allievo.')+'</td></tr>';
+  pers.forEach(({r})=>{
+    const sp = stampa ? schDi(cc(r,0)).map(x=>'<button class="btn" data-st="'+esc(cc(x.r,0))+'">'+(cerca?'Apri ':'Stampa ')+esc(cc(x.r,3).toLowerCase())+'</button>').join(" ") : schDi(cc(r,0)).map(x=>pillSport(cc(x.r,3))).join(" ");
+    h += '<tr class="click" data-p="'+esc(cc(r,0))+'" tabindex="0"><td>'+esc(cc(r,1)+" "+cc(r,2))+'</td><td>'+(sp||'<span class="vuoto">nessuna</span>')+'</td></tr>';
+  });
+  h += '</tbody></table></div><p class="hint">Dati nel foglio Google «Database Schede Allievi». Le modifiche fatte qui vanno subito nel foglio; per riportarle nelle schede online e nel sito scrivi a Claude «Aggiornamento schede». In aereo scrivi direttamente nel foglio con l\'app Fogli Google (disponibile offline): le modifiche si sincronizzano da sole quando torni online.</p>';
+  v.innerHTML = h;
+  $("#cerca").oninput = e=>{ schUI.q = e.target.value; const pos = e.target.selectionStart; schLista(); const x=$("#cerca"); x.focus(); x.setSelectionRange(pos,pos); };
+  if ($("#nuovo")) $("#nuovo").onclick = ()=>{ schUI = {v:"wizAn", pid:null, sid:null, step:0, draft:Array(12).fill(""), q:schUI.q, mode:"modifica"}; vistaSchede(); };
+  $("#aggiorna").onclick = ()=>mostra("schede",true);
+  v.querySelectorAll("tr[data-p]").forEach(tr=>{ const ap = ()=>{ if (stampa) return; schUI.v="persona"; schUI.pid=tr.dataset.p; vistaSchede(); }; tr.onclick=ap; tr.onkeydown=e=>{ if(e.key==="Enter") ap(); }; });
+  v.querySelectorAll("[data-st]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); schUI.v="stampa"; schUI.sid=b.dataset.st; vistaSchede(); });
+  $("#menu").onclick = ()=>{ schUI.v="menu"; vistaSchede(); };
+  if (cerca){ const cx = $("#cerca"); if (cx) cx.focus(); }
+}
+
+/* ---------- pagina allievo ---------- */
+function schPersona(msg){
+  const v = $("#view"), p = schPers().find(x=>cc(x.r,0)===schUI.pid);
+  if (!p){ schUI.v="lista"; return schLista(); }
+  const r = p.r, schede = schDi(schUI.pid);
+  const righe = [["Data di nascita",4],["Luogo di nascita",5],["Codice fiscale",6],["Indirizzo",7],["Telefono",8],["Email",9]];
+  let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><button class="btn sec" id="indietro">‹ Elenco</button><h2 style="margin-right:auto">'+esc(cc(r,1)+" "+cc(r,2))+'</h2><button class="btn sec" id="modAn">Modifica dati anagrafici</button></div>'+
+    '<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;color:var(--navy)">Dati anagrafici</summary><div class="tbl"><table><tbody>'+righe.map(([l,i])=>'<tr><th style="width:40%">'+l+'</th><td>'+esc(cc(r,i))+'</td></tr>').join("")+'</tbody></table></div></details>'+
+    '<h3 style="margin:18px 0 8px">Schede tecniche</h3><div class="bar">';
+  ["Tennis","Padel"].forEach(sp=>{
+    const s = schede.find(x=>cc(x.r,3)===sp);
+    h += s ? '<button class="btn" data-sc="'+esc(cc(s.r,0))+'">Scheda '+sp.toLowerCase()+' · apri</button>' : '<button class="btn sec" data-new="'+sp+'">Crea scheda '+sp.toLowerCase()+'</button>';
+  });
+  h += '</div><p class="hint">La scheda si compila a passi: dati, tecnica, atletica, tattica, mentale, valutazioni finali, documenti. Ogni passo viene salvato subito nel database.</p>';
+  v.innerHTML = h;
+  $("#indietro").onclick = ()=>{ schUI.v="lista"; vistaSchede(); };
+  $("#modAn").onclick = ()=>{ schUI = {v:"wizAn", pid:schUI.pid, sid:null, step:0, draft:Array.from({length:12},(_,i)=>cc(r,i)), q:schUI.q}; vistaSchede(); };
+  v.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{ schUI.v="wizSc"; schUI.sid=b.dataset.sc; schUI.step=0; vistaSchede(); });
+  v.querySelectorAll("[data-new]").forEach(b=>b.onclick=()=>schNuovaScheda(schUI.pid, b.dataset.new, b));
+}
+async function schNuovaScheda(pid, sport, btn){
+  btn.disabled = true; btn.textContent = "Creo la scheda…";
+  try{
+    const sid = await schCreaScheda(pid, sport);
+    schUI.v="wizSc"; schUI.sid=sid; schUI.step=0; await vistaSchede();
+  }catch(e){ $("#view").insertAdjacentHTML("afterbegin",'<p class="msg err">'+esc(errore(e))+'</p>'); btn.disabled=false; }
+}
+
+/* ---------- scheda nuova: crea tutte le righe nel database ---------- */
+async function schCreaScheda(pid, sport){
+  await schCarica(true);
+  const p = schPers().find(x=>cc(x.r,0)===pid).r, nome = cc(p,1)+" "+cc(p,2), sid = uuid();
+  const nSc = SCH.sc.length+1;
+  await scrivi(ID.schede, "SCHEDE!A"+nSc+":O"+nSc, [[sid,pid,nome,sport,"2026 - 2027",sport+" School","","","","","","",aggOggi(),"",""]]);
+  const vv = SCH.vc.slice(1).filter(r=>cc(r,0)===sport && cc(r,2)).map(r=>[sid,nome,sport,cc(r,1),cc(r,2),"","",""]);
+  if (vv.length){ const n = SCH.vo.length+1; await scrivi(ID.schede, "VOTI!A"+n+":H"+(n+vv.length-1), vv); }
+  const nSi = SCH.si.length+1;
+  await scrivi(ID.schede, "VALUTAZIONI!A"+nSi+":I"+nSi, [[sid,nome,sport,"","","","","",""]]);
+  const nDc = SCH.dc.length+1;
+  await scrivi(ID.schede, "DOCUMENTI!A"+nDc+":G"+(nDc+SCH_DOCS.length-1), SCH_DOCS.map(d=>[sid,nome,sport,d,"","",""]));
+  await schCarica(true);
+  await schEtichetta(pid);
+  await schSegna(sid, nome, sport);
+  await schCarica(true);
+  return sid;
+}
+
+/* ---------- inserimento anagrafica a passi ---------- */
+function schWizAn(){
+  const v = $("#view"), d = schUI.draft, s = schUI.step, nuovo = !schUI.pid;
+  let h = '<div class="bar"><button class="btn sec" id="esci">‹ '+(nuovo?'Annulla':'Torna all\'allievo')+'</button><h2 style="margin-right:auto">'+(nuovo?'Nuovo allievo':esc(cc(d,2)+" "+cc(d,1)))+'</h2></div>'+wizBar(AN_STEPS.map(x=>x.t).concat(["Scheda"]), s);
+  if (s < AN_STEPS.length){
+    h += '<form class="form" id="frm"><h3 class="full">'+esc(AN_STEPS[s].t)+'</h3>';
+    AN_STEPS[s].f.forEach(([lab,col,tipo])=>{
+      const id = "w"+col, val = cc(d,col);
+      if (tipo==="sesso") h += '<label for="'+id+'">'+lab+'<select id="'+id+'"><option value=""></option><option'+(val==="M"?' selected':'')+'>M</option><option'+(val==="F"?' selected':'')+'>F</option></select></label>';
+      else if (tipo==="date") h += '<label for="'+id+'">'+lab+'<input id="'+id+'" type="date" value="'+dmyToIso(val)+'"></label>';
+      else h += '<label for="'+id+'"'+(lab==="Indirizzo"||lab==="Note"?' class="full"':'')+'>'+lab+'<input id="'+id+'" value="'+esc(val)+'"'+(tipo==="email"?' type="email"':tipo==="tel"?' inputmode="tel"':'')+'></label>';
+    });
+    h += '<div class="azioni">'+(s>0?'<button class="btn sec" type="button" id="ind">‹ Indietro</button>':'')+'<button class="btn" type="submit">'+(s===AN_STEPS.length-1?'Salva e continua':'Avanti ›')+'</button></div><p class="full msg err" id="ferr" hidden></p></form>';
+  } else {
+    h += '<div class="panel" style="padding:14px"><p class="msg ok">Dati anagrafici salvati nel database.</p><h3>Quale scheda vuoi compilare?</h3><div class="bar" id="scelte"></div><p class="hint">Se l\'allievo gioca sia a tennis sia a padel puoi compilare entrambe, una dopo l\'altra.</p></div>';
+  }
+  v.innerHTML = h;
+  $("#esci").onclick = ()=>{ if (schUI.pid){ schUI.v="persona"; } else schUI.v="lista"; vistaSchede(); };
+  if (s < AN_STEPS.length){
+    if ($("#ind")) $("#ind").onclick = ()=>{ schLeggiAn(); schUI.step--; schWizAn(); };
+    $("#frm").onsubmit = async e=>{
+      e.preventDefault(); schLeggiAn();
+      const err = $("#ferr");
+      if (s===0 && (!cc(d,1).trim() || !cc(d,2).trim())){ err.hidden=false; err.textContent="Scrivi cognome e nome."; return; }
+      if (s < AN_STEPS.length-1){ schUI.step++; return schWizAn(); }
+      const bt = $("#frm button[type=submit]"); bt.disabled=true; bt.textContent="Salvo…";
+      try{ await schSalvaAn(); schUI.step++; schWizAn(); }
+      catch(x){ err.hidden=false; err.textContent=errore(x); bt.disabled=false; bt.textContent="Salva e continua"; }
+    };
+  } else {
+    const box = $("#scelte");
+    ["Tennis","Padel"].forEach(sp=>{
+      const b = document.createElement("button"); b.className = "btn"; b.textContent = "Scheda tecnica "+sp.toLowerCase();
+      const ex = schDi(schUI.pid).find(x=>cc(x.r,3)===sp);
+      b.onclick = async ()=>{ if (ex){ schUI.v="wizSc"; schUI.sid=cc(ex.r,0); schUI.step=0; return vistaSchede(); } b.disabled=true; b.textContent="Creo la scheda…"; try{ const sid = await schCreaScheda(schUI.pid, sp); schUI.v="wizSc"; schUI.sid=sid; schUI.step=0; vistaSchede(); }catch(x){ box.insertAdjacentHTML("afterend",'<p class="msg err">'+esc(errore(x))+'</p>'); b.disabled=false; b.textContent="Scheda tecnica "+sp.toLowerCase(); } };
+      box.appendChild(b);
+    });
+    const f = document.createElement("button"); f.className="btn sec"; f.textContent="Fine, solo anagrafica";
+    f.onclick = ()=>{ schUI.v="persona"; vistaSchede(null,"Dati di "+cc(d,2)+" "+cc(d,1)+" salvati."); };
+    box.appendChild(f);
+  }
+}
+function schLeggiAn(){
+  const d = schUI.draft, s = schUI.step;
+  if (s >= AN_STEPS.length) return;
+  AN_STEPS[s].f.forEach(([lab,col,tipo])=>{ const el = $("#w"+col); if(!el) return; d[col] = tipo==="date" ? isoToDmy(el.value) : el.value.trim(); });
+}
+async function schSalvaAn(){
+  await schCarica(true);
+  const d = schUI.draft.map(x=>x==null?"":String(x));
+  let row, vecchio = null;
+  if (!schUI.pid){
+    const max = Math.max(0, ...schPers().map(x=>parseInt(cc(x.r,0).replace(/\D/g,""),10)||0));
+    schUI.pid = "P"+String(max+1).padStart(2,"0"); d[0] = schUI.pid; d[10] = ""; row = SCH.an.length+1;
+  } else {
+    const p = schPers().find(x=>cc(x.r,0)===schUI.pid); row = p.row; vecchio = cc(p.r,1)+" "+cc(p.r,2); d[0] = schUI.pid; d[10] = cc(p.r,10);
+  }
+  schUI.draft = d;
+  await scrivi(ID.schede, "ANAGRAFICA!A"+row+":L"+row, [d]);
+  const nuovo = d[1]+" "+d[2];
+  if (vecchio && vecchio !== nuovo){
+    for (const x of schDi(schUI.pid)){
+      const sid = cc(x.r,0);
+      await schColonna("SCHEDE", SCH.sc, 2, sid, nuovo); await schColonna("VOTI", SCH.vo, 1, sid, nuovo);
+      await schColonna("VALUTAZIONI", SCH.si, 1, sid, nuovo); await schColonna("DOCUMENTI", SCH.dc, 1, sid, nuovo);
+    }
+  }
+  await schCarica(true);
+  for (const x of schDi(schUI.pid)) await schSegna(cc(x.r,0), nuovo, cc(x.r,3));
+}
+
+/* ---------- scheda tecnica a passi ---------- */
+function schWizSc(){
+  const v = $("#view"), sid = schUI.sid, s = schUI.step;
+  const sc = SCH.sc.slice(1).map((r,i)=>({r,row:i+2})).find(x=>cc(x.r,0)===sid);
+  if (!sc){ schUI.v="lista"; return schLista(); }
+  const sport = cc(sc.r,3);
+  const key = sid+":"+s; if (schUI.key!==key){ schUI.key=key; schVi=0; }
+  let h = '<div class="bar"><button class="btn sec" id="esci">‹ Torna all\'allievo</button><h2 style="margin-right:auto">'+esc(cc(sc.r,2))+' · '+pillSport(sport)+'</h2></div>'+wizBar(SC_STEPS, s)+'<form class="form" id="frm">';
+  const voti = [];
+  if (s===0){
+    h += '<h3 class="full">Dati della scheda</h3>'+
+      [["Stagione",4,"text"],["Livello",8,"text"],["Mano",6,"mano"],["Lato di gioco",7,"text"],["Inizio corso",9,"date"],["Corso",10,"text"],["Gioco",11,"text"]].map(([lab,col,tipo])=>{
+        const val = cc(sc.r,col), id = "s"+col;
+        if (tipo==="mano") return '<label for="'+id+'">'+lab+'<select id="'+id+'"><option value=""></option><option'+(val==="Destra"?' selected':'')+'>Destra</option><option'+(val==="Sinistra"?' selected':'')+'>Sinistra</option></select></label>';
+        if (tipo==="date") return '<label for="'+id+'">'+lab+'<input id="'+id+'" type="date" value="'+dmyToIso(val)+'"></label>';
+        return '<label for="'+id+'"'+(lab==="Corso"||lab==="Gioco"?' class="full"':'')+'>'+lab+'<input id="'+id+'" value="'+esc(val)+'"></label>';
+      }).join("");
+  } else if (s>=1 && s<=4){
+    const area = SCH_AREE[s-1];
+    SCH.vo.forEach((r,i)=>{ if (i>0 && cc(r,0)===sid && cc(r,3)===area) voti.push({r,row:i+1}); });
+    if (!voti.length) h += '<p class="full msg info">In questa area non ci sono voci nel database.</p>';
+    else {
+      if (schVi<0 || schVi>=voti.length) schVi = schVi<0 ? voti.length-1 : 0;
+      const r = voti[schVi].r;
+      h += '<div class="full" style="display:grid;gap:12px"><div style="color:var(--muted);font-weight:600">'+area+' · voce '+(schVi+1)+' di '+voti.length+'</div><h2 style="font-size:30px;color:var(--navy)">'+esc(cc(r,4))+'</h2>'+
+        '<label>Voto da 1 a 10 (anche 6,5)<input id="v0" type="number" min="1" max="10" step="0.5" inputmode="decimal" value="'+esc(nVoto(cc(r,5)))+'" style="font-size:24px;max-width:150px"></label>'+
+        '<label>Commento<textarea id="d0" placeholder="Scrivi qui il commento…" style="min-height:220px;font-size:18px;background:#fff">'+esc(cc(r,6))+'</textarea></label></div>';
+    }
+  } else if (s===5){
+    const si = SCH.si.slice(1).map((r,i)=>({r,row:i+2})).find(x=>cc(x.r,0)===sid);
+    const c = i => si ? cc(si.r,i) : "";
+    h += '<h3 class="full">Valutazioni finali <small style="color:var(--muted);font-size:14px">una voce per riga</small></h3>'+
+      [["Punti di forza",3],["Punti deboli",4],["Lavori consigliati – Tecnico",5],["Lavori consigliati – Tattico",6],["Lavori consigliati – Fisico",7],["Lavori consigliati – Mentale",8]].map(([lab,i])=>'<label class="full" for="y'+i+'">'+lab+'<textarea id="y'+i+'">'+esc(c(i))+'</textarea></label>').join("");
+  } else {
+    SCH.dc.forEach((r,i)=>{ if (i>0 && cc(r,0)===sid) voti.push({r,row:i+1}); });
+    h += '<h3 class="full">Documenti</h3>';
+    if (!voti.length) h += '<p class="full msg info">Nessun documento nel database.</p>';
+    voti.forEach(({r},k)=>{
+      const st = cc(r,4);
+      h += '<div class="voce full"><h4>'+esc(cc(r,3))+'</h4><div class="riga" style="grid-template-columns:1fr 1fr"><label>Stato<select id="e'+k+'"><option value=""></option>'+["consegnato","da consegnare","scaduto"].map(o=>'<option'+(st===o?' selected':'')+'>'+o+'</option>').join("")+'</select></label><label>Scadenza<input id="f'+k+'" type="date" value="'+dmyToIso(cc(r,5))+'"></label><label style="grid-column:1/-1">Note<input id="g'+k+'" value="'+esc(cc(r,6))+'"></label></div></div>';
+    });
+  }
+  const eVoce = s>=1 && s<=4 && voti.length>0, ultimaV = eVoce && schVi>=voti.length-1;
+  h += '<div class="azioni">'+(s>0?'<button class="btn sec" type="button" id="ind">‹ Indietro</button>':'')+'<button class="btn sec" type="button" id="salta">'+(s===SC_STEPS.length-1?'Chiudi senza salvare':eVoce?'Salta voce ›':'Salta ›')+'</button><button class="btn" type="submit">'+(s===SC_STEPS.length-1?'Salva e finisci':eVoce&&!ultimaV?'Salva e prossima voce ›':'Salva e avanti ›')+'</button></div><p class="full msg err" id="ferr" hidden></p></form>';
+  v.innerHTML = h;
+  window.scrollTo(0,0);
+  const esci = msg => { schUI.v = "persona"; schUI.pid = cc(sc.r,1); vistaSchede(null,msg); };
+  $("#esci").onclick = ()=>esci();
+  if ($("#ind")) $("#ind").onclick = ()=>{ if (eVoce && schVi>0){ schVi--; return schWizSc(); } schUI.step--; if (schUI.step>=1 && schUI.step<=4){ schVi=-1; } else schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
+  $("#salta").onclick = ()=>{ if (s===SC_STEPS.length-1) return esci(); if (eVoce && !ultimaV){ schVi++; return schWizSc(); } schUI.step++; schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
+  $("#frm").onsubmit = async e=>{
+    e.preventDefault();
+    const err = $("#ferr"), bt = $("#frm button[type=submit]"), tb = bt.textContent; err.hidden = true;
+    const ag = aggOggi();
+    try{
+      if (s===1 || s===2 || s===3 || s===4){
+        if (voti.length){
+          const t = $("#v0").value.trim().replace(",","."); const n = t===""?"":parseFloat(t); if (t!=="" && (isNaN(n)||n<1||n>10)) throw {code:"tool_error", message:"voto non valido (da 1 a 10)"};
+          const txt = $("#d0").value.trim();
+          bt.disabled = true; bt.textContent = "Salvo…";
+          await scrivi(ID.schede, "VOTI!F"+voti[schVi].row+":G"+voti[schVi].row, [[n, txt]]);
+          const rr = SCH.vo[voti[schVi].row-1]; while (rr.length<7) rr.push(""); rr[5] = String(n).replace(".",","); rr[6] = txt;
+        }
+      } else if (s===0){
+        const g = c => { const el = $("#s"+c); return el.type==="date" ? isoToDmy(el.value) : el.value.trim(); };
+        bt.disabled = true; bt.textContent = "Salvo…";
+        await scrivi(ID.schede, "SCHEDE!E"+sc.row+":L"+sc.row, [[g(4), cc(sc.r,5), g(6), g(7), g(8), g(9), g(10), g(11)]]);
+      } else if (s===5){
+        const si = SCH.si.slice(1).map((r,i)=>({r,row:i+2})).find(x=>cc(x.r,0)===sid);
+        const row = si ? si.row : SCH.si.length+1;
+        const vals = [3,4,5,6,7,8].map(i=>righeTxt($("#y"+i).value).join("\n"));
+        bt.disabled = true; bt.textContent = "Salvo…";
+        if (!si) await scrivi(ID.schede, "VALUTAZIONI!A"+row+":C"+row, [[sid, cc(sc.r,2), sport]]);
+        await scrivi(ID.schede, "VALUTAZIONI!D"+row+":I"+row, [vals]);
+      } else {
+        const vals = voti.map((_,k)=>[$("#e"+k).value, isoToDmy($("#f"+k).value), $("#g"+k).value.trim()]);
+        bt.disabled = true; bt.textContent = "Salvo…";
+        let i = 0;
+        while (i < voti.length){ let j = i; while (j+1<voti.length && voti[j+1].row===voti[j].row+1) j++;
+          await scrivi(ID.schede, "DOCUMENTI!E"+voti[i].row+":G"+voti[j].row, vals.slice(i,j+1)); i = j+1; }
+      }
+      await scrivi(ID.schede, "SCHEDE!M"+sc.row, [[ag]]);
+      await schSegna(sid, cc(sc.r,2), sport);
+      if (!(s>=1 && s<=4)) await schCarica(true);
+      if (s === SC_STEPS.length-1) return esci("Scheda "+sport.toLowerCase()+" di "+cc(sc.r,2)+" salvata nel database. Per portarla nelle schede online e nel sito scrivi a Claude «Aggiornamento schede».");
+      if (s>=1 && s<=4 && voti.length && schVi<voti.length-1){ schVi++; return schWizSc(); }
+      schUI.step++; schVi=0; schUI.key = sid+":"+schUI.step; schWizSc();
+    }catch(x){ err.hidden = false; err.textContent = (x && x.code==="tool_error" && x.message && x.message.startsWith("voto")) ? x.message : errore(x); bt.disabled = false; bt.textContent = tb; }
+  };
+}
+
+/* ---------- menu: Aggiungi / Modifica / Stampa ---------- */
+function schMenu(msg){
+  const v = $("#view"), n = schPers().length;
+  const ic = {
+    find:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+    add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+    mod:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
+    prt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><rect x="7" y="14" width="10" height="7"/></svg>'
+  };
+  v.innerHTML = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><h2 style="margin-right:auto">Schede tecniche <small style="color:var(--muted);font-size:16px">('+n+' allievi)</small></h2></div>'+
+    '<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">'+
+    '<button class="tile big" data-az="find">'+ic.find+'<b>Cerca</b><small>Trova un allievo e guarda la sua scheda</small></button>'+
+    '<button class="tile" data-az="add">'+ic.add+'<b>Aggiungi scheda</b><small>Nuovo allievo, poi scheda tennis o padel</small></button>'+
+    '<button class="tile" data-az="mod">'+ic.mod+'<b>Modifica</b><small>Scegli un allievo e compila voce per voce</small></button>'+
+    '<button class="tile" data-az="prt">'+ic.prt+'<b>Stampa</b><small>Pagina riepilogativa A4 da consegnare</small></button></div>'+
+    '<p class="hint">Per aggiungere una scheda tennis o padel a un allievo che c\'è già: Modifica, scegli il nome, poi «Crea scheda».</p>';
+  v.querySelectorAll("[data-az]").forEach(b=>b.onclick=()=>{
+    const a = b.dataset.az;
+    if (a==="add") schUI = {v:"wizAn", pid:null, sid:null, step:0, draft:Array(12).fill(""), q:"", mode:"modifica"};
+    else { schUI.v = "lista"; schUI.mode = a==="prt" ? "stampa" : a==="find" ? "cerca" : "modifica"; schUI.q = ""; }
+    vistaSchede();
+  });
+}
+
+/* ---------- stampa: pagina riepilogativa A4 ---------- */
+const schFoto = {};
+const schBarCol = n => n>=8 ? "#2E7D5B" : n>=6 ? "#C2A970" : "#C9792B";
+const schFmt = n => String(n).replace(".",",");
+function schStampa(sid){
+  const v = $("#view"), sc = SCH.sc.slice(1).find(r=>cc(r,0)===sid);
+  if (!sc){ schUI.v="lista"; return schLista(); }
+  const pr = SCH.an.slice(1).find(r=>cc(r,0)===cc(sc,1)) || [];
+  const sport = cc(sc,3), nome = (cc(pr,2)+" "+cc(pr,1)).trim() || cc(sc,2);
+  const ini = ((cc(pr,2)[0]||"")+(cc(pr,1)[0]||"")).toUpperCase() || "?";
+  const voci = SCH.vo.slice(1).filter(r=>cc(r,0)===sid).map(r=>({area:cc(r,3), voce:cc(r,4), n:nVoto(cc(r,5)), d:cc(r,6).trim()}));
+  const si = SCH.si.slice(1).find(r=>cc(r,0)===sid) || [];
+  const aree = SCH_AREE.map(a=>({a, v:voci.filter(x=>x.area===a)}));
+  const vals = voci.filter(x=>x.n!=="");
+  const media = arr => { const k = arr.filter(x=>x.n!==""); return k.length ? Math.round(k.reduce((s,x)=>s+x.n,0)/k.length*10)/10 : ""; };
+  const blocco = a => { const k = a.v.filter(x=>x.n!==""); if (!k.length) return "";
+    return `<section class="ar"><h3><span>${esc(a.a)}</span><b>${schFmt(media(a.v))}</b></h3>`+k.map(x=>`<div class="br"><span>${esc(x.voce)}</span><i><u style="width:${x.n*10}%;background:${schBarCol(x.n)}"></u></i><em>${schFmt(x.n)}</em></div>`).join("")+`</section>`; };
+  const lista = i => righeTxt(cc(si,i));
+  const ul = (arr) => arr.length ? "<ul>"+arr.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>" : "";
+  const chip = (l,x) => x ? `<span><b>${l}</b> ${esc(x)}</span>` : "";
+  const forza = lista(3), deboli = lista(4);
+  const lavori = [["Tecnico",5],["Tattico",6],["Fisico",7],["Mentale",8]].map(([l,i])=>[l,lista(i)]).filter(x=>x[1].length);
+  const comm = aree.map(a=>({a:a.a, v:a.v.filter(x=>x.d)})).filter(x=>x.v.length);
+  const foto = schFoto[sid];
+  const colSx = blocco(aree[0]), colDx = aree.slice(1).map(blocco).join("");
+  let pag2 = "";
+  if (forza.length || deboli.length || lavori.length || comm.length){
+    pag2 = `<div class="sheet"><div class="hd s"><div><div class="lg">Sport &amp; Services</div><div class="sb">${esc(nome)} · scheda ${esc(sport.toLowerCase())}</div></div><div class="tp">Valutazioni finali</div></div><div class="p2">`+
+      (forza.length||deboli.length ? `<div class="due">${forza.length?`<div class="bx ok"><h4>Punti di forza</h4>${ul(forza)}</div>`:""}${deboli.length?`<div class="bx warn"><h4>Punti da migliorare</h4>${ul(deboli)}</div>`:""}</div>` : "")+
+      (lavori.length ? `<div class="bx nv"><h4>Lavori consigliati</h4><div class="lv">${lavori.map(([l,a])=>`<div><b>${l}</b>${ul(a)}</div>`).join("")}</div></div>` : "")+
+      (comm.length ? `<h4 class="ct">Commenti del maestro</h4>`+comm.map(c=>`<div class="cm"><h5>${esc(c.a)}</h5>${c.v.map(x=>`<p><b>${esc(x.voce)}</b>${x.n!==""?" ("+schFmt(x.n)+")":""} – ${esc(x.d)}</p>`).join("")}</div>`).join("") : "")+
+      `</div><div class="ft"><span>A.S.D. Sport &amp; Services</span><span>Aggiornata: ${esc(cc(sc,12))}</span></div></div>`;
+  }
+  v.innerHTML = `<div class="bar noprint"><button class="btn sec" id="ind">‹ Indietro</button><h2 style="margin-right:auto">Stampa: ${esc(nome)} · ${esc(sport.toLowerCase())}</h2>`+
+    `<label class="btn sec" style="display:inline-block">${foto?"Cambia foto":"Aggiungi foto"}<input id="foto" type="file" accept="image/*" hidden></label><button class="btn sec" id="modsc">Modifica scheda</button><button class="btn" id="stampa">Stampa / Salva PDF</button></div>`+
+    `<p class="hint noprint">La foto serve solo per questa stampa: resta sul tuo dispositivo e non viene salvata. Se la stampa non parte da qui, usa il menu del browser «Stampa» e scegli «Salva come PDF», formato A4.</p><div id="perr"></div>`+
+    `<div class="sheetwrap"><div class="sheet"><div class="hd"><div><div class="lg">Sport &amp; Services</div><div class="sb">A.S.D. · Scuola di tennis e padel</div></div><div class="tp">Scheda tecnica ${esc(sport)}</div></div>`+
+    `<div class="id">${foto?`<img class="ph" src="${foto}" alt="">`:`<div class="ph">${esc(ini)}</div>`}<div><div class="nm">${esc(nome)}</div><div class="ch">${chip("Stagione",cc(sc,4))}${chip("Livello",cc(sc,8))}${chip("Mano",cc(sc,6))}${chip("Lato",cc(sc,7))}${chip("Corso",cc(sc,10))}${chip("Gioco",cc(sc,11))}</div></div>`+
+    `${vals.length?`<div class="md"><div><b>${schFmt(media(vals))}</b><br><small>media</small></div></div>`:""}</div>`+
+    (vals.length ? `<div class="gr"><div class="col">${colSx}</div><div class="col">${colDx}</div></div>` : `<p class="vuoto" style="padding:10mm 12mm">Nessun voto inserito: compila prima la scheda.</p>`)+
+    `<div class="lg2"><span><i style="background:#2E7D5B"></i>8 e oltre</span><span><i style="background:#C2A970"></i>6 – 7,5</span><span><i style="background:#C9792B"></i>sotto 6</span></div>`+
+    `<div class="ft"><span>A.S.D. Sport &amp; Services · Gianluca Micarelli, maestro di tennis e padel</span><span>Aggiornata: ${esc(cc(sc,12))}</span></div></div>${pag2}</div>`;
+  window.scrollTo(0,0);
+  $("#ind").onclick = ()=>{ schUI.v="lista"; vistaSchede(); };
+  $("#modsc").onclick = ()=>{ schUI.v="wizSc"; schUI.sid=sid; schUI.pid=cc(sc,1); schUI.step=0; schUI.key=null; vistaSchede(); };
+  $("#stampa").onclick = ()=>{ try{ window.print(); }catch(e){ $("#perr").innerHTML = '<p class="msg err">La stampa non parte da questa pagina: usa il menu del browser «Stampa» e scegli «Salva come PDF».</p>'; } };
+  $("#foto").onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { const im = new Image(); im.onload = () => { const s = Math.min(im.width, im.height), c = document.createElement("canvas"); c.width = c.height = 500; c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,500,500); schFoto[sid] = c.toDataURL("image/jpeg",.88); schStampa(sid); }; im.src = rd.result; };
+    rd.readAsDataURL(f);
+  };
+}
+
 /* ===================== HOME ===================== */
 const ICONE = {
   planner:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h6"/></svg>',
@@ -432,11 +868,12 @@ const ICONE = {
   promozioni:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11v2a1 1 0 001 1h3l6 4V6L7 10H4a1 1 0 00-1 1z"/><path d="M17 9a4 4 0 010 6M19.5 6.5a7.5 7.5 0 010 11"/></svg>',
   allenamenti:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6c3 2.6 3 10.2 0 12.8M18.4 5.6c-3 2.6-3 10.2 0 12.8"/></svg>'
 };
-const TILE = [["planner","Planner","14 giorni, giorno e settimana"],["giocatori","Giocatori allenamento","Nome, livello, circolo"],["allievi","Allievi","Padel e tennis, contatti e livello"],["promozioni","Promozioni","Comandi con data di invio"],["allenamenti","Allenamenti","Richieste per livello e club"]];
+ICONE.schede = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M8.5 10h7M8.5 14h7M8.5 18h4"/></svg>';
+const TILE = [["planner","Planner","14 giorni, giorno e settimana"],["giocatori","Giocatori allenamento","Nome, livello, circolo"],["allievi","Allievi","Padel e tennis, contatti e livello"],["promozioni","Promozioni","Comandi con data di invio"],["allenamenti","Allenamenti","Richieste per livello e club"],["schede","Schede tecniche","Anagrafica e schede tennis/padel"]];
 async function vistaHome(refresh){
   const v = $("#view"); v.classList.add("home");
   const t = oggi();
-  const tiles = '<div class="tiles">'+TILE.map(([k,l,d])=>'<button class="tile'+(k==="planner"?' big':'')+'" data-go="'+k+'">'+ICONE[k]+'<b>'+l+'</b><small>'+d+'</small></button>').join("")+'</div>';
+  const tiles = '<div class="tiles">'+TILE.map(([k,l,d])=>'<button class="tile'+(k==="planner"||k==="schede"?' big':'')+'" data-go="'+k+'">'+ICONE[k]+'<b>'+l+'</b><small>'+d+'</small></button>').join("")+'</div>';
   const disegna = (dati, err) => {
     const g = dati.planner ? dati.planner.find(x=>x.data.getTime()===t.getTime()) : null;
     const imp = g ? g.righe.filter(r=>r.nomi.length) : [];
@@ -471,25 +908,27 @@ async function vistaHome(refresh){
 function vistaAccesso(msg){
   $("#back").hidden = true; $("#view").classList.remove("home");
   $("#view").innerHTML = '<form class="form" id="acc" style="max-width:420px;margin:30px auto"><h3 class="full">Entra nel Planner</h3>'+(msg?'<p class="full msg err">'+esc(msg)+'</p>':'')+
-    '<label for="pw" class="full">Password<input id="pw" type="password" autocomplete="current-password" required></label><div class="azioni"><button class="btn" type="submit">Entra</button></div><p class="full hint">La password serve una volta sola su questo telefono: poi il Planner la ricorda.</p></form>';
+    '<label for="pw" class="full">Password<input id="pw" type="password" autocomplete="current-password" required></label><div class="azioni"><button class="btn" type="submit">Entra</button></div><p class="full hint">La password serve una volta sola su questo dispositivo: poi il Planner la ricorda.</p></form>';
   $("#pw").focus();
   $("#acc").onsubmit = async e => { e.preventDefault(); const p = $("#pw").value.trim(); const b = $("#acc button"); b.disabled = true;
     try { await api({op:"prova"}, p); salvaPw(p); mostra("home"); } catch(err){ vistaAccesso(errore(err)); } };
 }
 /* ===================== AVVIO ===================== */
 async function mostra(v, refresh){
+  if (v==="schede" && vista!=="schede") schUI = {v:"menu", pid:null, sid:null, step:0, draft:null, q:"", mode:"modifica"};
   vista = v;
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
   try { location.hash = v; } catch(e){}
   if (!leggiPw()) return vistaAccesso();
   $("#view").classList.toggle("home", v==="home");
   $("#back").hidden = v==="home";
-  const tl = {home:"Planner",planner:"Planner",giocatori:"Giocatori",allievi:"Allievi",promozioni:"Promozioni",allenamenti:"Allenamenti"};
+  const tl = {home:"Planner",planner:"Planner",giocatori:"Giocatori",allievi:"Allievi",promozioni:"Promozioni",allenamenti:"Allenamenti",schede:"Schede tecniche"};
   $("#titolo").textContent = tl[v]||"Planner";
   window.scrollTo(0,0);
   try{
     if (v==="home") await vistaHome(refresh);
     else if (v==="planner") await vistaPlanner(refresh);
+    else if (v==="schede") await vistaSchede(refresh);
     else if (ELENCHI[v]) await vistaElenco(v, refresh);
     else { if (v==="allenamenti" && !cache.giocatori) { try{ cache.giocatori = await caricaElenco("giocatori"); }catch(e){} } await vistaComandi(v, refresh); }
     $("#stato").textContent = "";
