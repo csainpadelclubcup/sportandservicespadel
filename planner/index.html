@@ -620,6 +620,17 @@ async function schCreaScheda(pid, sport){
   return sid;
 }
 
+/* ---------- foto dall'app: vanno su Google Drive, cartella "Foto schede" ---------- */
+function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va nella cartella «Foto schede» del tuo Google Drive; per portarla nella scheda online e nel sito scrivi a Claude «Aggiornamento schede».</p></div>'; }
+function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1, 1600/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(im.src); ok(c.toDataURL("image/jpeg",0.85).split(",")[1]); }; im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
+function fotoAttiva(sid, voce, dopo){
+  const inp = $("#fotoIn"); if (!inp) return;
+  inp.onchange = async ()=>{ const f = inp.files[0]; if (!f) return; const m = $("#fotoMsg"); m.textContent = "Carico la foto…";
+    try { const img = await fotoJpeg(f); const nome = await api({op:"foto", sid, voce, img}); dopo(nome); m.innerHTML = '<b style="color:var(--ok)">Foto salvata: '+esc(nome)+'</b>'; }
+    catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; }
+    inp.value = ""; };
+}
+
 /* ---------- inserimento anagrafica a passi ---------- */
 function schWizAn(){
   const v = $("#view"), d = schUI.draft, s = schUI.step, nuovo = !schUI.pid;
@@ -708,6 +719,7 @@ function schWizSc(){
         if (tipo==="date") return '<label for="'+id+'">'+lab+'<input id="'+id+'" type="date" value="'+dmyToIso(val)+'"></label>';
         return '<label for="'+id+'"'+(lab==="Corso"||lab==="Gioco"?' class="full"':'')+'>'+lab+'<input id="'+id+'" value="'+esc(val)+'"></label>';
       }).join("");
+    h += fotoBox(cc(sc.r,13) ? [cc(sc.r,13)] : [], "Foto profilo");
   } else if (s>=1 && s<=4){
     const area = SCH_AREE[s-1];
     SCH.vo.forEach((r,i)=>{ if (i>0 && cc(r,0)===sid && cc(r,3)===area) voti.push({r,row:i+1}); });
@@ -717,7 +729,7 @@ function schWizSc(){
       const r = voti[schVi].r;
       h += '<div class="full" style="display:grid;gap:12px"><div style="color:var(--muted);font-weight:600">'+area+' · voce '+(schVi+1)+' di '+voti.length+'</div><h2 style="font-size:30px;color:var(--navy)">'+esc(cc(r,4))+'</h2>'+
         '<label>Voto da 1 a 10 (anche 6,5)<input id="v0" type="number" min="1" max="10" step="0.5" inputmode="decimal" value="'+esc(nVoto(cc(r,5)))+'" style="font-size:24px;max-width:150px"></label>'+
-        '<label>Commento<textarea id="d0" placeholder="Scrivi qui il commento…" style="min-height:220px;font-size:18px;background:#fff">'+esc(cc(r,6))+'</textarea></label></div>';
+        '<label>Commento<textarea id="d0" placeholder="Scrivi qui il commento…" style="min-height:220px;font-size:18px;background:#fff">'+esc(cc(r,6))+'</textarea></label>'+fotoBox(righeTxt(cc(r,7).replace(/,\s*/g,"\n")), "Foto del colpo")+'</div>';
     }
   } else if (s===5){
     const si = SCH.si.slice(1).map((r,i)=>({r,row:i+2})).find(x=>cc(x.r,0)===sid);
@@ -737,6 +749,8 @@ function schWizSc(){
   h += '<div class="azioni">'+(s>0?'<button class="btn sec" type="button" id="ind">‹ Indietro</button>':'')+'<button class="btn sec" type="button" id="salta">'+(s===SC_STEPS.length-1?'Chiudi senza salvare':eVoce?'Salta voce ›':'Salta ›')+'</button><button class="btn" type="submit">'+(s===SC_STEPS.length-1?'Salva e finisci':eVoce&&!ultimaV?'Salva e prossima voce ›':'Salva e avanti ›')+'</button></div><p class="full msg err" id="ferr" hidden></p></form>';
   v.innerHTML = h;
   window.scrollTo(0,0);
+  if (s===0) fotoAttiva(sid, "", n=>{ while (sc.r.length<14) sc.r.push(""); sc.r[13] = n; });
+  if (s>=1 && s<=4 && voti.length){ const rr = voti[schVi].r; fotoAttiva(sid, cc(rr,4), n=>{ while (rr.length<8) rr.push(""); rr[7] = rr[7] ? rr[7]+", "+n : n; }); }
   const esci = msg => { schUI.v = "persona"; schUI.pid = cc(sc.r,1); vistaSchede(null,msg); };
   $("#esci").onclick = ()=>esci();
   if ($("#ind")) $("#ind").onclick = ()=>{ if (eVoce && schVi>0){ schVi--; return schWizSc(); } schUI.step--; if (schUI.step>=1 && schUI.step<=4){ schVi=-1; } else schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
