@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Planner</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Planner">
+<meta name="theme-color" content="#1C2440">
+<link rel="apple-touch-icon" href="/planner/icona-180.png">
+<link rel="icon" type="image/png" href="/planner/icona-192.png">
+<link rel="manifest" href="/planner/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Planner Sport & Services: barra blu notte con menù, contenuto su carta chiara; padel giallo, tennis arancione come nel foglio */
+:root{
+  --navy:#1C2440; --gold:#C2A970; --paper:#FFFFFF; --bg:#EEF0EC; --ink:#1E2624; --muted:#5E6B67;
+  --line:#DCE1DC; --tint:#F4F5F1;
+  --padel:#FFF27A; --padel-ink:#5B4D00; --tennis:#FFB347; --tennis-ink:#5A2E00;
+  --ok:#2E7D5B; --warn:#A8670F; --ko:#B5443A;
+  --display:"Oswald","Arial Narrow",Arial,sans-serif; --body:"Source Sans 3","Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body)}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.02em;text-wrap:balance;margin:0}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.top{position:sticky;top:0;z-index:10;background:var(--navy);color:#fff;padding:10px 16px 0}
+.top .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top h1{font-size:24px;color:var(--gold);text-transform:uppercase;letter-spacing:.12em}
+.top .stato{font-size:13px;opacity:.85}
+nav{display:flex;gap:4px;overflow-x:auto;margin-top:8px}
+nav button{background:transparent;border:0;color:#E8E4D8;padding:10px 14px;border-bottom:3px solid transparent;white-space:nowrap;font-weight:600}
+nav button.on{color:var(--gold);border-bottom-color:var(--gold)}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.panel{background:var(--paper);border-radius:12px;padding:16px;box-shadow:0 1px 0 var(--line)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.seg{display:inline-flex;border:1px solid var(--navy);border-radius:8px;overflow:hidden}
+.seg button{background:var(--paper);border:0;padding:8px 14px;color:var(--navy);font-weight:600}
+.seg button.on{background:var(--navy);color:var(--gold)}
+.btn{background:var(--navy);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600}
+.btn.sec{background:var(--paper);color:var(--navy);border:1px solid var(--navy)}
+.btn.del{background:var(--paper);color:var(--ko);border:1px solid var(--ko)}
+.btn:disabled{opacity:.5;cursor:default}
+select,input,textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--ink)}
+textarea{width:100%;min-height:80px}
+.msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:15px}
+.msg.err{background:#F8E3E0;color:var(--ko)} .msg.info{background:var(--tint);color:var(--muted)} .msg.ok{background:#E3F1EA;color:var(--ok)}
+/* planner */
+.days{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.day{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper)}
+.day header{background:var(--tint);padding:8px 12px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line)}
+.day header b{font-family:var(--display);font-size:18px;color:var(--navy);text-transform:capitalize}
+.day header span{font-size:13px;color:var(--muted)}
+.day.oggi header{background:var(--navy)} .day.oggi header b{color:var(--gold)} .day.oggi header span{color:#E8E4D8}
+.slot{display:grid;grid-template-columns:52px 1fr;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.slot:last-child{border-bottom:0}
+.ora{font-variant-numeric:tabular-nums;font-weight:700;color:var(--navy)}
+.nomi{border-radius:6px;padding:2px 8px}
+.nomi.padel{background:var(--padel);color:var(--padel-ink)} .nomi.tennis{background:var(--tennis);color:var(--tennis-ink)}
+.nomi small{display:block;opacity:.8}
+.vuoto{color:var(--muted);font-style:italic;padding:10px 12px;font-size:14px}
+.note{background:#FBF7EC;border-top:1px dashed var(--gold);padding:6px 12px;font-size:13.5px;color:#5A4A1E}
+.note div+div{margin-top:3px}
+.note .rich{font-weight:700;color:var(--warn)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:8px;overflow-x:auto}
+.legend{display:flex;gap:12px;font-size:13px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+/* tabelle */
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;background:var(--tint);color:var(--navy);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer} tr.click:hover td{background:#FAF8F1}
+.pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:13px;font-weight:700}
+.pill.padel{background:var(--padel);color:var(--padel-ink)} .pill.tennis{background:var(--tennis);color:var(--tennis-ink)}
+.pill.fare{background:#FBF0DD;color:var(--warn)} .pill.fatto{background:#E3F1EA;color:var(--ok)} .pill.corso{background:#E2E8F5;color:var(--navy)} .pill.errore{background:#F8E3E0;color:var(--ko)}
+.form{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin:12px 0;padding:14px;border:1px solid var(--gold);border-radius:10px;background:#FFFDF7}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted);font-weight:600}
+.form .full{grid-column:1/-1}
+.form .azioni{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.check{display:flex;gap:14px;align-items:center;flex-wrap:wrap;color:var(--ink);font-weight:400}
+.check label{flex-direction:row;align-items:center;color:var(--ink);font-weight:400}
+/* calendario */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:420px;margin-bottom:14px}
+.cal .h{font-size:12px;text-align:center;color:var(--muted);font-weight:700}
+.cal button{aspect-ratio:1;border:1px solid var(--line);border-radius:8px;background:#fff;position:relative;font-variant-numeric:tabular-nums}
+.cal button.fuori{visibility:hidden}
+.cal button.oggi{border-color:var(--navy);font-weight:700}
+.cal button.sel{background:var(--navy);color:var(--gold)}
+.cal button.ha::after{content:"";position:absolute;bottom:5px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--gold)}
+.calhead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.calhead b{font-family:var(--display);font-size:18px;color:var(--navy);min-width:150px;text-align:center;text-transform:capitalize}
+.hint{font-size:14px;color:var(--muted);margin:6px 0 12px}
+
+/* home */
+.top{background:linear-gradient(120deg,#1C2440 0%,#26324F 60%,#304143 100%)}
+.top h1{display:flex;align-items:center;gap:10px}
+.top h1 .mono{width:34px;height:34px;border-radius:9px;border:2px solid var(--gold);display:grid;place-items:center;font-size:18px;letter-spacing:0}
+.hero{background:linear-gradient(120deg,#1C2440,#304143);color:#F6F2E8;border-radius:14px;padding:20px 22px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:16px;box-shadow:0 8px 24px rgba(28,36,64,.18)}
+.hero .eb{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.hero h2{font-size:clamp(26px,5vw,38px);color:#fff;text-transform:capitalize;margin-top:4px}
+.hero .conti{display:flex;gap:10px;flex-wrap:wrap}
+.hero .conto{border:1px solid rgba(194,169,112,.6);border-radius:10px;padding:8px 14px;min-width:92px}
+.hero .conto b{display:block;font-family:var(--display);font-size:26px;color:var(--gold);line-height:1.1;font-variant-numeric:tabular-nums}
+.hero .conto span{font-size:13px;opacity:.85}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:18px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;color:var(--navy);box-shadow:0 2px 0 var(--line);transition:transform .15s,box-shadow .15s;min-height:132px}
+.tile:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(28,36,64,.14);border-color:var(--gold)}
+.tile svg{width:38px;height:38px;padding:8px;border-radius:10px;background:var(--navy);color:var(--gold);box-sizing:content-box}
+.tile b{font-family:var(--display);font-size:19px;letter-spacing:.03em;text-transform:uppercase}
+.tile small{color:var(--muted);font-size:13.5px;line-height:1.3}
+.duo{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.box{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper)}
+.box h3{background:var(--tint);color:var(--navy);font-size:17px;padding:9px 14px;border-bottom:1px solid var(--line);text-transform:uppercase}
+.cmd{padding:8px 14px;border-bottom:1px solid var(--line);font-size:15px;display:grid;grid-template-columns:86px 1fr;gap:8px}
+.cmd:last-child{border-bottom:0}
+.cmd .d{font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+#view.panel.home{background:transparent;box-shadow:none;padding:0}
+@media (max-width:600px){.tiles{grid-template-columns:1fr 1fr}.tile{min-height:118px;padding:13px}}
+@media (max-width:600px){main{padding:10px}.panel{padding:12px}}
+
+/* layout compatto: telefono piccolo, tablet e PC più grandi */
+html{font-size:15px}
+.top{padding:10px 14px}
+.top .row{min-height:40px}
+.top h1{font-size:20px;flex:1}
+.top h1 .mono{width:30px;height:30px;font-size:16px}
+.back{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:6px 10px;font-weight:700}
+.tile{position:relative;overflow:hidden;background:linear-gradient(145deg,#1C2440 0%,#2B3858 70%,#304143 100%);border:1px solid rgba(194,169,112,.55);color:#F6F2E8;box-shadow:0 6px 16px rgba(28,36,64,.18);align-items:center;justify-content:center;text-align:center;gap:8px;min-height:112px;padding:14px 10px}
+.tile::after{content:"";position:absolute;inset:6px;border:1px solid rgba(194,169,112,.25);border-radius:10px;pointer-events:none}
+.tile:hover{border-color:var(--gold);box-shadow:0 12px 26px rgba(28,36,64,.28)}
+.tile:active{transform:scale(.98)}
+.tile svg{width:28px;height:28px;padding:9px;border-radius:50%;background:rgba(194,169,112,.14);color:var(--gold);border:1px solid rgba(194,169,112,.6)}
+.tile b{font-size:15px;color:#fff;letter-spacing:.05em;line-height:1.15}
+.tile small{color:#CFC9B8;font-size:12px}
+.tiles{grid-template-columns:repeat(2,1fr);gap:10px;margin:2px 0 16px}
+.tile.big{grid-column:1/-1;flex-direction:row;justify-content:flex-start;text-align:left;min-height:84px;padding:14px 18px;gap:14px}
+.tile.big b{font-size:18px}
+main{padding:12px}
+.box h3{font-size:15px}
+.slot,.cmd{font-size:14px}
+@media (min-width:700px){
+  html{font-size:16px}
+  .top h1{font-size:24px}
+  .tiles{grid-template-columns:repeat(3,1fr);gap:14px}
+  .tile{min-height:150px}
+  .tile svg{width:34px;height:34px;padding:12px}
+  .tile b{font-size:18px} .tile small{font-size:13.5px}
+  .tile.big{grid-column:auto;flex-direction:column;justify-content:center;text-align:center;min-height:150px}
+  main{padding:20px}
+}
+@media (min-width:1100px){
+  html{font-size:17px}
+  .tiles{grid-template-columns:repeat(5,1fr);gap:16px}
+  .tile{min-height:190px}
+  .tile svg{width:40px;height:40px;padding:14px}
+  .tile b{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="row"><button class="back" id="back" hidden aria-label="Torna alla Home">‹ Home</button><h1 id="logo" style="cursor:pointer" title="Home"><span class="mono">P</span><span id="titolo">Planner</span></h1><span class="stato" id="stato"></span></div>
+  <nav id="nav" hidden>
+    <button data-v="home" class="on">Home</button>
+    <button data-v="planner">Planner</button>
+    <button data-v="giocatori">Giocatori allenamento</button>
+    <button data-v="allievi">Allievi</button>
+    <button data-v="promozioni">Promozioni</button>
+    <button data-v="allenamenti">Allenamenti</button>
+  </nav>
+</div>
+<main><div id="view" class="panel"><p class="msg info">Caricamento…</p></div></main>
+
+<script>
+const S = "Google Sheets";
+const ID = {
+  planner: "1bPhAiRhNm2f2ggXXfdMze2GtkSlMy__5vRJ-exjXS9I",
+  giocatori: "1L2Oep0BkpWDtTnE7LytvJbrEAWX8iqDrSTUKN_c2WOU",
+  allievi: "1WGzxuiLBRkiylw3IK5RZozSQ9eCZ8Q07_DAprCcOBp0",
+  comandi: "1z_BDwRZxgsJ74TkrINPsO0_qnoBT_U_eg4YOYBZ38XI"
+};
+const GG = ["dom","lun","mar","mer","gio","ven","sab"];
+const GIORNI = ["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
+const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+let vista = "home", pvista = "15", giornoSel = null, settimana = 0;
+const cache = {};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pay = r => { let p = r && r.payload !== undefined ? r.payload : r; if (p && p.content && !Array.isArray(p.content)) p = p.content; return p || {}; };
+const oggi = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const dmy = d => String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();
+const parseDmy = s => { const m = String(s||"").match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); return m ? new Date(+m[3], +m[2]-1, +m[1]) : null; };
+const isoToDmy = s => { if(!s) return ""; const [y,m,d] = s.split("-"); return d+"/"+m+"/"+y; };
+const dmyToIso = s => { const d = parseDmy(s); return d ? d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0") : ""; };
+const nomeGiorno = d => GIORNI[d.getDay()]+" "+d.getDate()+" "+MESI[d.getMonth()];
+
+const API = "https://script.google.com/macros/s/AKfycbzXzyYtmDh7HducKgjW8kGFwAqtdBe5ctvJVWGAFi3f_hXYKZZKI2YMEl60N8Tx_Zkuqg/exec";
+const KEY = {}; Object.keys(ID).forEach(k=>KEY[ID[k]]=k);
+const leggiPw = () => { try { return localStorage.getItem("planner_pw") || ""; } catch(e){ return ""; } };
+const salvaPw = p => { try { localStorage.setItem("planner_pw", p); } catch(e){} };
+function errore(e){
+  const c = e && e.code;
+  if (c==="password") return "Password sbagliata.";
+  if (c==="rete") return "Non riesco a collegarmi ai fogli Google. Controlla la connessione e riprova.";
+  return "Google ha rifiutato l'operazione: "+((e && e.message)||"errore sconosciuto")+".";
+}
+async function api(body, pw){
+  let res;
+  try { res = await fetch(API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(Object.assign({}, body, {pw: pw || leggiPw()}))}); }
+  catch(e){ throw {code:"rete"}; }
+  let j; try { j = await res.json(); } catch(e){ throw {code:"rete"}; }
+  if (!j.ok) throw {code: j.error==="password" ? "password" : "tool_error", message: j.error};
+  return j.data;
+}
+function dividi(r){ const i = r.lastIndexOf("!"); return {tab: r.slice(0,i).replace(/^'|'$/g,"").replace(/''/g,"'"), range: r.slice(i+1)}; }
+async function leggi(id, range){ const d = dividi(range); return api({op:"read", file:KEY[id], tab:d.tab, range:d.range}); }
+async function scrivi(id, range, values){ const d = dividi(range); return api({op:"write", file:KEY[id], tab:d.tab, range:d.range, values}); }
+
+/* ===================== PLANNER ===================== */
+async function caricaPlanner(){
+  const d = await api({op:"planner"});
+  const vals = d.values || [], col = d.colors || [];
+  const sport = i => { const h = (col[i]||"").replace("#",""); if (h.length!==6) return ""; const r=parseInt(h.slice(0,2),16)/255, g=parseInt(h.slice(2,4),16)/255, b=parseInt(h.slice(4,6),16)/255;
+    if (r>0.9 && b<0.5 && g>0.45 && g<0.8) return "tennis"; if (r>0.9 && g>0.8 && b<0.65) return "padel"; return ""; };
+  const giorni = []; let cur = null;
+  vals.forEach((row,i) => {
+    if ((row[2]||"").trim()==="Allievo 1"){ const d = parseDmy(row[1]); cur = d ? {data:d, righe:[], note:[]} : null; if(cur) giorni.push(cur); return; }
+    if (!cur) return;
+    const b = (row[1]||"").trim(), nomi = row.slice(2,7).map(x=>(x||"").trim()).filter(Boolean), nota = (row[7]||"").trim();
+    if (!b){ if (nota) cur.note.push(nota); return; }
+    const m = b.match(/(\d{1,2})[:.](\d{2})/); if(!m) return;
+    cur.righe.push({ora:m[1].padStart(2,"0")+":"+m[2], nomi, nota, sport: nomi.length ? sport(i) : ""});
+  });
+  giorni.forEach(g => g.righe.sort((a,b)=>a.ora.localeCompare(b.ora)));
+  giorni.sort((a,b)=>a.data-b.data);
+  return giorni;
+}
+function cardGiorno(g, tutte){
+  const t = oggi(), isOggi = g.data.getTime()===t.getTime();
+  const righe = tutte ? g.righe : g.righe.filter(r=>r.nomi.length);
+  let h = '<div class="day'+(isOggi?' oggi':'')+'"><header><b>'+esc(GIORNI[g.data.getDay()])+'</b><span>'+dmy(g.data)+(isOggi?' · oggi':'')+'</span></header>';
+  if (!righe.length) h += '<div class="vuoto">Nessun impegno</div>';
+  righe.forEach(r => {
+    h += '<div class="slot"><span class="ora">'+r.ora+'</span>';
+    h += r.nomi.length ? '<span class="nomi '+r.sport+'">'+esc(r.nomi.join(", "))+(r.nota?'<small>'+esc(r.nota)+'</small>':'')+'</span>' : '<span class="vuoto" style="padding:0">libero</span>';
+    h += '</div>';
+  });
+  if (g.note.length) h += '<div class="note">'+g.note.map(n=>'<div class="'+(/RICHIESTA SITO/i.test(n)?'rich':'')+'">'+esc(n)+'</div>').join("")+'</div>';
+  return h+'</div>';
+}
+async function vistaPlanner(refresh){
+  const v = $("#view");
+  if (!cache.planner || refresh){ v.innerHTML = '<p class="msg info">Leggo il planner…</p>'; cache.planner = await caricaPlanner(); }
+  const giorni = cache.planner;
+  if (!giornoSel || !giorni.some(g=>g.data.getTime()===giornoSel)) giornoSel = (giorni.find(g=>g.data>=oggi())||giorni[0]||{data:oggi()}).data.getTime();
+  let h = '<div class="bar"><div class="seg" role="tablist">'+
+    [["15","14 giorni"],["giorno","Giorno"],["settimana","Settimana"]].map(([k,l])=>'<button data-pv="'+k+'" class="'+(pvista===k?'on':'')+'">'+l+'</button>').join("")+'</div>';
+  if (pvista==="giorno") h += '<select id="selGiorno" aria-label="Giorno">'+giorni.map(g=>'<option value="'+g.data.getTime()+'"'+(g.data.getTime()===giornoSel?' selected':'')+'>'+esc(nomeGiorno(g.data))+'</option>').join("")+'</select>';
+  if (pvista==="settimana") h += '<div class="seg"><button data-w="0" class="'+(settimana===0?'on':'')+'">Prima settimana</button><button data-w="1" class="'+(settimana===1?'on':'')+'">Seconda settimana</button></div>';
+  h += '<button class="btn sec" id="aggiorna">Aggiorna</button><span class="legend"><span><i style="background:var(--padel)"></i>Padel</span><span><i style="background:var(--tennis)"></i>Tennis</span></span></div>';
+  if (!giorni.length) h += '<p class="msg err">Nel planner non trovo nessuna data. Controlla il foglio o chiedi a Claude.</p>';
+  if (pvista==="15") h += '<div class="days">'+giorni.map(g=>cardGiorno(g,false)).join("")+'</div>';
+  if (pvista==="giorno"){ const g = giorni.find(x=>x.data.getTime()===giornoSel); if(g) h += '<div style="max-width:520px">'+cardGiorno(g,true)+'</div>'; }
+  if (pvista==="settimana") h += '<div class="week">'+giorni.slice(settimana*7, settimana*7+7).map(g=>cardGiorno(g,false)).join("")+'</div>';
+  h += '<p class="hint">Il planner copre '+giorni.length+' giorni e si rinnova ogni mattina alle 6:39. Per aggiungere o spostare una lezione dettala a Claude nel progetto School Sport &amp; Services: aggiorna planner e calendario insieme.</p>';
+  v.innerHTML = h;
+  v.querySelectorAll("[data-pv]").forEach(b=>b.onclick=()=>{pvista=b.dataset.pv; vistaPlanner();});
+  v.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{settimana=+b.dataset.w; vistaPlanner();});
+  const sg = $("#selGiorno"); if (sg) sg.onchange = ()=>{giornoSel=+sg.value; vistaPlanner();};
+  $("#aggiorna").onclick = ()=>mostra(vista,true);
+}
+
+/* ============ ELENCHI (giocatori, allievi) ============ */
+const ELENCHI = {
+  giocatori: {id:ID.giocatori, tab:"Giocatori", cols:["Nome","Livello di gioco","Circolo","Telefono","Note"], titolo:"Giocatori per allenamento", filtri:["Livello di gioco","Circolo"]},
+  allievi:   {id:ID.allievi, tab:"Allievi", cols:["Sport (Padel/Tennis)","Nome","Mail","Telefono","Livello","Note"], titolo:"Allievi", filtri:["Sport (Padel/Tennis)","Livello"]}
+};
+const lettera = n => String.fromCharCode(64+n);
+async function caricaElenco(k){
+  const c = ELENCHI[k]; const v = await leggi(c.id, c.tab+"!A2:"+lettera(c.cols.length)+"500");
+  return v.map(r => c.cols.map((_,i)=>(r[i]||"").toString())).filter(r=>r.some(x=>x.trim()));
+}
+async function salvaElenco(k, righe, prima){
+  const c = ELENCHI[k], n = Math.max(righe.length, prima);
+  const vals = Array.from({length:n}, (_,i)=> righe[i] || c.cols.map(()=>""));
+  await scrivi(c.id, c.tab+"!A2:"+lettera(c.cols.length)+(n+1), vals.length?vals:[c.cols.map(()=>"")]);
+}
+function sportPill(s){ const x = s.toLowerCase(); return x.includes("padel")?'<span class="pill padel">'+esc(s)+'</span>':x.includes("tennis")?'<span class="pill tennis">'+esc(s)+'</span>':esc(s); }
+async function vistaElenco(k, refresh, msg){
+  const c = ELENCHI[k], v = $("#view");
+  if (!cache[k] || refresh){ v.innerHTML = '<p class="msg info">Leggo il foglio '+esc(c.titolo)+'…</p>'; cache[k] = await caricaElenco(k); }
+  const righe = cache[k], f = cache["f_"+k] || (cache["f_"+k] = {q:""});
+  const vis = righe.map((r,i)=>({r,i})).filter(({r})=>(!f.q || r.join(" ").toLowerCase().includes(f.q.toLowerCase())) && c.filtri.every(col=>!f[col] || r[c.cols.indexOf(col)]===f[col]));
+  let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><h2 style="margin-right:auto">'+esc(c.titolo)+' <small style="color:var(--muted);font-size:16px">('+righe.length+')</small></h2>'+
+    '<input id="cerca" placeholder="Cerca nome, telefono…" value="'+esc(f.q)+'" aria-label="Cerca">';
+  c.filtri.forEach(col=>{ const opz = [...new Set(righe.map(r=>r[c.cols.indexOf(col)]).filter(Boolean))].sort();
+    h += '<select data-f="'+esc(col)+'" aria-label="'+esc(col)+'"><option value="">'+esc(col.replace(/ \(.*\)/,""))+': tutti</option>'+opz.map(o=>'<option'+(f[col]===o?' selected':'')+'>'+esc(o)+'</option>').join("")+'</select>'; });
+  h += '<button class="btn" id="nuovo">Aggiungi</button><button class="btn sec" id="aggiorna">Aggiorna</button></div><div id="form"></div>';
+  h += '<div class="tbl"><table><thead><tr>'+c.cols.map(x=>'<th>'+esc(x.replace(/ \(.*\)/,""))+'</th>').join("")+'</tr></thead><tbody>';
+  if (!vis.length) h += '<tr><td colspan="'+c.cols.length+'" class="vuoto">'+(righe.length?'Nessun nome con questi filtri.':'Elenco vuoto: premi Aggiungi per inserire il primo nome.')+'</td></tr>';
+  vis.forEach(({r,i})=>{ h += '<tr class="click" data-i="'+i+'" tabindex="0">'+r.map((x,j)=>'<td>'+(c.cols[j].startsWith("Sport")?sportPill(x):esc(x))+'</td>').join("")+'</tr>'; });
+  h += '</tbody></table></div><p class="hint">Tocca un nome per modificarlo. Le modifiche vanno subito nel foglio Google su Drive; quello che cambi su Drive lo vedi qui premendo Aggiorna.</p>';
+  v.innerHTML = h;
+  $("#cerca").oninput = e=>{ f.q = e.target.value; const pos = e.target.selectionStart; vistaElenco(k).then(()=>{ const x=$("#cerca"); x.focus(); x.setSelectionRange(pos,pos); }); };
+  v.querySelectorAll("[data-f]").forEach(s=>s.onchange=()=>{ f[s.dataset.f]=s.value; vistaElenco(k); });
+  $("#nuovo").onclick = ()=>formElenco(k, -1);
+  $("#aggiorna").onclick = ()=>mostra(vista,true);
+  v.querySelectorAll("tr[data-i]").forEach(tr=>{ tr.onclick=()=>formElenco(k,+tr.dataset.i); tr.onkeydown=e=>{ if(e.key==="Enter") formElenco(k,+tr.dataset.i); }; });
+}
+function formElenco(k, i){
+  const c = ELENCHI[k], r = i>=0 ? cache[k][i] : c.cols.map(()=>""), box = $("#form");
+  box.innerHTML = '<form class="form" id="frm"><h3 class="full">'+(i>=0?'Modifica':'Nuovo nome')+'</h3>'+c.cols.map((col,j)=>{
+    const id = "c"+j;
+    if (col.startsWith("Sport")) return '<label for="'+id+'">Sport<select id="'+id+'"><option'+(r[j]==="Padel"?' selected':'')+'>Padel</option><option'+(r[j]==="Tennis"?' selected':'')+'>Tennis</option></select></label>';
+    return '<label for="'+id+'"'+(col==="Note"?' class="full"':'')+'>'+esc(col)+'<input id="'+id+'" value="'+esc(r[j])+'"'+(col==="Mail"?' type="email"':col==="Telefono"?' inputmode="tel"':'')+'></label>';
+  }).join("")+'<div class="azioni"><button class="btn" type="submit">Salva</button><button class="btn sec" type="button" id="annulla">Annulla</button>'+(i>=0?'<button class="btn del" type="button" id="elimina">Elimina</button>':'')+'</div><p class="full msg err" id="ferr" hidden></p></form>';
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+  $("#c"+(c.cols[0].startsWith("Sport")?1:0)).focus();
+  $("#annulla").onclick = ()=>box.innerHTML="";
+  const esegui = async (nuove, testo) => {
+    box.querySelectorAll("button").forEach(b=>b.disabled=true);
+    try{ const prima = (await caricaElenco(k)).length; await salvaElenco(k, nuove, prima); cache[k]=null; await vistaElenco(k,true,testo); }
+    catch(e){ const p=$("#ferr"); p.hidden=false; p.textContent=errore(e); box.querySelectorAll("button").forEach(b=>b.disabled=false); }
+  };
+  if (i>=0){ let conf=false; $("#elimina").onclick = function(){ if(!conf){ conf=true; this.textContent="Conferma eliminazione"; return; } const n = cache[k].slice(); n.splice(i,1); esegui(n, r[c.cols.indexOf("Nome")]+" eliminato."); }; }
+  $("#frm").onsubmit = e=>{ e.preventDefault(); const nr = c.cols.map((_,j)=>$("#c"+j).value.trim()); if(!nr[c.cols.indexOf("Nome")]){ const p=$("#ferr"); p.hidden=false; p.textContent="Scrivi almeno il nome."; return; }
+    const n = cache[k].slice(); if(i>=0) n[i]=nr; else n.push(nr); n.sort((a,b)=>a[c.cols.indexOf("Nome")].localeCompare(b[c.cols.indexOf("Nome")],"it")); esegui(n, nr[c.cols.indexOf("Nome")]+" salvato."); };
+}
+
+/* ============ COMANDI (promozioni, allenamenti) ============ */
+const COMANDI = {
+  promozioni: {tab:"Promozioni", cols:["Data esecuzione","Comando","Stato","Esito"], titolo:"Promozioni",
+    spiega:"Scrivi un comando e la data in cui partire. Esempio: «Mandare la locandina Promozione del giovedì a tutti i giocatori padel di tutti i livelli, con SMS, WhatsApp e mail, 5 allievi l'ora». Il giorno indicato Claude legge il comando e lo esegue da solo. WhatsApp parte solo se il PC è acceso; altrimenti solo mail e SMS."},
+  allenamenti: {tab:"Allenamenti", cols:["Data invio","Data allenamento","Ora","Club","Livello","Canali","Indicazioni","Stato","Esito"], titolo:"Allenamenti",
+    spiega:"Indica quando mandare la richiesta, il giorno e il club dell'allenamento, il livello e i canali. Il giorno dell'invio Claude sceglie dal foglio Giocatori allenamento quelli del livello richiesto (e del club, se indicato) e manda loro la richiesta."}
+};
+async function caricaComandi(k){
+  const c = COMANDI[k]; const v = await leggi(ID.comandi, c.tab+"!A2:"+lettera(c.cols.length)+"500");
+  return v.map(r=>c.cols.map((_,i)=>(r[i]||"").toString())).filter(r=>r.some(x=>x.trim()));
+}
+function pillStato(s){ const x=(s||"Da fare").toLowerCase(); const cl = x.includes("fatt")||x.includes("eseguit")?"fatto":x.includes("corso")?"corso":x.includes("error")||x.includes("non")?"errore":"fare"; return '<span class="pill '+cl+'">'+esc(s||"Da fare")+'</span>'; }
+function calendario(date, k){
+  const st = cache["cal_"+k] || (cache["cal_"+k] = {m: oggi().getMonth(), y: oggi().getFullYear(), sel:null});
+  const primo = new Date(st.y, st.m, 1), off = (primo.getDay()+6)%7, n = new Date(st.y, st.m+1, 0).getDate(), t = oggi().getTime();
+  let h = '<div class="calhead"><button class="btn sec" data-mese="-1" aria-label="Mese precedente">‹</button><b>'+MESI[st.m]+' '+st.y+'</b><button class="btn sec" data-mese="1" aria-label="Mese successivo">›</button>'+(st.sel?'<button class="btn sec" id="tutte">Mostra tutte le date</button>':'')+'</div><div class="cal">'+
+    ["L","M","M","G","V","S","D"].map(x=>'<span class="h">'+x+'</span>').join("");
+  for (let i=0;i<off;i++) h += '<button class="fuori" tabindex="-1" aria-hidden="true"></button>';
+  for (let d=1; d<=n; d++){ const dt = new Date(st.y, st.m, d), s = dmy(dt);
+    h += '<button data-giorno="'+s+'" class="'+(date.has(s)?'ha ':'')+(dt.getTime()===t?'oggi ':'')+(st.sel===s?'sel':'')+'" aria-label="'+esc(nomeGiorno(dt))+'">'+d+'</button>'; }
+  return h+'</div>';
+}
+async function vistaComandi(k, refresh, msg){
+  const c = COMANDI[k], v = $("#view");
+  if (!cache[k] || refresh){ v.innerHTML = '<p class="msg info">Leggo i comandi…</p>'; cache[k] = await caricaComandi(k); }
+  const righe = cache[k], st = cache["cal_"+k] || (cache["cal_"+k] = {m: oggi().getMonth(), y: oggi().getFullYear(), sel:null});
+  const dateSet = new Set(righe.map(r=>r[0]));
+  const vis = righe.map((r,i)=>({r,i})).filter(({r})=>!st.sel || r[0]===st.sel || r[1]===st.sel).sort((a,b)=>(parseDmy(a.r[0])||0)-(parseDmy(b.r[0])||0));
+  let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><h2 style="margin-right:auto">'+c.titolo+'</h2><button class="btn" id="nuovo">Nuovo comando</button><button class="btn sec" id="aggiorna">Aggiorna</button></div>'+
+    '<p class="hint">'+esc(c.spiega)+'</p>'+calendario(dateSet,k)+'<div id="form"></div><div class="tbl"><table><thead><tr>'+c.cols.map(x=>'<th>'+esc(x)+'</th>').join("")+'</tr></thead><tbody>';
+  if (!vis.length) h += '<tr><td colspan="'+c.cols.length+'" class="vuoto">'+(st.sel?'Nessun comando per il '+st.sel+'.':'Nessun comando. Premi Nuovo comando per aggiungerne uno.')+'</td></tr>';
+  vis.forEach(({r,i})=>{ h += '<tr class="click" data-i="'+i+'" tabindex="0">'+r.map((x,j)=>'<td>'+(c.cols[j]==="Stato"?pillStato(x):esc(x))+'</td>').join("")+'</tr>'; });
+  h += '</tbody></table></div><p class="hint">I comandi si salvano nel foglio «Planner – Comandi» su Drive. Puoi sempre dare gli stessi comandi anche in chat.</p>';
+  v.innerHTML = h;
+  v.querySelectorAll("[data-mese]").forEach(b=>b.onclick=()=>{ st.m += +b.dataset.mese; if(st.m<0){st.m=11;st.y--;} if(st.m>11){st.m=0;st.y++;} vistaComandi(k); });
+  v.querySelectorAll("[data-giorno]").forEach(b=>b.onclick=()=>{ st.sel = st.sel===b.dataset.giorno?null:b.dataset.giorno; vistaComandi(k); });
+  const tt = $("#tutte"); if (tt) tt.onclick = ()=>{ st.sel=null; vistaComandi(k); };
+  $("#nuovo").onclick = ()=>formComando(k,-1);
+  $("#aggiorna").onclick = ()=>mostra(vista,true);
+  v.querySelectorAll("tr[data-i]").forEach(tr=>{ tr.onclick=()=>formComando(k,+tr.dataset.i); tr.onkeydown=e=>{ if(e.key==="Enter") formComando(k,+tr.dataset.i); }; });
+}
+function formComando(k, i){
+  const c = COMANDI[k], st = cache["cal_"+k], r = i>=0 ? cache[k][i] : c.cols.map(()=>""), box = $("#form");
+  if (i<0 && st.sel) r[0] = st.sel;
+  const bloccato = i>=0 && r[c.cols.indexOf("Stato")] && !/da fare/i.test(r[c.cols.indexOf("Stato")]);
+  let h = '<form class="form" id="frm"><h3 class="full">'+(i>=0?'Modifica comando':'Nuovo comando')+'</h3>';
+  if (k==="promozioni"){
+    h += '<label for="f0">Data in cui partire<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
+         '<label for="f1" class="full">Comando<textarea id="f1" required placeholder="Es. mandare la locandina Promozione del giovedì a tutti i giocatori padel, con SMS, WhatsApp e mail, 5 allievi l\'ora">'+esc(r[1])+'</textarea></label>';
+  } else {
+    const circoli = [...new Set((cache.giocatori||[]).map(x=>x[2]).filter(Boolean))].sort();
+    const livelli = [...new Set((cache.giocatori||[]).map(x=>x[1]).filter(Boolean))].sort();
+    const can = (r[5]||"SMS, WhatsApp").toLowerCase();
+    h += '<label for="f0">Data invio richiesta<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
+         '<label for="f1">Data allenamento<input id="f1" type="date" value="'+dmyToIso(r[1])+'" required></label>'+
+         '<label for="f2">Ora<input id="f2" type="time" value="'+esc(r[2])+'"></label>'+
+         '<label for="f3">Club<input id="f3" list="lc" value="'+esc(r[3])+'" placeholder="Qualsiasi club"><datalist id="lc">'+circoli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
+         '<label for="f4">Livello<input id="f4" list="ll" value="'+esc(r[4])+'" placeholder="Es. 3.5"><datalist id="ll">'+livelli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
+         '<fieldset class="check" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend><label><input type="checkbox" id="chS"'+(can.includes("sms")?' checked':'')+'> SMS</label><label><input type="checkbox" id="chW"'+(can.includes("whatsapp")?' checked':'')+'> WhatsApp</label><label><input type="checkbox" id="chM"'+(can.includes("mail")?' checked':'')+'> Mail</label></fieldset>'+
+         '<label for="f6" class="full">Indicazioni<textarea id="f6" placeholder="Es. cercare 3 giocatori per allenamento di 1h30, campo coperto">'+esc(r[6])+'</textarea></label>';
+  }
+  if (bloccato) h += '<p class="full msg info">Questo comando è già stato '+esc(r[c.cols.indexOf("Stato")].toLowerCase())+': puoi solo eliminarlo dall\'elenco.</p>';
+  h += '<div class="azioni">'+(bloccato?'':'<button class="btn" type="submit">Salva</button>')+'<button class="btn sec" type="button" id="annulla">Annulla</button>'+(i>=0?'<button class="btn del" type="button" id="elimina">Elimina</button>':'')+'</div><p class="full msg err" id="ferr" hidden></p></form>';
+  box.innerHTML = h; box.scrollIntoView({behavior:"smooth",block:"start"});
+  $("#annulla").onclick = ()=>box.innerHTML="";
+  const esegui = async (nuove, testo) => {
+    box.querySelectorAll("button").forEach(b=>b.disabled=true);
+    try{ const prima = (await caricaComandi(k)).length, n = Math.max(nuove.length, prima);
+      const vals = Array.from({length:n},(_,j)=>nuove[j]||c.cols.map(()=>""));
+      await scrivi(ID.comandi, c.tab+"!A2:"+lettera(c.cols.length)+(n+1), vals.length?vals:[c.cols.map(()=>"")]);
+      cache[k]=null; await vistaComandi(k,true,testo); }
+    catch(e){ const p=$("#ferr"); p.hidden=false; p.textContent=errore(e); box.querySelectorAll("button").forEach(b=>b.disabled=false); }
+  };
+  if (i>=0){ let conf=false; $("#elimina").onclick=function(){ if(!conf){conf=true; this.textContent="Conferma eliminazione"; return;} const n=cache[k].slice(); n.splice(i,1); esegui(n,"Comando eliminato."); }; }
+  $("#frm").onsubmit = e=>{ e.preventDefault(); const err=$("#ferr");
+    let nr;
+    if (k==="promozioni"){ nr = [isoToDmy($("#f0").value), $("#f1").value.trim(), r[2]||"Da fare", r[3]||""]; if(!nr[0]||!nr[1]){ err.hidden=false; err.textContent="Servono la data e il testo del comando."; return; } }
+    else { const can = [["chS","SMS"],["chW","WhatsApp"],["chM","Mail"]].filter(([id])=>$("#"+id).checked).map(x=>x[1]).join(", ");
+      nr = [isoToDmy($("#f0").value), isoToDmy($("#f1").value), $("#f2").value, $("#f3").value.trim(), $("#f4").value.trim(), can, $("#f6").value.trim(), r[7]||"Da fare", r[8]||""];
+      if(!nr[0]||!nr[1]){ err.hidden=false; err.textContent="Servono la data di invio e la data dell'allenamento."; return; }
+      if(!can){ err.hidden=false; err.textContent="Scegli almeno un canale."; return; } }
+    const n = cache[k].slice(); if(i>=0) n[i]=nr; else n.push(nr);
+    n.sort((a,b)=>(parseDmy(a[0])||0)-(parseDmy(b[0])||0));
+    esegui(n, "Comando salvato per il "+nr[0]+".");
+  };
+}
+
+
+/* ===================== HOME ===================== */
+const ICONE = {
+  planner:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h6"/></svg>',
+  giocatori:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="18" cy="15.5" r="3.2"/><path d="M15.8 13.3l4.4 4.4"/></svg>',
+  allievi:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c2 2 10 2 12 0v-5M22 9v6"/></svg>',
+  promozioni:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11v2a1 1 0 001 1h3l6 4V6L7 10H4a1 1 0 00-1 1z"/><path d="M17 9a4 4 0 010 6M19.5 6.5a7.5 7.5 0 010 11"/></svg>',
+  allenamenti:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6c3 2.6 3 10.2 0 12.8M18.4 5.6c-3 2.6-3 10.2 0 12.8"/></svg>'
+};
+const TILE = [["planner","Planner","14 giorni, giorno e settimana"],["giocatori","Giocatori allenamento","Nome, livello, circolo"],["allievi","Allievi","Padel e tennis, contatti e livello"],["promozioni","Promozioni","Comandi con data di invio"],["allenamenti","Allenamenti","Richieste per livello e club"]];
+async function vistaHome(refresh){
+  const v = $("#view"); v.classList.add("home");
+  const t = oggi();
+  const tiles = '<div class="tiles">'+TILE.map(([k,l,d])=>'<button class="tile'+(k==="planner"?' big':'')+'" data-go="'+k+'">'+ICONE[k]+'<b>'+l+'</b><small>'+d+'</small></button>').join("")+'</div>';
+  const disegna = (dati, err) => {
+    const g = dati.planner ? dati.planner.find(x=>x.data.getTime()===t.getTime()) : null;
+    const imp = g ? g.righe.filter(r=>r.nomi.length) : [];
+    const dom = dati.planner ? dati.planner.find(x=>x.data.getTime()===t.getTime()+864e5) : null;
+    const nDom = dom ? dom.righe.filter(r=>r.nomi.length).length : 0;
+    const cmd = [...(dati.promozioni||[]).map(r=>({d:r[0],t:r[1],s:r[2],k:"Promozione"})),...(dati.allenamenti||[]).map(r=>({d:r[0],t:"Allenamento "+r[1]+(r[3]?" al "+r[3]:"")+(r[4]?", livello "+r[4]:""),s:r[7],k:"Allenamento"}))]
+      .filter(c=>{const d=parseDmy(c.d); return d && d>=t && !/fatt|eseguit/i.test(c.s||"");}).sort((a,b)=>parseDmy(a.d)-parseDmy(b.d));
+    let h = '';
+    if (err) h += '<p class="msg err">'+esc(err)+'</p>';
+    h = tiles + h + '<div class="duo"><div class="box"><h3>Oggi · '+esc(nomeGiorno(t))+'</h3>';
+    if (!dati.planner) h += '<div class="vuoto">'+(err?'Planner non disponibile.':'Leggo il planner…')+'</div>';
+    else if (!imp.length) h += '<div class="vuoto">Nessun impegno oggi.</div>';
+    else imp.forEach(r=>{ h += '<div class="slot"><span class="ora">'+r.ora+'</span><span class="nomi '+r.sport+'">'+esc(r.nomi.join(", "))+(r.nota?'<small>'+esc(r.nota)+'</small>':'')+'</span></div>'; });
+    h += '</div><div class="box"><h3>Prossimi comandi</h3>';
+    if (!dati.promozioni) h += '<div class="vuoto">'+(err?'Comandi non disponibili.':'Leggo i comandi…')+'</div>';
+    else if (!cmd.length) h += '<div class="vuoto">Nessun comando in programma.</div>';
+    else cmd.slice(0,5).forEach(c=>{ h += '<div class="cmd"><span class="d">'+esc(c.d)+'</span><span><b>'+c.k+':</b> '+esc(c.t)+'</span></div>'; });
+    h += '</div></div>';
+    v.innerHTML = h;
+    v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>mostra(b.dataset.go));
+  };
+  const dati = {planner: refresh?null:cache.planner, promozioni: refresh?null:cache.promozioni, allenamenti: refresh?null:cache.allenamenti};
+  disegna(dati);
+  try{
+    const [p, pr, al] = await Promise.all([dati.planner||caricaPlanner(), dati.promozioni||caricaComandi("promozioni"), dati.allenamenti||caricaComandi("allenamenti")]);
+    cache.planner=p; cache.promozioni=pr; cache.allenamenti=al;
+    disegna({planner:p, promozioni:pr, allenamenti:al});
+  }catch(e){ disegna(dati, errore(e)); }
+}
+
+/* ===================== ACCESSO ===================== */
+function vistaAccesso(msg){
+  $("#back").hidden = true; $("#view").classList.remove("home");
+  $("#view").innerHTML = '<form class="form" id="acc" style="max-width:420px;margin:30px auto"><h3 class="full">Entra nel Planner</h3>'+(msg?'<p class="full msg err">'+esc(msg)+'</p>':'')+
+    '<label for="pw" class="full">Password<input id="pw" type="password" autocomplete="current-password" required></label><div class="azioni"><button class="btn" type="submit">Entra</button></div><p class="full hint">La password serve una volta sola su questo telefono: poi il Planner la ricorda.</p></form>';
+  $("#pw").focus();
+  $("#acc").onsubmit = async e => { e.preventDefault(); const p = $("#pw").value.trim(); const b = $("#acc button"); b.disabled = true;
+    try { await api({op:"prova"}, p); salvaPw(p); mostra("home"); } catch(err){ vistaAccesso(errore(err)); } };
+}
+/* ===================== AVVIO ===================== */
+async function mostra(v, refresh){
+  vista = v;
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  try { location.hash = v; } catch(e){}
+  if (!leggiPw()) return vistaAccesso();
+  $("#view").classList.toggle("home", v==="home");
+  $("#back").hidden = v==="home";
+  const tl = {home:"Planner",planner:"Planner",giocatori:"Giocatori",allievi:"Allievi",promozioni:"Promozioni",allenamenti:"Allenamenti"};
+  $("#titolo").textContent = tl[v]||"Planner";
+  window.scrollTo(0,0);
+  try{
+    if (v==="home") await vistaHome(refresh);
+    else if (v==="planner") await vistaPlanner(refresh);
+    else if (ELENCHI[v]) await vistaElenco(v, refresh);
+    else { if (v==="allenamenti" && !cache.giocatori) { try{ cache.giocatori = await caricaElenco("giocatori"); }catch(e){} } await vistaComandi(v, refresh); }
+    $("#stato").textContent = "";
+  }catch(e){
+    if (e && e.code==="password"){ salvaPw(""); return vistaAccesso("La password non è più valida: inseriscila di nuovo."); }
+    $("#view").innerHTML = '<p class="msg err">'+esc(errore(e))+'</p><button class="btn" id="riprova">Riprova</button>';
+    $("#riprova").onclick = ()=>mostra(v,true);
+    $("#stato").textContent = "Fogli non raggiungibili";
+  }
+}
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>mostra(b.dataset.v));
+$("#logo").onclick=()=>mostra("home");
+$("#back").onclick=()=>mostra("home");
+window.addEventListener("hashchange", ()=>{ const h = location.hash.slice(1); if (h && h!==vista && document.querySelector('#nav [data-v="'+h+'"]')) mostra(h); });
+(()=>{
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
+  const h = location.hash.slice(1);
+  mostra(document.querySelector('#nav [data-v="'+h+'"]') ? h : "home");
+})();
+</script>
+</body>
+</html>
