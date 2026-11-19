@@ -621,12 +621,27 @@ async function schCreaScheda(pid, sport){
 }
 
 /* ---------- foto dall'app: vanno su Google Drive, cartella "Foto schede" ---------- */
-function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va nella cartella «Foto schede» del tuo Google Drive. Ogni sera la porto da solo nella scheda online e nel sito; se ti serve subito (per esempio per stampare) scrivi a Claude «Aggiorna schede».</p></div>'; }
+function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va su Google Drive («Foto schede»). Claude la ritaglia (stasera, o subito se gli scrivi «Aggiorna schede») e te la mostra in «Foto da approvare», nella pagina Schede tecniche: entra nella scheda solo quando la approvi.</p></div>'; }
 function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1, 1600/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(im.src); ok(c.toDataURL("image/jpeg",0.85).split(",")[1]); }; im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
+async function fotoApprova(){
+  const box = $("#fotoApp"); if (!box) return;
+  box.innerHTML = '<p class="hint">Controllo le foto da approvare…</p>';
+  let L; try { L = await api({op:"fotoDaApprovare"}); } catch(e){ box.innerHTML = '<p class="msg err">Foto da approvare: '+esc(errore(e))+'</p>'; return; }
+  if (!L.length){ box.innerHTML = '<h3 style="margin:18px 0 8px">Foto da approvare</h3><p class="hint">Nessuna foto da approvare.</p>'; return; }
+  box.innerHTML = '<h3 style="margin:18px 0 8px">Foto da approvare ('+L.length+')</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">'+
+    L.map(f=>'<div data-r="'+f.riga+'" style="border:1px solid rgba(127,127,127,.35);border-radius:12px;padding:10px"><img src="data:image/jpeg;base64,'+f.img+'" alt="" style="width:100%;border-radius:8px;display:block"><p style="margin:8px 0 4px"><b>'+esc(f.allievo)+'</b><br><small>'+esc(f.sport)+' · '+esc(f.voce)+'</small></p><div class="bar" style="margin:0;flex-wrap:wrap;gap:6px"><button class="btn" data-e="ok">✓ Va bene</button><button class="btn sec" data-e="rifai">↻ Rifai il taglio</button><button class="btn sec" data-e="scarta">✗ Foto sbagliata</button></div></div>').join("")+'</div>';
+  const fatto = {ok:"Approvata: entra nella scheda stasera (o subito con «Aggiorna schede»).", rifai:"Claude rifà il taglio e te la ripropone qui.", scarta:"Scartata: non andrà nella scheda."};
+  box.querySelectorAll("[data-e]").forEach(b=>b.onclick=async()=>{ const c = b.closest("[data-r]"), e = b.dataset.e;
+    let nota = ""; if (e==="rifai"){ nota = prompt("Come la vuoi tagliata? (puoi lasciare vuoto)"); if (nota===null) return; }
+    c.querySelectorAll("button").forEach(x=>x.disabled=true);
+    try { await api({op:"fotoEsito", riga:Number(c.dataset.r), esito:e, nota}); c.querySelector(".bar").outerHTML = '<p class="msg ok" style="margin:0">'+fatto[e]+'</p>'; }
+    catch(x){ c.querySelectorAll("button").forEach(y=>y.disabled=false); c.insertAdjacentHTML("beforeend",'<p class="msg err">'+esc(errore(x))+'</p>'); }
+  });
+}
 function fotoAttiva(sid, voce, dopo){
   const inp = $("#fotoIn"); if (!inp) return;
   inp.onchange = async ()=>{ const f = inp.files[0]; if (!f) return; const m = $("#fotoMsg"); m.textContent = "Carico la foto…";
-    try { const img = await fotoJpeg(f); const nome = await api({op:"foto", sid, voce, img}); dopo(nome); m.innerHTML = '<b style="color:var(--ok)">Foto salvata: '+esc(nome)+'</b>'; }
+    try { const img = await fotoJpeg(f); const nome = await api({op:"foto", sid, voce, img}); dopo(nome); m.innerHTML = '<b style="color:var(--ok)">Foto inviata. Dopo il ritaglio la trovi in «Foto da approvare» (pagina Schede tecniche).</b>'; }
     catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; }
     inp.value = ""; };
 }
@@ -713,11 +728,11 @@ function schWizSc(){
   const voti = [];
   if (s===0){
     h += '<h3 class="full">Dati della scheda</h3>'+
-      [["Stagione",4,"text"],["Livello",8,"text"],["Mano",6,"mano"],["Lato di gioco",7,"text"],["Inizio corso",9,"date"],["Corso",10,"text"],["Gioco",11,"text"]].map(([lab,col,tipo])=>{
+      [["Stagione",4,"text"],["Livello",8,"text"],["Mano",6,"mano"],["Lato di gioco",7,"text"],["Inizio corso",9,"date"],["Corso",10,"text"]].map(([lab,col,tipo])=>{
         const val = cc(sc.r,col), id = "s"+col;
         if (tipo==="mano") return '<label for="'+id+'">'+lab+'<select id="'+id+'"><option value=""></option><option'+(val==="Destra"?' selected':'')+'>Destra</option><option'+(val==="Sinistra"?' selected':'')+'>Sinistra</option></select></label>';
         if (tipo==="date") return '<label for="'+id+'">'+lab+'<input id="'+id+'" type="date" value="'+dmyToIso(val)+'"></label>';
-        return '<label for="'+id+'"'+(lab==="Corso"||lab==="Gioco"?' class="full"':'')+'>'+lab+'<input id="'+id+'" value="'+esc(val)+'"></label>';
+        return '<label for="'+id+'"'+(lab==="Corso"?' class="full"':'')+'>'+lab+'<input id="'+id+'" value="'+esc(val)+'"></label>';
       }).join("");
     h += fotoBox(cc(sc.r,13) ? [cc(sc.r,13)] : [], "Foto profilo");
   } else if (s>=1 && s<=4){
@@ -749,8 +764,8 @@ function schWizSc(){
   h += '<div class="azioni">'+(s>0?'<button class="btn sec" type="button" id="ind">‹ Indietro</button>':'')+'<button class="btn sec" type="button" id="salta">'+(s===SC_STEPS.length-1?'Chiudi senza salvare':eVoce?'Salta voce ›':'Salta ›')+'</button><button class="btn" type="submit">'+(s===SC_STEPS.length-1?'Salva e finisci':eVoce&&!ultimaV?'Salva e prossima voce ›':'Salva e avanti ›')+'</button></div><p class="full msg err" id="ferr" hidden></p></form>';
   v.innerHTML = h;
   window.scrollTo(0,0);
-  if (s===0) fotoAttiva(sid, "", n=>{ while (sc.r.length<14) sc.r.push(""); sc.r[13] = n; });
-  if (s>=1 && s<=4 && voti.length){ const rr = voti[schVi].r; fotoAttiva(sid, cc(rr,4), n=>{ while (rr.length<8) rr.push(""); rr[7] = rr[7] ? rr[7]+", "+n : n; }); }
+  if (s===0) fotoAttiva(sid, "", ()=>{});
+  if (s>=1 && s<=4 && voti.length){ const rr = voti[schVi].r; fotoAttiva(sid, cc(rr,4), ()=>{}); }
   const esci = msg => { schUI.v = "persona"; schUI.pid = cc(sc.r,1); vistaSchede(null,msg); };
   $("#esci").onclick = ()=>esci();
   if ($("#ind")) $("#ind").onclick = ()=>{ if (eVoce && schVi>0){ schVi--; return schWizSc(); } schUI.step--; if (schUI.step>=1 && schUI.step<=4){ schVi=-1; } else schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
@@ -771,7 +786,7 @@ function schWizSc(){
       } else if (s===0){
         const g = c => { const el = $("#s"+c); return el.type==="date" ? isoToDmy(el.value) : el.value.trim(); };
         bt.disabled = true; bt.textContent = "Salvo…";
-        await scrivi(ID.schede, "SCHEDE!E"+sc.row+":L"+sc.row, [[g(4), cc(sc.r,5), g(6), g(7), g(8), g(9), g(10), g(11)]]);
+        await scrivi(ID.schede, "SCHEDE!E"+sc.row+":L"+sc.row, [[g(4), cc(sc.r,5), g(6), g(7), g(8), g(9), g(10), cc(sc.r,11)]]);
       } else if (s===5){
         const si = SCH.si.slice(1).map((r,i)=>({r,row:i+2})).find(x=>cc(x.r,0)===sid);
         const row = si ? si.row : SCH.si.length+1;
@@ -811,7 +826,8 @@ function schMenu(msg){
     '<button class="tile" data-az="add">'+ic.add+'<b>Aggiungi scheda</b><small>Nuovo allievo, poi scheda tennis o padel</small></button>'+
     '<button class="tile" data-az="mod">'+ic.mod+'<b>Modifica</b><small>Scegli un allievo e compila voce per voce</small></button>'+
     '<button class="tile" data-az="prt">'+ic.prt+'<b>Stampa</b><small>Pagina riepilogativa A4 da consegnare</small></button></div>'+
-    '<p class="hint">Per aggiungere una scheda tennis o padel a un allievo che c\'è già: Modifica, scegli il nome, poi «Crea scheda».</p>';
+    '<p class="hint">Per aggiungere una scheda tennis o padel a un allievo che c\'è già: Modifica, scegli il nome, poi «Crea scheda».</p><div id="fotoApp"></div>';
+  fotoApprova();
   v.querySelectorAll("[data-az]").forEach(b=>b.onclick=()=>{
     const a = b.dataset.az;
     if (a==="add") schUI = {v:"wizAn", pid:null, sid:null, step:0, draft:Array(12).fill(""), q:"", mode:"modifica"};
@@ -857,7 +873,7 @@ function schStampa(sid){
     `<label class="btn sec" style="display:inline-block">${foto?"Cambia foto":"Aggiungi foto"}<input id="foto" type="file" accept="image/*" hidden></label><button class="btn sec" id="modsc">Modifica scheda</button><button class="btn" id="stampa">Stampa / Salva PDF</button></div>`+
     `<p class="hint noprint">La foto serve solo per questa stampa: resta sul tuo dispositivo e non viene salvata. Se la stampa non parte da qui, usa il menu del browser «Stampa» e scegli «Salva come PDF», formato A4.</p><div id="perr"></div>`+
     `<div class="sheetwrap"><div class="sheet"><div class="hd"><div><div class="lg">Sport &amp; Services</div><div class="sb">A.S.D. · Scuola di tennis e padel</div></div><div class="tp">Scheda tecnica ${esc(sport)}</div></div>`+
-    `<div class="id">${foto?`<img class="ph" src="${foto}" alt="">`:`<div class="ph">${esc(ini)}</div>`}<div><div class="nm">${esc(nome)}</div><div class="ch">${chip("Stagione",cc(sc,4))}${chip("Livello",cc(sc,8))}${chip("Mano",cc(sc,6))}${chip("Lato",cc(sc,7))}${chip("Corso",cc(sc,10))}${chip("Gioco",cc(sc,11))}</div></div>`+
+    `<div class="id">${foto?`<img class="ph" src="${foto}" alt="">`:`<div class="ph">${esc(ini)}</div>`}<div><div class="nm">${esc(nome)}</div><div class="ch">${chip("Stagione",cc(sc,4))}${chip("Livello",cc(sc,8))}${chip("Mano",cc(sc,6))}${chip("Lato",cc(sc,7))}${chip("Corso",cc(sc,10))}</div></div>`+
     `${vals.length?`<div class="md"><div><b>${schFmt(media(vals))}</b><br><small>media</small></div></div>`:""}</div>`+
     (vals.length ? `<div class="gr"><div class="col">${colSx}</div><div class="col">${colDx}</div></div>` : `<p class="vuoto" style="padding:10mm 12mm">Nessun voto inserito: compila prima la scheda.</p>`)+
     `<div class="lg2"><span><i style="background:#2E7D5B"></i>8 e oltre</span><span><i style="background:#C2A970"></i>6 – 7,5</span><span><i style="background:#C9792B"></i>sotto 6</span></div>`+
