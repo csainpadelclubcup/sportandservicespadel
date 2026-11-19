@@ -621,27 +621,28 @@ async function schCreaScheda(pid, sport){
 }
 
 /* ---------- foto dall'app: vanno su Google Drive, cartella "Foto schede" ---------- */
-function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va su Google Drive («Foto schede»). Claude la ritaglia (stasera, o subito se gli scrivi «Aggiorna schede») e te la mostra in «Foto da approvare», nella pagina Schede tecniche: entra nella scheda solo quando la approvi.</p></div>'; }
+function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><div id="fotoApp"></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va su Google Drive («Foto schede»). Claude la ritaglia (stasera, o subito se gli scrivi «Aggiorna schede») e te la mostra qui sotto da approvare: entra nella scheda solo quando la approvi.</p></div>'; }
 function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1, 1600/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(im.src); ok(c.toDataURL("image/jpeg",0.85).split(",")[1]); }; im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
-async function fotoApprova(){
-  const box = $("#fotoApp"); if (!box) return;
-  box.innerHTML = '<p class="hint">Controllo le foto da approvare…</p>';
-  let L; try { L = await api({op:"fotoDaApprovare"}); } catch(e){ box.innerHTML = '<p class="msg err">Foto da approvare: '+esc(errore(e))+'</p>'; return; }
-  if (!L.length){ box.innerHTML = '<h3 style="margin:18px 0 8px">Foto da approvare</h3><p class="hint">Nessuna foto da approvare.</p>'; return; }
-  box.innerHTML = '<h3 style="margin:18px 0 8px">Foto da approvare ('+L.length+')</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">'+
-    L.map(f=>'<div data-r="'+f.riga+'" style="border:1px solid rgba(127,127,127,.35);border-radius:12px;padding:10px"><img src="data:image/jpeg;base64,'+f.img+'" alt="" style="width:100%;border-radius:8px;display:block"><p style="margin:8px 0 4px"><b>'+esc(f.allievo)+'</b><br><small>'+esc(f.sport)+' · '+esc(f.voce)+'</small></p><div class="bar" style="margin:0;flex-wrap:wrap;gap:6px"><button class="btn" data-e="ok">✓ Va bene</button><button class="btn sec" data-e="rifai">↻ Rifai il taglio</button><button class="btn sec" data-e="scarta">✗ Foto sbagliata</button></div></div>').join("")+'</div>';
+async function fotoApprova(sid, voce){
+  const box = $("#fotoApp"); if (!box) return; const vv = voce || "Foto profilo";
+  let L; try { L = (await api({op:"fotoDaApprovare", sid})).filter(f=>f.voce===vv); } catch(e){ box.innerHTML = '<p class="msg err">Foto da approvare: '+esc(errore(e))+'</p>'; return; }
+  if (box !== $("#fotoApp")) return;
+  box.innerHTML = L.map(f=> f.stato!=="Da approvare"
+    ? '<p class="hint" style="margin:8px 0 0">📷 Una foto '+(f.stato==="Da rifare"?'da ritagliare di nuovo':'in attesa del ritaglio')+' (la vedrai qui).</p>'
+    : '<div data-r="'+f.riga+'" style="margin-top:10px;border:2px solid var(--ok,#2a7);border-radius:12px;padding:10px;max-width:340px"><p style="margin:0 0 6px"><b>Foto da approvare</b></p><img src="data:image/jpeg;base64,'+f.img+'" alt="" style="width:100%;border-radius:8px;display:block">'+(f.nota?'<p class="hint" style="margin:6px 0 0">Nota di Claude: '+esc(f.nota)+'</p>':'')+'<div class="bar" style="margin:8px 0 0;flex-wrap:wrap;gap:6px"><button type="button" class="btn" data-e="ok">✓ Va bene</button><button type="button" class="btn sec" data-e="rifai">↻ Rifai il taglio</button><button type="button" class="btn sec" data-e="scarta">✗ Foto sbagliata</button></div></div>').join("");
   const fatto = {ok:"Approvata: entra nella scheda stasera (o subito con «Aggiorna schede»).", rifai:"Claude rifà il taglio e te la ripropone qui.", scarta:"Scartata: non andrà nella scheda."};
   box.querySelectorAll("[data-e]").forEach(b=>b.onclick=async()=>{ const c = b.closest("[data-r]"), e = b.dataset.e;
     let nota = ""; if (e==="rifai"){ nota = prompt("Come la vuoi tagliata? (puoi lasciare vuoto)"); if (nota===null) return; }
     c.querySelectorAll("button").forEach(x=>x.disabled=true);
-    try { await api({op:"fotoEsito", riga:Number(c.dataset.r), esito:e, nota}); c.querySelector(".bar").outerHTML = '<p class="msg ok" style="margin:0">'+fatto[e]+'</p>'; }
+    try { await api({op:"fotoEsito", riga:Number(c.dataset.r), esito:e, nota}); c.querySelector(".bar").outerHTML = '<p class="msg ok" style="margin:8px 0 0">'+fatto[e]+'</p>'; }
     catch(x){ c.querySelectorAll("button").forEach(y=>y.disabled=false); c.insertAdjacentHTML("beforeend",'<p class="msg err">'+esc(errore(x))+'</p>'); }
   });
 }
 function fotoAttiva(sid, voce, dopo){
   const inp = $("#fotoIn"); if (!inp) return;
+  fotoApprova(sid, voce);
   inp.onchange = async ()=>{ const f = inp.files[0]; if (!f) return; const m = $("#fotoMsg"); m.textContent = "Carico la foto…";
-    try { const img = await fotoJpeg(f); const nome = await api({op:"foto", sid, voce, img}); dopo(nome); m.innerHTML = '<b style="color:var(--ok)">Foto inviata. Dopo il ritaglio la trovi in «Foto da approvare» (pagina Schede tecniche).</b>'; }
+    try { const img = await fotoJpeg(f); const nome = await api({op:"foto", sid, voce, img}); dopo(nome); m.innerHTML = '<b style="color:var(--ok)">Foto inviata. Dopo il ritaglio la trovi qui, da approvare.</b>'; fotoApprova(sid, voce); }
     catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; }
     inp.value = ""; };
 }
@@ -826,8 +827,7 @@ function schMenu(msg){
     '<button class="tile" data-az="add">'+ic.add+'<b>Aggiungi scheda</b><small>Nuovo allievo, poi scheda tennis o padel</small></button>'+
     '<button class="tile" data-az="mod">'+ic.mod+'<b>Modifica</b><small>Scegli un allievo e compila voce per voce</small></button>'+
     '<button class="tile" data-az="prt">'+ic.prt+'<b>Stampa</b><small>Pagina riepilogativa A4 da consegnare</small></button></div>'+
-    '<p class="hint">Per aggiungere una scheda tennis o padel a un allievo che c\'è già: Modifica, scegli il nome, poi «Crea scheda».</p><div id="fotoApp"></div>';
-  fotoApprova();
+    '<p class="hint">Per aggiungere una scheda tennis o padel a un allievo che c\'è già: Modifica, scegli il nome, poi «Crea scheda».</p>';
   v.querySelectorAll("[data-az]").forEach(b=>b.onclick=()=>{
     const a = b.dataset.az;
     if (a==="add") schUI = {v:"wizAn", pid:null, sid:null, step:0, draft:Array(12).fill(""), q:"", mode:"modifica"};
