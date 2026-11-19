@@ -193,6 +193,10 @@ main{padding:12px}
 .sheet .md small{font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:#5E6B67}
 .sheet .gr{display:grid;grid-template-columns:1fr 1fr;gap:6mm;padding:3mm 12mm 6mm}
 .sheet .col{display:grid;gap:5mm;align-content:start}
+.sheet .fc{height:85mm;border-radius:3mm;overflow:hidden;border:1.2mm solid #C2A970;background:#F4F5F1}
+.sheet .fc img{width:100%;height:100%;object-fit:cover;display:block}
+.sheet .fc.vuota{border:1mm dashed #C2A970;display:grid;place-items:center;color:#5E6B67;font-size:13px;cursor:pointer;text-align:center;padding:4mm}
+@media print{.sheet .fc.vuota{display:none}}
 .sheet .ar{border:1px solid #DCE1DC;border-radius:3mm;padding:3mm 4mm;background:#FFFEFB;break-inside:avoid}
 .sheet .ar h3{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:#1C2440;text-transform:uppercase;border-bottom:1.5px solid #C2A970;padding-bottom:2px;margin-bottom:5px}
 .sheet .ar h3 b{font-size:17px}
@@ -837,7 +841,7 @@ function schMenu(msg){
 }
 
 /* ---------- stampa: pagina riepilogativa A4 ---------- */
-const schFoto = {};
+const schFoto = {}, schFotoColpo = {};
 const schBarCol = n => n>=8 ? "#2E7D5B" : n>=6 ? "#C2A970" : "#C9792B";
 const schFmt = n => String(n).replace(".",",");
 function schStampa(sid){
@@ -859,8 +863,9 @@ function schStampa(sid){
   const forza = lista(3), deboli = lista(4);
   const lavori = [["Tecnico",5],["Tattico",6],["Fisico",7],["Mentale",8]].map(([l,i])=>[l,lista(i)]).filter(x=>x[1].length);
   const comm = aree.map(a=>({a:a.a, v:a.v.filter(x=>x.d)})).filter(x=>x.v.length);
-  const foto = schFoto[sid];
-  const colSx = blocco(aree[0]), colDx = aree.slice(1).map(blocco).join("");
+  const foto = schFoto[sid], fc = schFotoColpo[sid];
+  const fotoBox = fc ? `<div class="fc"><img src="${fc}" alt=""></div>` : `<label class="fc vuota" for="fotoc">Spazio per la foto più bella<br><small>tocca per sceglierla</small></label>`;
+  const colSx = blocco(aree[0]) + fotoBox, colDx = aree.slice(1).map(blocco).join("");
   let pag2 = "";
   if (forza.length || deboli.length || lavori.length || comm.length){
     pag2 = `<div class="sheet"><div class="hd s"><div><div class="lg">Sport &amp; Services</div><div class="sb">${esc(nome)} · scheda ${esc(sport.toLowerCase())}</div></div><div class="tp">Valutazioni finali</div></div><div class="p2">`+
@@ -870,8 +875,8 @@ function schStampa(sid){
       `</div><div class="ft"><span>A.S.D. Sport &amp; Services</span><span>Aggiornata: ${esc(cc(sc,12))}</span></div></div>`;
   }
   v.innerHTML = `<div class="bar noprint"><button class="btn sec" id="ind">‹ Indietro</button><h2 style="margin-right:auto">Stampa: ${esc(nome)} · ${esc(sport.toLowerCase())}</h2>`+
-    `<label class="btn sec" style="display:inline-block">${foto?"Cambia foto":"Aggiungi foto"}<input id="foto" type="file" accept="image/*" hidden></label><button class="btn sec" id="modsc">Modifica scheda</button><button class="btn" id="stampa">Stampa / Salva PDF</button></div>`+
-    `<p class="hint noprint">La foto serve solo per questa stampa: resta sul tuo dispositivo e non viene salvata. Se la stampa non parte da qui, usa il menu del browser «Stampa» e scegli «Salva come PDF», formato A4.</p><div id="perr"></div>`+
+    `<label class="btn sec" style="display:inline-block">${foto?"Cambia ritratto":"Aggiungi ritratto"}<input id="foto" type="file" accept="image/*" hidden></label><label class="btn sec" style="display:inline-block">${fc?"Cambia foto grande":"Aggiungi foto grande"}<input id="fotoc" type="file" accept="image/*" hidden></label>${fc?'<button class="btn sec" id="togfc">Togli foto grande</button>':''}<button class="btn sec" id="modsc">Modifica scheda</button><button class="btn" id="stampa">Stampa / Salva PDF</button></div>`+
+    `<p class="hint noprint">Le foto (ritratto nel cerchio e foto grande sotto la tecnica) servono solo per questa stampa: restano sul tuo dispositivo e non vengono salvate. Se la stampa non parte da qui, usa il menu del browser «Stampa» e scegli «Salva come PDF», formato A4.</p><div id="perr"></div>`+
     `<div class="sheetwrap"><div class="sheet"><div class="hd"><div><div class="lg">Sport &amp; Services</div><div class="sb">A.S.D. · Scuola di tennis e padel</div></div><div class="tp">Scheda tecnica ${esc(sport)}</div></div>`+
     `<div class="id">${foto?`<img class="ph" src="${foto}" alt="">`:`<div class="ph">${esc(ini)}</div>`}<div><div class="nm">${esc(nome)}</div><div class="ch">${chip("Stagione",cc(sc,4))}${chip("Livello",cc(sc,8))}${chip("Mano",cc(sc,6))}${chip("Lato",cc(sc,7))}${chip("Corso",cc(sc,10))}</div></div>`+
     `${vals.length?`<div class="md"><div><b>${schFmt(media(vals))}</b><br><small>media</small></div></div>`:""}</div>`+
@@ -888,6 +893,13 @@ function schStampa(sid){
     rd.onload = () => { const im = new Image(); im.onload = () => { const s = Math.min(im.width, im.height), c = document.createElement("canvas"); c.width = c.height = 500; c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,500,500); schFoto[sid] = c.toDataURL("image/jpeg",.88); schStampa(sid); }; im.src = rd.result; };
     rd.readAsDataURL(f);
   };
+  $("#fotoc").onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, 1200/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); schFotoColpo[sid] = c.toDataURL("image/jpeg",.88); schStampa(sid); }; im.src = rd.result; };
+    rd.readAsDataURL(f);
+  };
+  if ($("#togfc")) $("#togfc").onclick = ()=>{ delete schFotoColpo[sid]; schStampa(sid); };
 }
 
 /* ===================== HOME ===================== */
