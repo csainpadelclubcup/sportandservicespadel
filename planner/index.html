@@ -562,7 +562,7 @@ function schLista(msg){
     const sp = stampa ? schDi(cc(r,0)).map(x=>'<button class="btn" data-st="'+esc(cc(x.r,0))+'">'+(cerca?'Apri ':'Stampa ')+esc(cc(x.r,3).toLowerCase())+'</button>').join(" ") : schDi(cc(r,0)).map(x=>pillSport(cc(x.r,3))).join(" ");
     h += '<tr class="click" data-p="'+esc(cc(r,0))+'" tabindex="0"><td>'+esc(cc(r,1)+" "+cc(r,2))+'</td><td>'+(sp||'<span class="vuoto">nessuna</span>')+'</td></tr>';
   });
-  h += '</tbody></table></div><p class="hint">Dati nel foglio Google «Database Schede Allievi». Le modifiche fatte qui vanno subito nel foglio; per riportarle nelle schede online e nel sito scrivi a Claude «Aggiornamento schede». In aereo scrivi direttamente nel foglio con l\'app Fogli Google (disponibile offline): le modifiche si sincronizzano da sole quando torni online.</p>';
+  h += '</tbody></table></div><p class="hint">Dati nel foglio Google «Database Schede Allievi». Le modifiche fatte qui vanno subito nel foglio; ogni sera Claude le porta da solo nelle schede online e nel sito. Se ti serve subito scrivi a Claude «Aggiorna schede». In aereo scrivi direttamente nel foglio con l\'app Fogli Google (disponibile offline): le modifiche si sincronizzano da sole quando torni online.</p>';
   v.innerHTML = h;
   $("#cerca").oninput = e=>{ schUI.q = e.target.value; const pos = e.target.selectionStart; schLista(); const x=$("#cerca"); x.focus(); x.setSelectionRange(pos,pos); };
   if ($("#nuovo")) $("#nuovo").onclick = ()=>{ schUI = {v:"wizAn", pid:null, sid:null, step:0, draft:Array(12).fill(""), q:schUI.q, mode:"modifica"}; vistaSchede(); };
@@ -621,7 +621,7 @@ async function schCreaScheda(pid, sport){
 }
 
 /* ---------- foto dall'app: vanno su Google Drive, cartella "Foto schede" ---------- */
-function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va nella cartella «Foto schede» del tuo Google Drive; per portarla nella scheda online e nel sito scrivi a Claude «Aggiornamento schede».</p></div>'; }
+function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va nella cartella «Foto schede» del tuo Google Drive. Ogni sera la porto da solo nella scheda online e nel sito; se ti serve subito (per esempio per stampare) scrivi a Claude «Aggiorna schede».</p></div>'; }
 function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1, 1600/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(im.src); ok(c.toDataURL("image/jpeg",0.85).split(",")[1]); }; im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
 function fotoAttiva(sid, voce, dopo){
   const inp = $("#fotoIn"); if (!inp) return;
@@ -789,7 +789,7 @@ function schWizSc(){
       await scrivi(ID.schede, "SCHEDE!M"+sc.row, [[ag]]);
       await schSegna(sid, cc(sc.r,2), sport);
       if (!(s>=1 && s<=4)) await schCarica(true);
-      if (s === SC_STEPS.length-1) return esci("Scheda "+sport.toLowerCase()+" di "+cc(sc.r,2)+" salvata nel database. Per portarla nelle schede online e nel sito scrivi a Claude «Aggiornamento schede».");
+      if (s === SC_STEPS.length-1) return esci("Scheda "+sport.toLowerCase()+" di "+cc(sc.r,2)+" salvata nel database. Stasera va da sola nella scheda online e nel sito; se ti serve subito scrivi a Claude «Aggiorna schede».");
       if (s>=1 && s<=4 && voti.length && schVi<voti.length-1){ schVi++; return schWizSc(); }
       schUI.step++; schVi=0; schUI.key = sid+":"+schUI.step; schWizSc();
     }catch(x){ err.hidden = false; err.textContent = (x && x.code==="tool_error" && x.message && x.message.startsWith("voto")) ? x.message : errore(x); bt.disabled = false; bt.textContent = tb; }
