@@ -276,6 +276,7 @@ const salvaPw = p => { try { localStorage.setItem("planner_pw", p); } catch(e){}
 function errore(e){
   const c = e && e.code;
   if (c==="password") return "Password sbagliata.";
+  if (c==="archivio") return "Salvato nel foglio, ma NON nell'archivio del sito. Riprova a salvare.";
   if (c==="rete") return "Non riesco a collegarmi ai fogli Google. Controlla la connessione e riprova.";
   return "Google ha rifiutato l'operazione: "+((e && e.message)||"errore sconosciuto")+".";
 }
@@ -537,6 +538,48 @@ async function schSegna(sid, nome, sport){
   const t = new Date(), ora = dmy(t)+" "+String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");
   await scrivi(ID.schede, "ALLINEAMENTO!A"+n+":C"+n, [[ora, "Da allineare", "Modifiche dal Planner: "+nome+" – scheda "+sport.toLowerCase()+" (ID "+sid+")"]]);
 }
+const SALVA_URL = "https://hbmmlnyfiesmmbmxkmcp.supabase.co/functions/v1/salva-planner";
+function schDatiDb(sid){
+  const sc = SCH.sc.slice(1).find(r => cc(r,0) === sid);
+  if (!sc) throw {code:"archivio", message:"scheda non trovata"};
+  const an = SCH.an.slice(1).find(r => cc(r,0) === cc(sc,1)) || [];
+  const dati = {
+    stagione: cc(sc,4), scuola: cc(sc,5), sport: cc(sc,3).toLowerCase(),
+    fotoProfilo: cc(sc,13), aggiornata: aggOggi(),
+    anagrafica: {
+      "Cognome": cc(an,1), "Nome": cc(an,2), "Sesso": cc(an,3),
+      "Data di nascita": cc(an,4), "Luogo di nascita": cc(an,5), "Codice fiscale": cc(an,6),
+      "Indirizzo": cc(an,7), "Telefono": cc(an,8), "Email": cc(an,9),
+      "Mano": cc(sc,6), "Lato di gioco": cc(sc,7), "Livello": cc(sc,8),
+      "Inizio corso": cc(sc,9), "Corso": cc(sc,10)
+    }
+  };
+  ["Tecnica","Atletica","Tattica","Mentale"].forEach((area,k) => {
+    const chiave = ["tecnica","atletica","tattica","mentale"][k];
+    dati[chiave] = SCH.vo.slice(1).filter(r => cc(r,0) === sid && cc(r,3) === area).map(r => ({
+      foto: cc(r,7).split(",").map(x => x.trim()).filter(Boolean),
+      voce: cc(r,4), voto: nVoto(cc(r,5)) === "" ? null : nVoto(cc(r,5)),
+      descrizione: cc(r,6)
+    }));
+  });
+  const si = SCH.si.slice(1).find(r => cc(r,0) === sid) || [];
+  dati.sintesi = {
+    forti: righeTxt(cc(si,3)), deboli: righeTxt(cc(si,4)),
+    lavori: { Tecnico: righeTxt(cc(si,5)), Tattico: righeTxt(cc(si,6)), Fisico: righeTxt(cc(si,7)), Mentale: righeTxt(cc(si,8)) }
+  };
+  dati.documenti = SCH.dc.slice(1).filter(r => cc(r,0) === sid).map(r => ({
+    nome: cc(r,3), stato: cc(r,4), scadenza: cc(r,5), note: cc(r,6)
+  }));
+  return {dati, email: cc(an,9), sport: cc(sc,3), nome: cc(sc,2)};
+}
+async function schInviaDb(sid){
+  const x = schDatiDb(sid);
+  let res;
+  try { res = await fetch(SALVA_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({op:"salvaScheda", pw: leggiPw(), id: sid, sport: x.sport.toLowerCase(), nome: x.nome, aggiornata: aggOggi(), email: x.email, dati: x.dati})}); }
+  catch(e){ throw {code:"archivio", message:"rete"}; }
+  let j; try { j = await res.json(); } catch(e){ throw {code:"archivio", message:"risposta"}; }
+  if (!j.ok) throw {code: j.error==="password" ? "password" : "archivio", message: j.error};
+}
 async function schEtichetta(pid){
   const p = schPers().find(x=>cc(x.r,0)===pid); if(!p) return;
   const lab = [...new Set(schDi(pid).map(x=>cc(x.r,3)))].sort().join(" + ");
@@ -720,6 +763,7 @@ async function schSalvaAn(){
   }
   await schCarica(true);
   for (const x of schDi(schUI.pid)) await schSegna(cc(x.r,0), nuovo, cc(x.r,3));
+  for (const x of schDi(schUI.pid)) await schInviaDb(cc(x.r,0));
 }
 
 /* ---------- scheda tecnica a passi ---------- */
@@ -809,6 +853,7 @@ function schWizSc(){
       await scrivi(ID.schede, "SCHEDE!M"+sc.row, [[ag]]);
       await schSegna(sid, cc(sc.r,2), sport);
       if (!(s>=1 && s<=4)) await schCarica(true);
+      await schInviaDb(sid);
       if (s === SC_STEPS.length-1) return esci("Scheda "+sport.toLowerCase()+" di "+cc(sc.r,2)+" salvata nel database. Stasera va da sola nella scheda online e nel sito; se ti serve subito scrivi a Claude «Aggiorna schede».");
       if (s>=1 && s<=4 && voti.length && schVi<voti.length-1){ schVi++; return schWizSc(); }
       schUI.step++; schVi=0; schUI.key = sid+":"+schUI.step; schWizSc();
