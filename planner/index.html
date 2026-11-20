@@ -580,6 +580,20 @@ async function schInviaDb(sid){
   let j; try { j = await res.json(); } catch(e){ throw {code:"archivio", message:"risposta"}; }
   if (!j.ok) throw {code: j.error==="password" ? "password" : "archivio", message: j.error};
 }
+async function salvaApi(body){
+  let res;
+  try { res = await fetch(SALVA_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(Object.assign({}, body, {pw: leggiPw()}))}); }
+  catch(e){ throw {code:"archivio", message:"rete"}; }
+  let j; try { j = await res.json(); } catch(e){ throw {code:"archivio", message:"risposta"}; }
+  if (!j.ok) throw {code:"archivio", message:j.error};
+  return j.data;
+}
+async function caricaFotoSalvate(root, sid){
+  for (const im of root.querySelectorAll("img[data-foto]")){
+    try { im.src = await salvaApi({op:"fotoUrl", id: sid, nome: im.dataset.foto}); }
+    catch(e){ im.alt = "foto non trovata nell'archivio"; im.style.minHeight = "40px"; }
+  }
+}
 async function schEtichetta(pid){
   const p = schPers().find(x=>cc(x.r,0)===pid); if(!p) return;
   const lab = [...new Set(schDi(pid).map(x=>cc(x.r,3)))].sort().join(" + ");
@@ -668,7 +682,7 @@ async function schCreaScheda(pid, sport){
 }
 
 /* ---------- foto dall'app: vanno su Google Drive, cartella "Foto schede" ---------- */
-function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<span class="pill corso">'+esc(n)+'</span>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><div id="fotoApp"></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va su Google Drive («Foto schede»). Claude la ritaglia (stasera, o subito se gli scrivi «Aggiorna schede») e te la mostra qui sotto da approvare: entra nella scheda solo quando la approvi.</p></div>'; }
+function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<figure style="margin:6px 6px 6px 0;display:inline-block;max-width:220px"><img data-foto="'+esc(n)+'" alt="" style="display:block;width:220px;max-width:100%;border-radius:10px;background:#eee;min-height:60px"><figcaption style="font-size:12px;color:var(--muted)">'+esc(n)+'</figcaption></figure>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><div id="fotoApp"></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va su Google Drive («Foto schede»). Claude la ritaglia (stasera, o subito se gli scrivi «Aggiorna schede») e te la mostra qui sotto da approvare: entra nella scheda solo quando la approvi.</p></div>'; }
 function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1, 1600/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(im.src); ok(c.toDataURL("image/jpeg",0.85).split(",")[1]); }; im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
 async function fotoApprova(sid, voce){
   const box = $("#fotoApp"); if (!box) return; const vv = voce || "Foto profilo";
@@ -812,6 +826,7 @@ function schWizSc(){
   const eVoce = s>=1 && s<=4 && voti.length>0, ultimaV = eVoce && schVi>=voti.length-1;
   h += '<div class="azioni">'+(s>0?'<button class="btn sec" type="button" id="ind">‹ Indietro</button>':'')+'<button class="btn sec" type="button" id="salta">'+(s===SC_STEPS.length-1?'Chiudi senza salvare':eVoce?'Salta voce ›':'Salta ›')+'</button><button class="btn" type="submit">'+(s===SC_STEPS.length-1?'Salva e finisci':eVoce&&!ultimaV?'Salva e prossima voce ›':'Salva e avanti ›')+'</button></div><p class="full msg err" id="ferr" hidden></p></form>';
   v.innerHTML = h;
+  caricaFotoSalvate(v, sid);
   window.scrollTo(0,0);
   if (s===0) fotoAttiva(sid, "", ()=>{});
   if (s>=1 && s<=4 && voti.length){ const rr = voti[schVi].r; fotoAttiva(sid, cc(rr,4), ()=>{}); }
