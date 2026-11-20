@@ -594,6 +594,24 @@ async function caricaFotoSalvate(root, sid){
     catch(e){ im.alt = "foto non trovata nell'archivio"; im.style.minHeight = "40px"; }
   }
 }
+/* ---------- video: link di YouTube per voce (solo nell'archivio) ---------- */
+function videoBox(){ return '<div class="full voce"><h4>Video della voce</h4><div id="videoApp"><p class="hint">Carico…</p></div></div>'; }
+async function caricaVideo(sid, voce){
+  const box = $("#videoApp"); if (!box) return;
+  let mappa; try { mappa = await salvaApi({op:"leggiVideo", id: sid}); } catch(e){ box.innerHTML = '<p class="msg err">'+esc(errore(e))+'</p>'; return; }
+  if (!$("#videoApp")) return;
+  const link = (mappa[voce]||[])[0] || "";
+  box.innerHTML = (link ? '<p style="margin:0 0 8px"><a href="'+esc(link)+'" target="_blank" rel="noopener">▶ Apri il video</a></p>' : '<p class="hint" style="margin:0 0 8px">Nessun video per questa voce.</p>')+
+    '<div class="bar" style="gap:6px;flex-wrap:wrap"><input id="vidIn" placeholder="Incolla il link di YouTube" value="'+esc(link)+'" style="flex:1;min-width:200px"><button type="button" class="btn" id="vidOk">Salva video</button>'+(link?'<button type="button" class="btn sec" id="vidDel">Rimuovi</button>':'')+'</div><p class="msg err" id="vidErr" hidden></p>';
+  $("#vidOk").onclick = ()=>salvaVid(sid, voce, $("#vidIn").value.trim());
+  if ($("#vidDel")) $("#vidDel").onclick = ()=>salvaVid(sid, voce, "");
+}
+async function salvaVid(sid, voce, link){
+  const e = $("#vidErr"); e.hidden = true;
+  if (link && !/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//i.test(link)){ e.hidden = false; e.textContent = "Il link deve essere di YouTube (youtube.com o youtu.be)."; return; }
+  try { await salvaApi({op:"salvaVideo", id: sid, voce, link}); caricaVideo(sid, voce); }
+  catch(x){ e.hidden = false; e.textContent = errore(x); }
+}
 async function schEtichetta(pid){
   const p = schPers().find(x=>cc(x.r,0)===pid); if(!p) return;
   const lab = [...new Set(schDi(pid).map(x=>cc(x.r,3)))].sort().join(" + ");
@@ -833,7 +851,7 @@ function schWizSc(){
       const r = voti[schVi].r;
       h += '<div class="full" style="display:grid;gap:12px"><div style="color:var(--muted);font-weight:600">'+area+' · voce '+(schVi+1)+' di '+voti.length+'</div><h2 style="font-size:30px;color:var(--navy)">'+esc(cc(r,4))+'</h2>'+
         '<label>Voto da 1 a 10 (anche 6,5)<input id="v0" type="number" min="1" max="10" step="0.5" inputmode="decimal" value="'+esc(nVoto(cc(r,5)))+'" style="font-size:24px;max-width:150px"></label>'+
-        '<label>Commento<textarea id="d0" placeholder="Scrivi qui il commento…" style="min-height:220px;font-size:18px;background:#fff">'+esc(cc(r,6))+'</textarea></label>'+fotoBox(righeTxt(cc(r,7).replace(/,\s*/g,"\n")), "Foto del colpo")+'</div>';
+        '<label>Commento<textarea id="d0" placeholder="Scrivi qui il commento…" style="min-height:220px;font-size:18px;background:#fff">'+esc(cc(r,6))+'</textarea></label>'+fotoBox(righeTxt(cc(r,7).replace(/,\s*/g,"\n")), "Foto del colpo")+videoBox()+'</div>';
     }
   } else if (s===5){
     const si = SCH.si.slice(1).map((r,i)=>({r,row:i+2})).find(x=>cc(x.r,0)===sid);
@@ -855,7 +873,7 @@ function schWizSc(){
   caricaFotoSalvate(v, sid);
   window.scrollTo(0,0);
   if (s===0) fotoAttiva(sid, "", ()=>{});
-  if (s>=1 && s<=4 && voti.length){ const rr = voti[schVi].r; fotoAttiva(sid, cc(rr,4), ()=>{}); }
+  if (s>=1 && s<=4 && voti.length){ const rr = voti[schVi].r; fotoAttiva(sid, cc(rr,4), ()=>{}); caricaVideo(sid, cc(rr,4)); }
   const esci = msg => { schUI.v = "persona"; schUI.pid = cc(sc.r,1); vistaSchede(null,msg); };
   $("#esci").onclick = ()=>esci();
   if ($("#ind")) $("#ind").onclick = ()=>{ if (eVoce && schVi>0){ schVi--; return schWizSc(); } schUI.step--; if (schUI.step>=1 && schUI.step<=4){ schVi=-1; } else schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
