@@ -681,31 +681,57 @@ async function schCreaScheda(pid, sport){
   return sid;
 }
 
-/* ---------- foto dall'app: vanno su Google Drive, cartella "Foto schede" ---------- */
-function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<figure style="margin:6px 6px 6px 0;display:inline-block;max-width:220px"><img data-foto="'+esc(n)+'" alt="" style="display:block;width:220px;max-width:100%;border-radius:10px;background:#eee;min-height:60px"><figcaption style="font-size:12px;color:var(--muted)">'+esc(n)+'</figcaption></figure>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">Aggiungi foto</label><input type="file" accept="image/*" id="fotoIn" hidden></div><div id="fotoApp"></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">La foto va su Google Drive («Foto schede»). Claude la ritaglia (stasera, o subito se gli scrivi «Aggiorna schede») e te la mostra qui sotto da approvare: entra nella scheda solo quando la approvi.</p></div>'; }
-function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1, 1600/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(im.src); ok(c.toDataURL("image/jpeg",0.85).split(",")[1]); }; im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
-async function fotoApprova(sid, voce){
-  const box = $("#fotoApp"); if (!box) return; const vv = voce || "Foto profilo";
-  let L; try { L = (await api({op:"fotoDaApprovare", sid})).filter(f=>f.voce===vv); } catch(e){ box.innerHTML = '<p class="msg err">Foto da approvare: '+esc(errore(e))+'</p>'; return; }
-  if (box !== $("#fotoApp")) return;
-  box.innerHTML = L.map(f=> f.stato!=="Da approvare"
-    ? '<p class="hint" style="margin:8px 0 0">📷 Una foto '+(f.stato==="Da rifare"?'da ritagliare di nuovo':'in attesa del ritaglio')+' (la vedrai qui).</p>'
-    : '<div data-r="'+f.riga+'" style="margin-top:10px;border:2px solid var(--ok,#2a7);border-radius:12px;padding:10px;max-width:340px"><p style="margin:0 0 6px"><b>Foto da approvare</b></p><img src="data:image/jpeg;base64,'+f.img+'" alt="" style="width:100%;border-radius:8px;display:block">'+(f.nota?'<p class="hint" style="margin:6px 0 0">Nota di Claude: '+esc(f.nota)+'</p>':'')+'<div class="bar" style="margin:8px 0 0;flex-wrap:wrap;gap:6px"><button type="button" class="btn" data-e="ok">✓ Va bene</button><button type="button" class="btn sec" data-e="rifai">↻ Rifai il taglio</button><button type="button" class="btn sec" data-e="scarta">✗ Foto sbagliata</button></div></div>').join("");
-  const fatto = {ok:"Approvata: entra nella scheda stasera (o subito con «Aggiorna schede»).", rifai:"Claude rifà il taglio e te la ripropone qui.", scarta:"Scartata: non andrà nella scheda."};
-  box.querySelectorAll("[data-e]").forEach(b=>b.onclick=async()=>{ const c = b.closest("[data-r]"), e = b.dataset.e;
-    let nota = ""; if (e==="rifai"){ nota = prompt("Come la vuoi tagliata? (puoi lasciare vuoto)"); if (nota===null) return; }
-    c.querySelectorAll("button").forEach(x=>x.disabled=true);
-    try { await api({op:"fotoEsito", riga:Number(c.dataset.r), esito:e, nota}); c.querySelector(".bar").outerHTML = '<p class="msg ok" style="margin:8px 0 0">'+fatto[e]+'</p>'; }
-    catch(x){ c.querySelectorAll("button").forEach(y=>y.disabled=false); c.insertAdjacentHTML("beforeend",'<p class="msg err">'+esc(errore(x))+'</p>'); }
-  });
+/* ---------- foto: ritaglio nel browser e salvataggio diretto nell'archivio ---------- */
+function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<figure style="margin:6px 6px 6px 0;display:inline-block;max-width:220px"><img data-foto="'+esc(n)+'" alt="" style="display:block;width:220px;max-width:100%;border-radius:10px;background:#eee;min-height:60px"><figcaption style="font-size:12px;color:var(--muted)">'+esc(n)+'</figcaption></figure>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">'+(nomi.length?'Cambia foto':'Aggiungi foto')+'</label>'+(nomi.length?'<button type="button" class="btn sec" id="fotoDel">Elimina foto</button>':'')+'<input type="file" accept="image/*" id="fotoIn" hidden></div><div id="fotoApp"></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">Ritaglia la foto e salvala: va direttamente nell\'archivio della scheda.</p></div>'; }
+function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>ok(im); im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
+function fotoNomeFile(testo){ return String(testo||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]/g,"_"); }
+// scrive il nome della foto nel foglio (VOTI colonna H o SCHEDE colonna N) e allinea l'archivio
+async function fotoSegnaNome(sid, voce, nome){
+  if (!voce){
+    const i = SCH.sc.findIndex((r,k)=>k>0 && cc(r,0)===sid); if (i<0) throw {code:"tool_error", message:"scheda non trovata"};
+    await scrivi(ID.schede, "SCHEDE!N"+(i+1)+":N"+(i+1), [[nome]]);
+    while (SCH.sc[i].length<14) SCH.sc[i].push(""); SCH.sc[i][13] = nome;
+  } else {
+    const i = SCH.vo.findIndex((r,k)=>k>0 && cc(r,0)===sid && cc(r,4)===voce); if (i<0) throw {code:"tool_error", message:"voce non trovata"};
+    await scrivi(ID.schede, "VOTI!H"+(i+1)+":H"+(i+1), [[nome]]);
+    while (SCH.vo[i].length<8) SCH.vo[i].push(""); SCH.vo[i][7] = nome;
+  }
+  await schInviaDb(sid);
 }
 function fotoAttiva(sid, voce, dopo){
   const inp = $("#fotoIn"); if (!inp) return;
-  fotoApprova(sid, voce);
-  inp.onchange = async ()=>{ const f = inp.files[0]; if (!f) return; const m = $("#fotoMsg"); m.textContent = "Carico la foto…";
-    try { const img = await fotoJpeg(f); const nome = await api({op:"foto", sid, voce, img}); dopo(nome); m.innerHTML = '<b style="color:var(--ok)">Foto inviata. Dopo il ritaglio la trovi qui, da approvare.</b>'; fotoApprova(sid, voce); }
-    catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; }
-    inp.value = ""; };
+  const box = $("#fotoApp"), m = $("#fotoMsg");
+  const del = $("#fotoDel"); if (del) del.onclick = async ()=>{ del.disabled = true; try { await fotoSegnaNome(sid, voce, ""); schWizSc(); } catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; del.disabled = false; } };
+  inp.onchange = async ()=>{ const f = inp.files[0]; inp.value = ""; if (!f) return;
+    let im; try { im = await fotoJpeg(f); } catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; return; }
+    const ratio = voce ? 1.25 : 1; // colpi 4:5, profilo quadrato
+    box.innerHTML = '<div style="margin-top:10px"><div id="cropFr" style="position:relative;overflow:hidden;width:100%;max-width:360px;background:#111;border-radius:12px;touch-action:none;cursor:move"><img id="cropImg" src="'+im.src+'" alt="" draggable="false" style="position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;max-width:none"></div><label style="display:block;margin-top:8px">Zoom <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" style="width:100%;max-width:360px"></label><div class="bar" style="margin:8px 0 0;gap:6px;flex-wrap:wrap"><button type="button" class="btn" id="cropOk">✓ Ritaglia e salva</button><button type="button" class="btn sec" id="cropNo">Annulla</button></div></div>';
+    const fr = $("#cropFr"), ci = $("#cropImg"), zm = $("#cropZoom");
+    let W = fr.clientWidth, H = W*ratio, sc0 = 1, z = 1, x = 0, y = 0;
+    const fissa = () => { const s = sc0*z; x = Math.min(0, Math.max(W - im.width*s, x)); y = Math.min(0, Math.max(H - im.height*s, y)); ci.style.transform = "translate("+x+"px,"+y+"px) scale("+s+")"; };
+    fr.style.height = H+"px";
+    sc0 = Math.max(W/im.width, H/im.height); x = (W - im.width*sc0)/2; y = (H - im.height*sc0)/2; fissa();
+    zm.oninput = ()=>{ z = Number(zm.value); fissa(); };
+    let drag = null;
+    fr.onpointerdown = e=>{ drag = {px:e.clientX, py:e.clientY, x0:x, y0:y}; fr.setPointerCapture(e.pointerId); };
+    fr.onpointermove = e=>{ if (!drag) return; x = drag.x0 + (e.clientX-drag.px); y = drag.y0 + (e.clientY-drag.py); fissa(); };
+    fr.onpointerup = fr.onpointercancel = ()=>{ drag = null; };
+    $("#cropNo").onclick = ()=>{ box.innerHTML = ""; m.textContent = "Ritaglia la foto e salvala: va direttamente nell'archivio della scheda."; };
+    $("#cropOk").onclick = async ()=>{ const b = $("#cropOk"); b.disabled = true; m.textContent = "Salvo la foto…";
+      try {
+        const s = sc0*z, sx = -x/s, sy = -y/s, sw = W/s, sh = H/s;
+        const ow = Math.min(1000, Math.round(sw)), oh = Math.round(ow*ratio);
+        const c = document.createElement("canvas"); c.width = ow; c.height = oh;
+        c.getContext("2d").drawImage(im, sx, sy, sw, sh, 0, 0, ow, oh);
+        const img = c.toDataURL("image/jpeg", 0.85).split(",")[1];
+        const sc = SCH.sc.find((r,k)=>k>0 && cc(r,0)===sid);
+        const nomeFile = fotoNomeFile(cc(sc,2)) + "_" + (voce ? fotoNomeFile(voce) : "profilo") + "_" + Date.now() + "_ritaglio.jpg";
+        await salvaApi({op:"salvaFoto", id: sid, nome: nomeFile, img});
+        await fotoSegnaNome(sid, voce, nomeFile);
+        schWizSc();
+      } catch(e){ b.disabled = false; m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; }
+    };
+  };
 }
 
 /* ---------- inserimento anagrafica a passi ---------- */
