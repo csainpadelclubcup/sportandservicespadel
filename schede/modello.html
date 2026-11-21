@@ -376,7 +376,7 @@ function setMode(m){
 }
 render();
 /* sul telefono (pagina online) la stampa non è disponibile: si fa dal PC */
-try{ if(window.self!==window.top) document.getElementById("bP").style.display="none"; }catch(e){ document.getElementById("bP").style.display="none"; }
+/* il pulsante Stampa / Salva PDF resta visibile anche dentro il sito: apre la pagina A4 in una nuova finestra */
 setMode(window.__MODO__||"giocatore");
 </script>
 </body>
