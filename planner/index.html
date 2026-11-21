@@ -167,6 +167,7 @@ main{padding:12px}
 .wiz span{flex:1;min-width:84px;text-align:center;font-size:12px;font-weight:700;padding:7px 4px;border-radius:8px;background:var(--tint);color:var(--muted);border-bottom:3px solid transparent}
 .wiz span.on{background:var(--navy);color:var(--gold)}
 .wiz span.ok{color:var(--ok);border-bottom-color:var(--ok)}
+.wiz.clic span{cursor:pointer} .wiz.clic span:hover{outline:2px solid var(--gold)}
 .voce{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--paper)}
 .voce h4{margin:0 0 6px;font-family:var(--display);color:var(--navy);font-size:16px}
 .voce .riga{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:start}
@@ -852,7 +853,7 @@ function schWizSc(){
   if (!sc){ schUI.v="lista"; return schLista(); }
   const sport = cc(sc.r,3);
   const key = sid+":"+s; if (schUI.key!==key){ schUI.key=key; schVi=0; }
-  let h = '<div class="bar"><button class="btn sec" id="esci">‹ Torna all\'allievo</button><h2 style="margin-right:auto">'+esc(cc(sc.r,2))+' · '+pillSport(sport)+'</h2></div>'+wizBar(SC_STEPS, s)+'<form class="form" id="frm">';
+  let h = '<div class="bar"><button class="btn sec" id="esci">‹ Torna all\'allievo</button><h2 style="margin-right:auto">'+esc(cc(sc.r,2))+' · '+pillSport(sport)+'</h2></div>'+wizBar(SC_STEPS, s).replace('class="wiz"','class="wiz clic" title="Tocca un passo per andarci direttamente"')+'<form class="form" id="frm">';
   const voti = [];
   if (s===0){
     h += '<h3 class="full">Dati della scheda</h3>'+
@@ -897,6 +898,11 @@ function schWizSc(){
   if (s>=1 && s<=4 && voti.length){ const rr = voti[schVi].r; fotoAttiva(sid, cc(rr,4), ()=>{}); caricaVideo(sid, cc(rr,4)); }
   const esci = msg => { schUI.v = "persona"; schUI.pid = cc(sc.r,1); vistaSchede(null,msg); };
   $("#esci").onclick = ()=>esci();
+  let modificato = false; $("#frm").addEventListener("input", ()=>{ modificato = true; });
+  v.querySelectorAll(".wiz.clic span").forEach((sp,i)=>{ sp.onclick = ()=>{
+    if (i===s) return;
+    if (modificato && !confirm("In questa pagina ci sono modifiche non salvate. Vuoi passare a «"+SC_STEPS[i]+"» senza salvarle?")) return;
+    schUI.step = i; schVi = 0; schUI.key = sid+":"+i; schWizSc(); }; });
   if ($("#ind")) $("#ind").onclick = ()=>{ if (eVoce && schVi>0){ schVi--; return schWizSc(); } schUI.step--; if (schUI.step>=1 && schUI.step<=4){ schVi=-1; } else schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
   $("#salta").onclick = ()=>{ if (s===SC_STEPS.length-1) return esci(); if (eVoce && !ultimaV){ schVi++; return schWizSc(); } schUI.step++; schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
   $("#frm").onsubmit = async e=>{
@@ -934,7 +940,7 @@ function schWizSc(){
       await schSegna(sid, cc(sc.r,2), sport);
       if (!(s>=1 && s<=4)) await schCarica(true);
       await schInviaDb(sid);
-      if (s === SC_STEPS.length-1) return esci("Scheda "+sport.toLowerCase()+" di "+cc(sc.r,2)+" salvata nel database. Stasera va da sola nella scheda online e nel sito; se ti serve subito scrivi a Claude «Aggiorna schede».");
+      if (s === SC_STEPS.length-1) return esci("Scheda "+sport.toLowerCase()+" di "+cc(sc.r,2)+" salvata nel database: la scheda sul sito è già aggiornata.");
       if (s>=1 && s<=4 && voti.length && schVi<voti.length-1){ schVi++; return schWizSc(); }
       schUI.step++; schVi=0; schUI.key = sid+":"+schUI.step; schWizSc();
     }catch(x){ err.hidden = false; err.textContent = (x && x.code==="tool_error" && x.message && x.message.startsWith("voto")) ? x.message : errore(x); bt.disabled = false; bt.textContent = tb; }

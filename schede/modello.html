@@ -107,7 +107,9 @@ td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .area-head .avg{font-family:Oswald,sans-serif;font-size:40px;color:var(--navy);line-height:1}
 .area-head .avg small{font-size:15px;color:var(--muted)}
 .items{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));align-items:stretch}
-.item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;break-inside:avoid}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;break-inside:avoid;display:flex;flex-direction:column}
+.item .corpo{flex:1;display:flex;flex-direction:column}
+.item .media{margin-top:auto;padding-top:10px}
 .item .top{display:flex;align-items:center;gap:12px}
 .item h3{margin:0;font-size:17px;color:var(--slate);flex:1}
 .score{font-family:Oswald,sans-serif;font-size:20px;color:var(--navy);min-width:52px;text-align:right}
