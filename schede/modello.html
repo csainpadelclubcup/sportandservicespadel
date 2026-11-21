@@ -37,7 +37,11 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .cover .kicker span{padding-left:.42em;white-space:nowrap}
 .cover .kicker::before,.cover .kicker::after{content:"";height:1px;width:clamp(28px,5vw,56px);background:var(--gold);opacity:.75}
 .cover .cover-foot{grid-column:1/-1;border-top:1px solid rgba(194,169,112,.45);padding-top:9px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cream);opacity:.9}
-.cover:has(.ritratto){grid-template-columns:auto 1fr auto}
+.cover,.cover:has(.ritratto){grid-template-columns:112px 1fr 112px}
+.cover img.logo{grid-column:1;justify-self:start}
+.cover .titoli{grid-column:2}
+.cover .ritratto{grid-column:3;justify-self:end}
+.cover .cover-foot{text-align:center}
 .ritratto{position:relative;width:104px;aspect-ratio:4/5;border-radius:16px;overflow:hidden;background:var(--slate2);box-shadow:0 0 0 2px var(--gold),0 0 0 5px rgba(194,169,112,.18),0 10px 24px rgba(0,0,0,.45);margin:0}
 .ritratto img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;display:block;transform:scale(1.02)}
 .ritratto::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,36,64,0) 55%,rgba(28,36,64,.85) 100%);pointer-events:none}
@@ -88,7 +92,7 @@ section.page{background:var(--paper);border-radius:14px;padding:22px 22px 18px;m
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{background:var(--tint);text-align:left;font-weight:700;color:var(--slate);padding:8px 10px;border-bottom:1px solid var(--line)}
 td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 22px}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:0 22px}
 .kv div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0}
 .kv span:first-child{color:var(--muted)}
 .kv span:last-child{font-weight:600;text-align:right}
@@ -102,7 +106,7 @@ td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .area-head{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:center;margin-bottom:8px}
 .area-head .avg{font-family:Oswald,sans-serif;font-size:40px;color:var(--navy);line-height:1}
 .area-head .avg small{font-size:15px;color:var(--muted)}
-.items{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));align-items:stretch}
+.items{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));align-items:stretch}
 .item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;break-inside:avoid}
 .item .top{display:flex;align-items:center;gap:12px}
 .item h3{margin:0;font-size:17px;color:var(--slate);flex:1}
@@ -123,7 +127,7 @@ td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .card ul{margin:0;padding-left:18px}
 .forte{background:#E8F3EC;border-left:5px solid var(--ok)} .forte h3{color:var(--ok)}
 .debole{background:#FBF1E3;border-left:5px solid var(--warn)} .debole h3{color:var(--warn)}
-.lavori{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px}
+.lavori{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:12px;margin-top:16px}
 .lavori .card{background:var(--tint);border-top:4px solid var(--navy)}
 .lavori .card h3{color:var(--navy);font-size:16px}
 
@@ -134,7 +138,8 @@ body.giocatore .solo-maestro{display:none!important}
 body.maestro .solo-giocatore{display:none!important}
 
 @media (max-width:640px){
-  .cover,.cover:has(.ritratto){grid-template-columns:1fr;text-align:center;background:var(--slate)} .cover img.logo{margin:0 auto} .cover .ritratto{margin:6px auto 4px;width:120px} .cover .titoli{padding-top:0}
+  .cover,.cover:has(.ritratto){grid-template-columns:1fr;text-align:center;background:var(--slate);padding:18px 14px 12px} .cover img.logo,.cover .titoli,.cover .ritratto{grid-column:1;justify-self:center} .cover img.logo{margin:0 auto}
+  .wrap{padding:14px 10px 40px} section.page{padding:16px 14px 14px} .sec-title h2{font-size:19px} .area-head{text-align:center} .item{padding:12px} .cover .ritratto{margin:6px auto 4px;width:120px} .cover .titoli{padding-top:0}
   .fotocolpo{max-height:78vh} .voto-tondo{width:56px;height:56px;font-size:22px}
   .cover .stats{justify-content:center}
   .cover .kicker{font-size:14px;letter-spacing:.3em;gap:10px} .cover .kicker span{padding-left:.3em} .cover .kicker::before,.cover .kicker::after{width:24px}
@@ -165,7 +170,7 @@ body.maestro .solo-giocatore{display:none!important}
       <button id="bM" class="on" onclick="setMode('maestro')">Versione maestro</button>
       <button id="bG" onclick="setMode('giocatore')">Versione giocatore</button>
     </div>
-    <button class="tbtn" id="bP" onclick="window.print()">Stampa / PDF</button>
+    <button class="tbtn" id="bP" onclick="stampaA4()">Stampa / Salva PDF</button>
   </div>
 </div>
 
@@ -245,6 +250,60 @@ function area(n, nome, items, tag){
     <div class="area-head"><div><div class="avg">${m!==null?num(m.toFixed(1)):"–"}<small> / 10 media</small></div>
       <p class="legend">Scala 1–10 · 1-4 da costruire · 5-6 sufficiente · 7-8 buono · 9-10 eccellente</p></div>${radar(items)}</div>
     <div class="items">${cards}</div></section>`;
+}
+
+
+/* ===== stampa A4 riepilogativa (stessa grafica della stampa dell'app Planner) ===== */
+function stampaA4(){
+  const S=SCHEDA, A=S.anagrafica||{}, nome=`${A.Nome||""} ${A.Cognome||""}`.trim();
+  const ini=((A.Nome||"")[0]||"")+((A.Cognome||"")[0]||"");
+  const fmt=n=>String(n).replace(".",","), col=n=>n>=8?"#2E7D5B":n>=6?"#C2A970":"#C9792B";
+  const AREE=[["Tecnica",S.tecnica],["Atletica",S.atletica],["Tattica",S.tattica],["Mentale",S.mentale]].map(([a,v])=>({a,v:(v||[]).filter(x=>typeof x.voto==="number")}));
+  const tutti=AREE.flatMap(x=>x.v), med=arr=>arr.length?Math.round(arr.reduce((t,x)=>t+x.voto,0)/arr.length*10)/10:"";
+  const blocco=x=>x.v.length?`<section class="ar"><h3><span>${esc(x.a)}</span><b>${fmt(med(x.v))}</b></h3>`+x.v.map(y=>`<div class="br"><span>${esc(y.voce)}</span><i><u style="width:${y.voto*10}%;background:${col(y.voto)}"></u></i><em>${fmt(y.voto)}</em></div>`).join("")+`</section>`:"";
+  const fg=(S.tecnica||[]).map(x=>(x.foto||[])[0]).find(f=>typeof f==="string");
+  const agg=String(S.aggiornata||"").replace(/^\d+\s+/,"");
+  const ul=a=>a&&a.length?"<ul>"+a.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>":"";
+  const si=S.sintesi||{}, lav=Object.entries(si.lavori||{}).filter(([k,v])=>v&&v.length);
+  const comm=AREE.map(x=>({a:x.a,v:x.v.filter(y=>y.descrizione)})).filter(x=>x.v.length);
+  const sport=String(S.sport||"").toLowerCase();
+  let p2="";
+  if((si.forti||[]).length||(si.deboli||[]).length||lav.length||comm.length)
+    p2=`<div class="sheet"><div class="hd s"><div><div class="lg">Sport &amp; Services</div><div class="sb">${esc(nome)} · scheda ${esc(sport)}</div></div><div class="tp">Valutazioni finali</div></div><div class="p2">`+
+      ((si.forti||[]).length||(si.deboli||[]).length?`<div class="due">${(si.forti||[]).length?`<div class="bx ok"><h4>Punti di forza</h4>${ul(si.forti)}</div>`:""}${(si.deboli||[]).length?`<div class="bx warn"><h4>Punti da migliorare</h4>${ul(si.deboli)}</div>`:""}</div>`:"")+
+      (lav.length?`<div class="bx nv"><h4>Lavori consigliati</h4><div class="lv">${lav.map(([k,v])=>`<div><b>${esc(k)}</b>${ul(v)}</div>`).join("")}</div></div>`:"")+
+      (comm.length?`<h4 class="ct">Commenti del maestro</h4>`+comm.map(c=>`<div class="cm"><h5>${esc(c.a)}</h5>${c.v.map(y=>`<p><b>${esc(y.voce)}</b> (${fmt(y.voto)}) – ${esc(y.descrizione)}</p>`).join("")}</div>`).join(""):"")+
+      `</div><div class="ft"><span>A.S.D. Sport &amp; Services</span><span>Aggiornata: ${esc(agg)}</span></div></div>`;
+  const css=`body{margin:0;background:#EEF0EC;font-family:"Source Sans 3",Arial,sans-serif}.bar{position:sticky;top:0;background:#1C2440;padding:10px;text-align:center;z-index:2}.bar button{background:#C2A970;color:#1C2440;border:0;border-radius:8px;padding:10px 18px;font:700 15px "Source Sans 3",sans-serif;margin:0 4px}.wrapA4{padding:14px 0}
+.sheet{background:#fff;width:210mm;min-height:297mm;margin:0 auto 16px;box-shadow:0 4px 18px rgba(28,36,64,.22);position:relative;overflow:hidden;font-size:11px;line-height:1.35;color:#1E2624;padding-bottom:18mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet .hd{background:linear-gradient(120deg,#1C2440,#304143);color:#F6F2E8;padding:10mm 12mm 8mm;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5mm solid #C2A970}.sheet .hd.s{padding:7mm 12mm 5mm}
+.sheet .lg{font-family:Oswald,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#C2A970;font-size:22px}.sheet .sb{font-size:10px;opacity:.85;letter-spacing:.06em}.sheet .tp{font-family:Oswald,sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.04em}
+.sheet .id{display:flex;gap:7mm;padding:8mm 12mm 3mm;align-items:center}.sheet .phw{position:relative;flex:none}
+.sheet .ph{width:38mm;height:38mm;border-radius:50%;border:1.2mm solid #C2A970;object-fit:cover;background:#E9ECE6;display:grid;place-items:center;font-family:Oswald,sans-serif;font-size:40px;color:#1C2440;overflow:hidden;flex:none;box-sizing:border-box}
+.sheet .lvb{position:absolute;left:50%;bottom:2.5mm;transform:translateX(-50%);background:#1C2440;color:#fff;border-radius:99px;padding:1px 8px;font-size:10px;font-weight:700;line-height:1.5;white-space:nowrap}
+.sheet .nm{font-family:Oswald,sans-serif;font-size:30px;color:#1C2440;text-transform:uppercase;line-height:1.05}.sheet .ag{margin-top:6px;font-size:12px;color:#5A6B80}
+.sheet .md{margin-left:auto;text-align:center;border:1.2mm solid #1C2440;border-radius:50%;width:27mm;height:27mm;display:grid;place-items:center;flex:none;box-sizing:border-box}.sheet .md b{font-family:Oswald,sans-serif;font-size:28px;color:#1C2440;line-height:1}.sheet .md small{font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:#5E6B67}
+.sheet .gr{display:grid;grid-template-columns:1fr 1fr;gap:6mm;padding:3mm 12mm 6mm}.sheet .col{display:grid;gap:5mm;align-content:start}
+.sheet .fc{height:85mm;border-radius:3mm;overflow:hidden;border:1.2mm solid #C2A970;background:#F4F5F1}.sheet .fc img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block}
+.sheet .ar{border:1px solid #DCE1DC;border-radius:3mm;padding:3mm 4mm;background:#FFFEFB;break-inside:avoid}.sheet .ar h3{display:flex;justify-content:space-between;align-items:baseline;font-family:Oswald,sans-serif;font-size:14px;color:#1C2440;text-transform:uppercase;border-bottom:1.5px solid #C2A970;padding-bottom:2px;margin:0 0 5px}.sheet .ar h3 b{font-size:17px}
+.sheet .br{display:grid;grid-template-columns:36mm 1fr 8mm;gap:2.5mm;align-items:center;margin:3.5px 0;line-height:1.15}.sheet .br i{display:block;height:7px;background:#ECEFEA;border-radius:4px;overflow:hidden}.sheet .br u{display:block;height:100%;border-radius:4px}.sheet .br em{font-style:normal;font-weight:700;text-align:right}
+.sheet .lg2{display:flex;gap:10px;justify-content:center;font-size:9.5px;color:#5E6B67}.sheet .lg2 i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.sheet .ft{position:absolute;left:0;right:0;bottom:0;background:#1C2440;color:#CFC9B8;padding:4mm 12mm;font-size:9.5px;display:flex;justify-content:space-between;gap:8px}
+.sheet .p2{padding:8mm 12mm 0}.sheet .due{display:grid;grid-template-columns:1fr 1fr;gap:5mm}.sheet .bx{border-left:1.6mm solid #1C2440;background:#F6F7F3;border-radius:0 3mm 3mm 0;padding:3mm 4mm;margin-bottom:5mm;break-inside:avoid}.sheet .bx.ok{border-left-color:#2E7D5B}.sheet .bx.warn{border-left-color:#C9792B}
+.sheet .bx h4,.sheet .ct{font-family:Oswald,sans-serif;font-size:14px;text-transform:uppercase;color:#1C2440;margin:0 0 4px;letter-spacing:.04em}.sheet .bx ul{margin:0;padding-left:15px}.sheet .bx li{margin:2px 0}.sheet .lv{display:grid;grid-template-columns:1fr 1fr;gap:3mm 6mm}.sheet .lv b{color:#1C2440;font-size:11px}
+.sheet .ct{margin:2mm 0 3mm;border-bottom:1.5px solid #C2A970;padding-bottom:2px}.sheet .cm{margin-bottom:3mm}.sheet .cm h5{margin:0 0 2px;font-size:11.5px;color:#C2A970;text-transform:uppercase;letter-spacing:.08em}.sheet .cm p{margin:2px 0;font-size:10.5px}
+@media (max-width:820px){.sheet{zoom:.45}}
+@media print{@page{size:A4;margin:0}body{background:#fff}.bar{display:none}.wrapA4{padding:0}.sheet{zoom:1!important;margin:0;box-shadow:none;break-after:page}.sheet:last-child{break-after:auto}}`;
+  const foto=S.fotoProfilo?`<img class="ph" src="${fsrc(S.fotoProfilo)}" alt="">`:`<div class="ph">${esc(ini.toUpperCase()||"?")}</div>`;
+  const pag1=`<div class="sheet"><div class="hd"><div><div class="lg">Sport &amp; Services</div><div class="sb">A.S.D. · Scuola di tennis e padel</div></div><div class="tp">Scheda tecnica ${esc(S.sport||"")}</div></div>`+
+    `<div class="id"><div class="phw">${foto}${A.Livello?`<span class="lvb">${esc(A.Livello)}</span>`:""}</div><div><div class="nm">${esc(nome)}</div>${agg?`<div class="ag">Scheda aggiornata a ${esc(agg)}</div>`:""}</div>${tutti.length?`<div class="md"><div><b>${fmt(med(tutti))}</b><br><small>media</small></div></div>`:""}</div>`+
+    `<div class="gr"><div class="col">${blocco(AREE[0])}${fg?`<div class="fc"><img src="${fsrc(fg)}" alt=""></div>`:""}</div><div class="col">${AREE.slice(1).map(blocco).join("")}</div></div>`+
+    `<div class="lg2"><span><i style="background:#2E7D5B"></i>8 e oltre</span><span><i style="background:#C2A970"></i>6 – 7,5</span><span><i style="background:#C9792B"></i>sotto 6</span></div>`+
+    `<div class="ft"><span>A.S.D. Sport &amp; Services · Gianluca Micarelli, maestro di tennis e padel</span><span>Aggiornata: ${esc(agg)}</span></div></div>`;
+  const html=`<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scheda ${esc(nome)}</title><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet"><style>${css}</style></head><body><div class="bar"><button onclick="window.print()">Stampa / Salva PDF</button><button onclick="window.close()">Chiudi</button></div><div class="wrapA4">${pag1}${p2}</div></body></html>`;
+  const w=window.open("","_blank");
+  if(!w){ alert("Il browser ha bloccato la nuova finestra: consenti i popup per questo sito e riprova."); return; }
+  w.document.open(); w.document.write(html); w.document.close();
 }
 
 function render(){
