@@ -1003,11 +1003,32 @@ function schStampa(sid){
     rd.onload = () => { const im = new Image(); im.onload = () => { const s = Math.min(im.width, im.height), c = document.createElement("canvas"); c.width = c.height = 500; c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,500,500); schFoto[sid] = c.toDataURL("image/jpeg",.88); schStampa(sid); }; im.src = rd.result; };
     rd.readAsDataURL(f);
   };
-  $("#fotoc").onchange = e => {
-    const f = e.target.files[0]; if (!f) return;
-    const rd = new FileReader();
-    rd.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, 1200/Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); schFotoColpo[sid] = c.toDataURL("image/jpeg",.88); schStampa(sid); }; im.src = rd.result; };
-    rd.readAsDataURL(f);
+  $("#fotoc").onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    let im; try { im = await fotoJpeg(f); } catch(x){ $("#perr").innerHTML = '<p class="msg err">'+esc(errore(x))+'</p>'; return; }
+    const fcEl = document.querySelector(".sheet .fc"), ratio = fcEl && fcEl.clientWidth ? fcEl.clientHeight/fcEl.clientWidth : 0.95;
+    const box = $("#perr");
+    box.innerHTML = '<div class="noprint panel" style="padding:12px;margin:10px 0"><h3 style="margin-top:0">Ritaglia la foto grande</h3><p class="hint">Trascina la foto e usa lo zoom. Resta solo su questo dispositivo, non viene salvata.</p><div id="cropFr" style="position:relative;overflow:hidden;width:100%;max-width:420px;background:#111;border-radius:12px;touch-action:none;cursor:move"><img id="cropImg" src="'+im.src+'" alt="" draggable="false" style="position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;max-width:none"></div><label style="display:block;margin-top:8px">Zoom <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" style="width:100%;max-width:420px"></label><div class="bar" style="margin:8px 0 0;gap:6px;flex-wrap:wrap"><button type="button" class="btn" id="cropOk">✓ Ritaglia e usa</button><button type="button" class="btn sec" id="cropNo">Annulla</button></div></div>';
+    const fr = $("#cropFr"), ci = $("#cropImg"), zm = $("#cropZoom");
+    const W = fr.clientWidth, H = W*ratio; let z = 1, x = 0, y = 0;
+    fr.style.height = H+"px";
+    const sc0 = Math.max(W/im.width, H/im.height);
+    const fissa = () => { const sc = sc0*z; x = Math.min(0, Math.max(W - im.width*sc, x)); y = Math.min(0, Math.max(H - im.height*sc, y)); ci.style.transform = "translate("+x+"px,"+y+"px) scale("+sc+")"; };
+    x = (W - im.width*sc0)/2; y = (H - im.height*sc0)/2; fissa();
+    zm.oninput = ()=>{ const c = sc0*z, cx = (W/2 - x)/c, cy = (H/2 - y)/c; z = Number(zm.value); const n = sc0*z; x = W/2 - cx*n; y = H/2 - cy*n; fissa(); };
+    let drag = null;
+    fr.onpointerdown = ev=>{ drag = {px:ev.clientX, py:ev.clientY, x0:x, y0:y}; fr.setPointerCapture(ev.pointerId); };
+    fr.onpointermove = ev=>{ if (!drag) return; x = drag.x0 + (ev.clientX-drag.px); y = drag.y0 + (ev.clientY-drag.py); fissa(); };
+    fr.onpointerup = fr.onpointercancel = ()=>{ drag = null; };
+    box.scrollIntoView({behavior:"smooth", block:"start"});
+    $("#cropNo").onclick = ()=>{ box.innerHTML = ""; };
+    $("#cropOk").onclick = ()=>{
+      const sc = sc0*z, sx = -x/sc, sy = -y/sc, sw = W/sc, sh = H/sc;
+      const ow = Math.min(1400, Math.round(sw)), oh = Math.round(ow*ratio);
+      const c = document.createElement("canvas"); c.width = ow; c.height = oh;
+      c.getContext("2d").drawImage(im, sx, sy, sw, sh, 0, 0, ow, oh);
+      schFotoColpo[sid] = c.toDataURL("image/jpeg", 0.88); schStampa(sid);
+    };
   };
   if ($("#togfc")) $("#togfc").onclick = ()=>{ delete schFotoColpo[sid]; schStampa(sid); };
 }
