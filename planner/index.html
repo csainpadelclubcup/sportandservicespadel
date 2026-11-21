@@ -187,6 +187,9 @@ main{padding:12px}
 .sheet .ph{width:38mm;height:38mm;border-radius:50%;border:1.2mm solid #C2A970;object-fit:cover;background:#E9ECE6;display:grid;place-items:center;font-family:var(--display);font-size:40px;color:#1C2440;overflow:hidden;flex:none}
 .sheet .nm{font-family:var(--display);font-size:30px;color:#1C2440;text-transform:uppercase;line-height:1.05}
 .sheet .ch{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.sheet .phw{position:relative;flex:none}
+.sheet .phw .lvb{position:absolute;left:50%;bottom:2.5mm;transform:translateX(-50%);background:#1C2440;color:#fff;border-radius:99px;padding:1px 8px;font-size:10px;font-weight:700;line-height:1.5;white-space:nowrap}
+.sheet .ag{margin-top:6px;font-size:12px;color:#5A6B80}
 .sheet .ch span{background:#F4F5F1;border:1px solid #DCE1DC;border-radius:99px;padding:2px 9px;font-size:10.5px}
 .sheet .md{margin-left:auto;text-align:center;border:1.2mm solid #1C2440;border-radius:50%;width:27mm;height:27mm;display:grid;place-items:center;flex:none}
 .sheet .md b{font-family:var(--display);font-size:28px;color:#1C2440;line-height:1}
@@ -968,6 +971,8 @@ function schStampa(sid){
   const lavori = [["Tecnico",5],["Tattico",6],["Fisico",7],["Mentale",8]].map(([l,i])=>[l,lista(i)]).filter(x=>x[1].length);
   const comm = aree.map(a=>({a:a.a, v:a.v.filter(x=>x.d)})).filter(x=>x.v.length);
   const foto = schFoto[sid], fc = schFotoColpo[sid];
+  const fotoProf = cc(sc,13).trim();
+  const agg = (()=>{ const t = cc(sc,12).trim(); const m = t.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m) return MESI[+m[2]-1]+" "+m[3]; const k = t.match(/([a-zà]+)\s+(\d{4})/i); return k ? k[1].toLowerCase()+" "+k[2] : t; })();
   const fotoBox = fc ? `<div class="fc"><img src="${fc}" alt=""></div>` : `<label class="fc vuota" for="fotoc">Spazio per la foto più bella<br><small>tocca per sceglierla</small></label>`;
   const colSx = blocco(aree[0]) + fotoBox, colDx = aree.slice(1).map(blocco).join("");
   let pag2 = "";
@@ -982,12 +987,13 @@ function schStampa(sid){
     `<label class="btn sec" style="display:inline-block">${foto?"Cambia ritratto":"Aggiungi ritratto"}<input id="foto" type="file" accept="image/*" hidden></label><label class="btn sec" style="display:inline-block">${fc?"Cambia foto grande":"Aggiungi foto grande"}<input id="fotoc" type="file" accept="image/*" hidden></label>${fc?'<button class="btn sec" id="togfc">Togli foto grande</button>':''}<button class="btn sec" id="modsc">Modifica scheda</button><button class="btn" id="stampa">Stampa / Salva PDF</button></div>`+
     `<p class="hint noprint">Le foto (ritratto nel cerchio e foto grande sotto la tecnica) servono solo per questa stampa: restano sul tuo dispositivo e non vengono salvate. Se la stampa non parte da qui, usa il menu del browser «Stampa» e scegli «Salva come PDF», formato A4.</p><div id="perr"></div>`+
     `<div class="sheetwrap"><div class="sheet"><div class="hd"><div><div class="lg">Sport &amp; Services</div><div class="sb">A.S.D. · Scuola di tennis e padel</div></div><div class="tp">Scheda tecnica ${esc(sport)}</div></div>`+
-    `<div class="id">${foto?`<img class="ph" src="${foto}" alt="">`:`<div class="ph">${esc(ini)}</div>`}<div><div class="nm">${esc(nome)}</div><div class="ch">${chip("Stagione",cc(sc,4))}${chip("Livello",cc(sc,8))}${chip("Mano",cc(sc,6))}${chip("Lato",cc(sc,7))}${chip("Corso",cc(sc,10))}</div></div>`+
+    `<div class="id"><div class="phw">${foto?`<img class="ph" src="${foto}" alt="">`:fotoProf?`<img class="ph" data-foto="${esc(fotoProf)}" alt="">`:`<div class="ph">${esc(ini)}</div>`}${cc(sc,8)?`<span class="lvb">${esc(cc(sc,8))}</span>`:""}</div><div><div class="nm">${esc(nome)}</div>${agg?`<div class="ag">Scheda aggiornata a ${esc(agg)}</div>`:""}</div>`+
     `${vals.length?`<div class="md"><div><b>${schFmt(media(vals))}</b><br><small>media</small></div></div>`:""}</div>`+
     (vals.length ? `<div class="gr"><div class="col">${colSx}</div><div class="col">${colDx}</div></div>` : `<p class="vuoto" style="padding:10mm 12mm">Nessun voto inserito: compila prima la scheda.</p>`)+
     `<div class="lg2"><span><i style="background:#2E7D5B"></i>8 e oltre</span><span><i style="background:#C2A970"></i>6 – 7,5</span><span><i style="background:#C9792B"></i>sotto 6</span></div>`+
     `<div class="ft"><span>A.S.D. Sport &amp; Services · Gianluca Micarelli, maestro di tennis e padel</span><span>Aggiornata: ${esc(cc(sc,12))}</span></div></div>${pag2}</div>`;
   window.scrollTo(0,0);
+  if (!foto && fotoProf) caricaFotoSalvate(v, sid);
   $("#ind").onclick = ()=>{ schUI.v="lista"; vistaSchede(); };
   $("#modsc").onclick = ()=>{ schUI.v="wizSc"; schUI.sid=sid; schUI.pid=cc(sc,1); schUI.step=0; schUI.key=null; vistaSchede(); };
   $("#stampa").onclick = ()=>{ try{ window.print(); }catch(e){ $("#perr").innerHTML = '<p class="msg err">La stampa non parte da questa pagina: usa il menu del browser «Stampa» e scegli «Salva come PDF».</p>'; } };
