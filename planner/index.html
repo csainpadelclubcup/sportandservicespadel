@@ -512,7 +512,7 @@ h += '<label for="f0">Data invio richiesta<input id="f0" type="date" value="'+dm
   $("#frm").onsubmit = e=>{ e.preventDefault(); const err=$("#ferr");
     let nr;
     const can = [["chS","SMS"],["chW","WhatsApp"],["chM","Mail"]].filter(([id])=>$("#"+id).checked).map(x=>x[1]).join(", ");
-    if (k==="promozioni"){ nr = [isoToDmy($("#f0").value), $("#f1").value, $("#f2").value.trim(), $("#f3").value.trim(), can, $("#f5").value.trim(), r[6]||"Da fare", r[7]||"", r[8]||""];
+    if (k==="promozioni"){ nr = [isoToDmy($("#f0").value), $("#f1").value, $("#f2").value.trim(), $("#f3").value.trim(), can, ($("#f5").value.trim()+(document.getElementById("chF").checked?" [allegato]":"")), r[6]||"Da fare", r[7]||"", r[8]||""];
       if(!nr[0]||!nr[5]){ err.hidden=false; err.textContent="Servono il giorno di invio e il messaggio."; return; }
       if(!can){ err.hidden=false; err.textContent="Scegli almeno un canale."; return; } }
     else {
