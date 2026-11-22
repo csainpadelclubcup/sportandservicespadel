@@ -1018,7 +1018,8 @@ function schMenu(msg){
 }
 
 /* ---------- stampa: pagina riepilogativa A4 ---------- */
-const schFoto = {}, schFotoColpo = {};
+const schFoto = {}, schFotoColpo = {}, schFcLetta = {};
+const FC_NOME = "stampa-foto-grande.jpg";
 const schBarCol = n => n>=8 ? "#2E7D5B" : n>=6 ? "#C2A970" : "#C9792B";
 const schFmt = n => String(n).replace(".",",");
 function schStampa(sid){
@@ -1055,7 +1056,7 @@ function schStampa(sid){
   }
   v.innerHTML = `<div class="bar noprint"><button class="btn sec" id="ind">‹ Indietro</button><h2 style="margin-right:auto">Stampa: ${esc(nome)} · ${esc(sport.toLowerCase())}</h2>`+
     `<label class="btn sec" style="display:inline-block">${foto?"Cambia ritratto":"Aggiungi ritratto"}<input id="foto" type="file" accept="image/*" hidden></label><label class="btn sec" style="display:inline-block">${fc?"Cambia foto grande":"Aggiungi foto grande"}<input id="fotoc" type="file" accept="image/*" hidden></label>${fc?'<button class="btn sec" id="togfc">Togli foto grande</button>':''}<button class="btn sec" id="modsc">Modifica scheda</button><button class="btn" id="stampa">Stampa / Salva PDF</button></div>`+
-    `<p class="hint noprint">Le foto (ritratto nel cerchio e foto grande sotto la tecnica) servono solo per questa stampa: restano sul tuo dispositivo e non vengono salvate. Se la stampa non parte da qui, usa il menu del browser «Stampa» e scegli «Salva come PDF», formato A4.</p><div id="perr"></div>`+
+    `<p class="hint noprint">La foto grande sotto la tecnica si salva nella scheda: la ritrovi ogni volta che riapri la stampa. Il ritratto nel cerchio è quello della scheda; se lo cambi qui vale solo per questa stampa. Se la stampa non parte da qui, usa il menu del browser «Stampa» e scegli «Salva come PDF», formato A4.</p><div id="perr"></div>`+
     `<div class="sheetwrap"><div class="sheet"><div class="hd"><div><div class="lg">Sport &amp; Services</div><div class="sb">A.S.D. · Scuola di tennis e padel</div></div><div class="tp">Scheda tecnica ${esc(sport)}</div></div>`+
     `<div class="id"><div class="phw">${foto?`<img class="ph" src="${foto}" alt="">`:fotoProf?`<img class="ph" data-foto="${esc(fotoProf)}" alt="">`:`<div class="ph">${esc(ini)}</div>`}${cc(sc,8)?`<span class="lvb">${esc(cc(sc,8))}</span>`:""}</div><div><div class="nm">${esc(nome)}</div>${agg?`<div class="ag">Scheda aggiornata a ${esc(agg)}</div>`:""}</div>`+
     `${vals.length?`<div class="md"><div><b>${schFmt(media(vals))}</b><br><small>media</small></div></div>`:""}</div>`+
@@ -1064,6 +1065,8 @@ function schStampa(sid){
     `<div class="ft"><span>A.S.D. Sport &amp; Services · Gianluca Micarelli, maestro di tennis e padel</span><span>Aggiornata: ${esc(cc(sc,12))}</span></div></div>${pag2}</div>`;
   window.scrollTo(0,0);
   if (!foto && fotoProf) caricaFotoSalvate(v, sid);
+  if (!fc && !schFcLetta[sid]){ schFcLetta[sid] = true;
+    salvaApi({op:"fotoUrl", id: sid, nome: FC_NOME}).then(u=>{ if (u && !schFotoColpo[sid]){ schFotoColpo[sid] = u; if (schUI.v==="stampa" && schUI.sid===sid) schStampa(sid); } }).catch(()=>{}); }
   $("#ind").onclick = ()=>{ schUI.v="lista"; vistaSchede(); };
   $("#modsc").onclick = ()=>{ schUI.v="wizSc"; schUI.sid=sid; schUI.pid=cc(sc,1); schUI.step=0; schUI.key=null; vistaSchede(); };
   $("#stampa").onclick = ()=>{ try{ window.print(); }catch(e){ $("#perr").innerHTML = '<p class="msg err">La stampa non parte da questa pagina: usa il menu del browser «Stampa» e scegli «Salva come PDF».</p>'; } };
@@ -1078,7 +1081,7 @@ function schStampa(sid){
     let im; try { im = await fotoJpeg(f); } catch(x){ $("#perr").innerHTML = '<p class="msg err">'+esc(errore(x))+'</p>'; return; }
     const fcEl = document.querySelector(".sheet .fc"), ratio = fcEl && fcEl.clientWidth ? fcEl.clientHeight/fcEl.clientWidth : 0.95;
     const box = $("#perr");
-    box.innerHTML = '<div class="noprint panel" style="padding:12px;margin:10px 0"><h3 style="margin-top:0">Ritaglia la foto grande</h3><p class="hint">Trascina la foto e usa lo zoom. Resta solo su questo dispositivo, non viene salvata.</p><div id="cropFr" style="position:relative;overflow:hidden;width:100%;max-width:420px;background:#111;border-radius:12px;touch-action:none;cursor:move"><img id="cropImg" src="'+im.src+'" alt="" draggable="false" style="position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;max-width:none"></div><label style="display:block;margin-top:8px">Zoom <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" style="width:100%;max-width:420px"></label><div class="bar" style="margin:8px 0 0;gap:6px;flex-wrap:wrap"><button type="button" class="btn" id="cropOk">✓ Ritaglia e usa</button><button type="button" class="btn sec" id="cropNo">Annulla</button></div></div>';
+    box.innerHTML = '<div class="noprint panel" style="padding:12px;margin:10px 0"><h3 style="margin-top:0">Ritaglia la foto grande</h3><p class="hint">Trascina la foto e usa lo zoom, poi premi Salva foto: resta salvata nella scheda.</p><div id="cropFr" style="position:relative;overflow:hidden;width:100%;max-width:420px;background:#111;border-radius:12px;touch-action:none;cursor:move"><img id="cropImg" src="'+im.src+'" alt="" draggable="false" style="position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;max-width:none"></div><label style="display:block;margin-top:8px">Zoom <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" style="width:100%;max-width:420px"></label><div class="bar" style="margin:8px 0 0;gap:6px;flex-wrap:wrap"><button type="button" class="btn" id="cropOk">✓ Salva foto</button><button type="button" class="btn sec" id="cropNo">Annulla</button></div></div>';
     const fr = $("#cropFr"), ci = $("#cropImg"), zm = $("#cropZoom");
     const W = fr.clientWidth, H = W*ratio; let z = 1, x = 0, y = 0;
     fr.style.height = H+"px";
@@ -1092,15 +1095,25 @@ function schStampa(sid){
     fr.onpointerup = fr.onpointercancel = ()=>{ drag = null; };
     box.scrollIntoView({behavior:"smooth", block:"start"});
     $("#cropNo").onclick = ()=>{ box.innerHTML = ""; };
-    $("#cropOk").onclick = ()=>{
+    $("#cropOk").onclick = async ()=>{
+      const b = $("#cropOk"); b.disabled = true; b.textContent = "Salvo la foto…";
       const sc = sc0*z, sx = -x/sc, sy = -y/sc, sw = W/sc, sh = H/sc;
       const ow = Math.min(1400, Math.round(sw)), oh = Math.round(ow*ratio);
       const c = document.createElement("canvas"); c.width = ow; c.height = oh;
       c.getContext("2d").drawImage(im, sx, sy, sw, sh, 0, 0, ow, oh);
-      schFotoColpo[sid] = c.toDataURL("image/jpeg", 0.88); schStampa(sid);
+      const url = c.toDataURL("image/jpeg", 0.88);
+      try { await salvaApi({op:"salvaFoto", id: sid, nome: FC_NOME, img: url.split(",")[1]}); }
+      catch(x){ b.disabled = false; b.textContent = "✓ Salva foto"; box.insertAdjacentHTML("beforeend", '<p class="msg err">Foto non salvata: '+esc(errore(x))+'. Riprova.</p>'); return; }
+      schFotoColpo[sid] = url; schStampa(sid);
+      $("#perr").innerHTML = '<p class="msg ok noprint">Foto grande salvata nella scheda.</p>';
     };
   };
-  if ($("#togfc")) $("#togfc").onclick = ()=>{ delete schFotoColpo[sid]; schStampa(sid); };
+  if ($("#togfc")) { let conf = false; $("#togfc").onclick = async function(){
+    if (!conf){ conf = true; this.textContent = "Conferma: togli e cancella la foto"; return; }
+    this.disabled = true;
+    try { await salvaApi({op:"togliFoto", id: sid, nome: FC_NOME}); }
+    catch(x){ this.disabled = false; $("#perr").innerHTML = '<p class="msg err">Non riesco a togliere la foto: '+esc(errore(x))+'</p>'; return; }
+    delete schFotoColpo[sid]; schStampa(sid); }; }
 }
 
 /* ===================== HOME ===================== */
