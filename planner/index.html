@@ -242,10 +242,11 @@ main{padding:12px}
     <button data-v="planner">Planner</button>
     <button data-v="giocatori">Giocatori allenamento</button>
     <button data-v="allievi">Allievi</button>
-    <button data-v="promozioni">Promozioni<br><em style="font-size:0.7em;font-weight:normal">Promozioni per corsi - lezioni - clinic e tornei</em></button>
-    <button data-v="allenamenti">Allenamenti</button>
+    <button data-v="promozioni">Promozioni</button>
+    <button data-v="allenamenti">Richieste</button>
     <button data-v="schede">Schede tecniche</button>
- <button data-v="allenamenti">Richieste<br><em style="font-size:0.7em;font-weight:normal">Richieste di disponibilità ed allenamento</em></button>><p class="msg info">Caricamento…</p></div></main>
+  </nav>
+</div>
 <main id="view" class="panel"></main>
 <script>
 const S = "Google Sheets";
@@ -409,7 +410,7 @@ function formElenco(k, i){
 const COMANDI = {
   promozioni: {tab:"Promozioni", cols:["Data invio","Destinatari","Sport / Club","Livello","Canali","Messaggio","Stato","Inviati","Esito"], titolo:"Promozioni",
     spiega:"Scegli il giorno, i destinatari e i canali e scrivi il messaggio (puoi scrivere {nome} per mettere il nome di ognuno). Dal giorno indicato i messaggi partono da soli: 5 persone ogni 20 minuti, dalle 8 alle 21. Mail e SMS partono in automatico; WhatsApp va in una lista che Claude invia quando scrivi «Invia WhatsApp» in chat, con il PC acceso."},
-  allenamenti: {tab:"Allenamenti", cols:["Data invio","Data allenamento","Ora","Club","Livello","Canali","Indicazioni","Stato","Inviati","Esito"], titolo:"Allenamenti",
+  allenamenti: {tab:"Allenamenti", cols:["Data invio","Data allenamento","Ora","Club","Livello","Canali","Indicazioni","Stato","Inviati","Esito"], titolo:"Richieste",
     spiega:"Indica quando mandare la richiesta, il giorno e il club dell'allenamento, il livello e i canali. Dal giorno dell'invio la richiesta parte da sola ai giocatori del foglio Giocatori allenamento di quel livello (e club, se indicato): 5 persone ogni 20 minuti, dalle 8 alle 21. WhatsApp va nella lista che Claude invia quando scrivi «Invia WhatsApp»."}
 };
 async function caricaComandi(k){
@@ -460,7 +461,8 @@ function formComando(k, i){
          '<label for="f2">Sport (allievi) o club (giocatori)<input id="f2" list="lsc" value="'+esc(r[2])+'" placeholder="Tutti"><datalist id="lsc">'+op([...new Set(al.map(x=>x[0]).concat(gi.map(x=>x[2])).filter(Boolean))].sort())+'</datalist></label>'+
          '<label for="f3">Livello<input id="f3" list="llv" value="'+esc(r[3])+'" placeholder="Tutti i livelli"><datalist id="llv">'+op([...new Set(al.map(x=>x[4]).concat(gi.map(x=>x[1])).filter(Boolean))].sort())+'</datalist></label>'+
          '<fieldset class="check full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend><label><input type="checkbox" id="chS"'+(can.includes("sms")?' checked':'')+'> SMS</label><label><input type="checkbox" id="chW"'+(can.includes("whatsapp")?' checked':'')+'> WhatsApp</label><label><input type="checkbox" id="chM"'+(can.includes("mail")?' checked':'')+'> Mail (solo allievi)</label></fieldset>'+
-         '<label for="f5" class="full">Messaggio<textarea id="f5" rows="6" required placeholder="Ciao {nome}, giovedì promozione padel…">'+esc(r[5])+'</textarea></label>'+
+         '<label for="f5" class="full">Messaggio<textarea id="f5" rows="6" required placeholder="Ciao {nome}, giovedì promozione padel…">'+esc(String(r[5]||"").replace(/\s*\[allegato\]/g,""))+'</textarea></label>'+
+         '<label class="full"><input type="checkbox" id="chF"'+(String(r[5]||"").includes("[allegato]")?' checked':'')+'> Allega locandina <small style="color:var(--muted)">(solo Mail e WhatsApp — SMS non supporta file)</small></label>'+
          '<p class="full hint" id="fconta"></p>';
   } else {
     const circoli = [...new Set((cache.giocatori||[]).map(x=>x[2]).filter(Boolean))].sort();
@@ -1085,7 +1087,7 @@ const ICONE = {
   allenamenti:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6c3 2.6 3 10.2 0 12.8M18.4 5.6c-3 2.6-3 10.2 0 12.8"/></svg>'
 };
 ICONE.schede = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M8.5 10h7M8.5 14h7M8.5 18h4"/></svg>';
-const TILE = [["planner","Planner","14 giorni, giorno e settimana"],["giocatori","Giocatori allenamento","Nome, livello, circolo"],["allievi","Allievi","Padel e tennis, contatti e livello"],["promozioni","Promozioni","Comandi con data di invio"],["allenamenti","Allenamenti","Richieste per livello e club"],["schede","Schede tecniche","Anagrafica e schede tennis/padel"]];
+const TILE = [["planner","Planner","14 giorni, giorno e settimana"],["giocatori","Giocatori allenamento","Nome, livello, circolo"],["allievi","Allievi","Padel e tennis, contatti e livello"],["promozioni","Promozioni","<em>Promozioni per corsi - lezioni - clinic e tornei</em>"],["allenamenti","Richieste","<em>Richieste di disponibilità ed allenamento</em>"],["schede","Schede tecniche","Anagrafica e schede tennis/padel"]];
 async function vistaHome(refresh){
   const v = $("#view"); v.classList.add("home");
   const t = oggi();
@@ -1138,7 +1140,7 @@ async function mostra(v, refresh){
   if (!leggiPw()) return vistaAccesso();
   $("#view").classList.toggle("home", v==="home");
   $("#back").hidden = v==="home";
-  const tl = {home:"Planner",planner:"Planner",giocatori:"Giocatori",allievi:"Allievi",promozioni:"Promozioni",allenamenti:"Allenamenti",schede:"Schede tecniche"};
+  const tl = {home:"Planner",planner:"Planner",giocatori:"Giocatori",allievi:"Allievi",promozioni:"Promozioni",allenamenti:"Richieste",schede:"Schede tecniche"};
   $("#titolo").textContent = tl[v]||"Planner";
   window.scrollTo(0,0);
   try{
