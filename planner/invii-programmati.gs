@@ -1,17 +1,21 @@
 /**
- * Invii programmati (Promozioni e Allenamenti dell'app Planner).
+ * Invii programmati (Promozioni e Richieste dell'app Planner).
  * Ogni 10 minuti, dalle 8 alle 21: se sono passati almeno 20 minuti dall'ultimo gruppo,
  * manda il messaggio alle prossime 5 persone dei comandi con data di invio arrivata.
- * Mail con Gmail, SMS con IFTTT (Webhooks "invia_sms" → Android SMS), WhatsApp nella "Coda WhatsApp".
+ * Mail con Gmail (con la locandina allegata), SMS con IFTTT (Webhooks "invia_sms" → Android SMS),
+ * WhatsApp nella "Coda WhatsApp" (colonna Allegato con il link della locandina).
  * Proprietà dello script: IFTTT_KEY (chiave Webhooks di IFTTT).
  * Primo avvio: eseguire una volta "attiva" e consentire i permessi.
  *
- * Destinatari (campo "Destinatari" nella riga Promozioni):
- *   "Allievi"               → DATABASE RICHIESTE nel foglio Planner – Comandi
- *   "Giocatori allenamento" → DATABASE PROMOZIONI nel foglio Planner – Comandi
- *   "Tutti"                 → entrambi i database
- * Filtro INTERESSI: letto dalla colonna "Interessi" nella riga Promozioni;
- *   se vuoto o "tutto" non filtra; altrimenti esclude chi ha un interesse diverso.
+ * PROMOZIONI (foglio "Promozioni"): Destinatari =
+ *   "Database Promozioni" → DATABASE PROMOZIONI
+ *   "Database Richieste"  → DATABASE RICHIESTE
+ *   "Tutti"               → entrambi (senza doppioni)
+ *   Filtri Sport e Livello: vuoto = tutti; chi nel database ha "tutti" riceve sempre.
+ *
+ * RICHIESTE (foglio "Allenamenti"): sempre al DATABASE RICHIESTE, filtri Sport e Livello.
+ *   Tipo: allenamento (giorno e ora) / corso1 / corso2 / lezioni / partite. Nessun link.
+ *
  * Colonne DB: NOME(A) COGNOME(B) TELEFONO/WA(C) TELEGRAM(D) EMAIL(E)
  *             SPORT(F) LIVELLO(G) PROVENIENZA(H) INTERESSI(I) NOTE(J)
  */
@@ -20,6 +24,14 @@ const DB_PROMO   = 'DATABASE PROMOZIONI';
 const DB_RICH    = 'DATABASE RICHIESTE';
 const PER_GRUPPO = 5, PAUSA_MIN = 20, ORA_DA = 8, ORA_A = 21;
 const FIRMA = '\n\nGianluca – Sport & Services';
+const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+const TESTI_RICH = {
+  allenamento: 'Ciao {nome}, fammi sapere se {giorno} alle {ora} puoi giocare.',
+  corso1: 'Ciao {nome}, fammi sapere se in questa settimana hai preferenze particolari e se nel giorno dell\'allenamento vuoi restare dopo per match. Scrivimi anche giorni e fascia oraria in questa settimana in cui vorresti fare match.',
+  corso2: 'Ciao {nome}, scrivimi quando puoi giocare questa settimana ed eventualmente se vuoi restare dopo per match.',
+  lezioni: 'Ciao {nome}, scrivimi se questa settimana vuoi giocare ed in caso indicami anche fascia oraria in cui sei disponibile.',
+  partite: 'Ciao {nome}, fammi sapere se questa settimana vuoi giocare, in caso affermativo scrivimi anche fascia oraria.'
+};
 
 function attiva() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
@@ -27,6 +39,7 @@ function attiva() {
   });
   ScriptApp.newTrigger('inviiProgrammati').timeBased().everyMinutes(10).create();
   GmailApp.getAliases(); // permesso Gmail
+  UrlFetchApp.getRequest('https://example.com'); // permesso per scaricare le locandine
   Logger.log('Invii programmati attivi: controllo ogni 10 minuti.');
 }
 
@@ -42,7 +55,7 @@ function inviiProgrammati() {
     const oggi = Utilities.formatDate(new Date(), 'Europe/Rome', 'yyyyMMdd');
     const avvisi = [];
     let posti = PER_GRUPPO;
-    [['Promozioni', destPromo_], ['Allenamenti', destAllen_]].forEach(function (x) {
+    [['Promozioni', destPromo_], ['Allenamenti', destRich_]].forEach(function (x) {
       const sh = ss.getSheetByName(x[0]);
       const v = sh.getDataRange().getDisplayValues();
       const h = v[0];
@@ -51,24 +64,34 @@ function inviiProgrammati() {
         const r = {}; h.forEach(function (n, j) { r[n] = v[i][j]; });
         const d = ymd_(r['Data invio']);
         if (!d || d > oggi || /fatto|errore/i.test(r['Stato'])) continue;
-        let lista;
-        try { lista = x[1](ss, r); } catch (e) { scrivi_(sh, i, c, 'Errore', '', String(e.message || e)); avvisi.push(x[0] + ' riga ' + (i + 1) + ': ' + (e.message || e)); continue; }
+        let lista, file = null;
+        try {
+          lista = x[1](ss, r);
+          if (r['Allegato']) file = allegato_(r['Allegato']);
+        } catch (e) { scrivi_(sh, i, c, 'Errore', '', String(e.message || e)); avvisi.push(x[0] + ' riga ' + (i + 1) + ': ' + (e.message || e)); continue; }
         const can = String(r['Canali']).toLowerCase();
         let fatti = Number(String(r['Inviati'] || '').split('/')[0]) || 0;
         const err = [];
         while (fatti < lista.length && posti > 0) {
           const p = lista[fatti];
-          if (can.indexOf('mail') >= 0 && p.mail) { try { GmailApp.sendEmail(p.mail, p.oggetto, p.testo + FIRMA, { name: 'Sport & Services' }); } catch (e) { err.push(p.nome + ' (mail)'); } }
+          if (can.indexOf('mail') >= 0 && p.mail) {
+            try {
+              const opz = { name: 'Sport & Services' };
+              if (file) opz.attachments = [file];
+              GmailApp.sendEmail(p.mail, p.oggetto, p.testo + FIRMA, opz);
+            } catch (e) { err.push(p.nome + ' (mail)'); }
+          }
           if (can.indexOf('sms') >= 0 && p.tel) { try { sms_(p.tel, p.testo); } catch (e) { err.push(p.nome + ' (SMS)'); } }
-          if (can.indexOf('whatsapp') >= 0 && p.tel) codaWa_(ss, x[0], p);
+          if (can.indexOf('whatsapp') >= 0 && p.tel) codaWa_(ss, x[0] === 'Allenamenti' ? 'Richieste' : x[0], p, r['Allegato'] || '');
           fatti++; posti--;
         }
         const finito = fatti >= lista.length;
         const ora2 = Utilities.formatDate(new Date(), 'Europe/Rome', 'dd/MM HH:mm');
         const esito = (lista.length ? 'Ultimo gruppo ' + ora2 : 'Nessun destinatario trovato') + (err.length ? ' · non partiti: ' + err.join(', ') : '');
         scrivi_(sh, i, c, finito ? 'Fatto' : 'In corso', fatti + '/' + lista.length, esito);
-        if (err.length) avvisi.push(x[0] + ' del ' + r['Data invio'] + ': non partiti ' + err.join(', '));
-        if (!lista.length) avvisi.push(x[0] + ' del ' + r['Data invio'] + ': nessun destinatario trovato');
+        const nomeCmd = x[0] === 'Allenamenti' ? 'Richiesta' : 'Promozione';
+        if (err.length) avvisi.push(nomeCmd + ' del ' + r['Data invio'] + ': non partiti ' + err.join(', '));
+        if (!lista.length) avvisi.push(nomeCmd + ' del ' + r['Data invio'] + ': nessun destinatario trovato');
       }
     });
     if (posti < PER_GRUPPO) props.setProperty('ULTIMO_GRUPPO', String(Date.now()));
@@ -78,65 +101,44 @@ function inviiProgrammati() {
   }
 }
 
-// Legge righe dai database in base al campo Destinatari.
-// Ritorna array di {nome, tel, mail, oggetto, testo}.
-function destPromo_(ss, r) {
-  const testo = String(r['Messaggio'] || '').trim();
-  if (!testo) throw new Error('messaggio vuoto');
-  const filtroSport    = norm_(r['Sport / Club']);
-  const filtroLiv      = norm_(r['Livello']);
-  const filtroInteressi = norm_(r['Interessi'] || '');
-  const dest = String(r['Destinatari'] || '').trim().toLowerCase();
-  const usaRich  = dest === 'allievi' || dest === 'tutti';
-  const usaPromo = dest === 'giocatori allenamento' || dest === 'tutti';
-  const out = [];
-  const visti = {}; // evita duplicati se stesso contatto è in entrambi i DB
-  function aggiungi(nome, tel, mail) {
-    const key = tel || mail;
+// Ritorna array di {nome, tel, mail, oggetto, testo} senza doppioni (stesso telefono o mail).
+function destinatari_(righe, filtroSport, filtroLiv, testoDi, oggetto) {
+  const out = [], visti = {};
+  righe.forEach(function (g) {
+    const nome = String(g[0] || '').trim();
+    if (!nome) return;
+    if (!okFiltro_(filtroSport, g[5]) || !okFiltro_(filtroLiv, g[6])) return;
+    const tel = tel_(g[2]), mail = String(g[4] || '').trim();
+    const key = tel || mail.toLowerCase();
     if (!key || visti[key]) return;
     visti[key] = true;
-    out.push({ nome: primo_(nome), tel: tel_(tel), mail: String(mail || '').trim(), oggetto: 'Sport & Services', testo: personal_(testo, nome) });
-  }
-  if (usaRich) {
-    const righe = dbRighe_(ss, DB_RICH);
-    righe.forEach(function (g) {
-      // col: 0=NOME 1=COGNOME 2=TEL 3=TEL 4=EMAIL 5=SPORT 6=LIVELLO 7=PROV 8=INTERESSI
-      const nomeCompleto = (g[0] + ' ' + g[1]).trim();
-      if (!nomeCompleto) return;
-      if (!okFiltro_(filtroSport, g[5])) return;
-      if (!okFiltro_(filtroLiv, g[6])) return;
-      if (!okInteressi_(filtroInteressi, g[8])) return;
-      aggiungi(nomeCompleto, g[2], g[4]);
-    });
-  }
-  if (usaPromo) {
-    const righe = dbRighe_(ss, DB_PROMO);
-    righe.forEach(function (g) {
-      const nomeCompleto = (g[0] + ' ' + g[1]).trim();
-      if (!nomeCompleto) return;
-      if (!okFiltro_(filtroSport, g[5])) return;
-      if (!okFiltro_(filtroLiv, g[6])) return;
-      if (!okInteressi_(filtroInteressi, g[8])) return;
-      aggiungi(nomeCompleto, g[2], g[4]);
-    });
-  }
-  if (!usaRich && !usaPromo) throw new Error('Destinatari non riconosciuto: ' + r['Destinatari']);
+    out.push({ nome: primo_(nome), tel: tel, mail: mail, oggetto: oggetto, testo: testoDi(primo_(nome)) });
+  });
   return out;
 }
 
-function destAllen_(ss, r) {
-  const club = norm_(r['Club']), liv = norm_(r['Livello']);
-  const out = [];
-  dbRighe_(ss, DB_PROMO).forEach(function (g) {
-    const nomeCompleto = (g[0] + ' ' + g[1]).trim();
-    if (!nomeCompleto) return;
-    if (!okFiltro_(club, g[7])) return; // filtra per PROVENIENZA=club
-    if (!okFiltro_(liv, g[6])) return;
-    const t = 'Ciao ' + primo_(nomeCompleto) + ', sto organizzando un allenamento ' + r['Data allenamento'] + (r['Ora'] ? ' alle ' + r['Ora'] : '') +
-              (r['Club'] ? ' al ' + r['Club'] : '') + '.' + (r['Indicazioni'] ? ' ' + r['Indicazioni'] : '') + ' Ci sei? Rispondimi qui.';
-    out.push({ nome: primo_(nomeCompleto), tel: tel_(g[2]), mail: '', oggetto: 'Allenamento ' + r['Data allenamento'], testo: t });
-  });
-  return out;
+function destPromo_(ss, r) {
+  const testo = String(r['Messaggio'] || '').trim();
+  if (!testo) throw new Error('messaggio vuoto');
+  const dest = String(r['Destinatari'] || '').trim().toLowerCase();
+  let righe;
+  if (dest === 'database promozioni') righe = dbRighe_(ss, DB_PROMO);
+  else if (dest === 'database richieste') righe = dbRighe_(ss, DB_RICH);
+  else if (dest === 'tutti') righe = dbRighe_(ss, DB_PROMO).concat(dbRighe_(ss, DB_RICH));
+  else throw new Error('Destinatari non riconosciuto: ' + r['Destinatari']);
+  return destinatari_(righe, norm_(r['Sport']), norm_(r['Livello']),
+    function (nome) { return testo.replace(/\{nome\}/gi, nome); }, 'Sport & Services');
+}
+
+function destRich_(ss, r) {
+  const tipo = String(r['Tipo'] || '').trim().toLowerCase();
+  const base = TESTI_RICH[tipo];
+  if (!base) throw new Error('Tipo di richiesta non riconosciuto: ' + r['Tipo']);
+  if (tipo === 'allenamento' && (!r['Giorno'] || !r['Ora'])) throw new Error('per l\'allenamento servono giorno e ora');
+  const frase = String(r['Frase in più'] || '').trim();
+  const t = base.replace('{giorno}', giorno_(r['Giorno'])).replace('{ora}', String(r['Ora'] || '').trim()) + (frase ? ' ' + frase : '');
+  return destinatari_(dbRighe_(ss, DB_RICH), norm_(r['Sport']), norm_(r['Livello']),
+    function (nome) { return t.replace('{nome}', nome); }, 'Sport & Services');
 }
 
 function dbRighe_(ss, sheetName) {
@@ -145,11 +147,18 @@ function dbRighe_(ss, sheetName) {
   return sh.getRange(2, 1, sh.getLastRow() - 1, 10).getDisplayValues();
 }
 
-function okFiltro_(filtro, val) { return !filtro || String(val || '').trim().toLowerCase() === filtro; }
-function okInteressi_(filtro, val) {
-  if (!filtro || filtro === 'tutto') return true;
+// filtro vuoto = tutti; chi nel database ha "tutti" (o vuoto) va bene per ogni filtro
+function okFiltro_(filtro, val) {
   const v = String(val || '').trim().toLowerCase();
-  return !v || v === 'tutto' || v === filtro;
+  return !filtro || !v || v === 'tutti' || v === filtro;
+}
+
+// Scarica la locandina dal link salvato dall'app (archivio "locandine" del sito).
+function allegato_(url) {
+  const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  if (res.getResponseCode() !== 200) throw new Error('locandina non trovata');
+  const nome = decodeURIComponent(String(url).split('/').pop()).replace(/^\d+_/, '');
+  return res.getBlob().setName(nome);
 }
 
 function sms_(tel, testo) {
@@ -162,8 +171,8 @@ function sms_(tel, testo) {
   if (res.getResponseCode() !== 200) throw new Error('IFTTT ' + res.getResponseCode());
 }
 
-function codaWa_(ss, origine, p) {
-  ss.getSheetByName('Coda WhatsApp').appendRow([Utilities.formatDate(new Date(), 'Europe/Rome', 'dd/MM/yyyy HH:mm'), origine, p.nome, p.tel, p.testo, 'Da inviare', '']);
+function codaWa_(ss, origine, p, allegato) {
+  ss.getSheetByName('Coda WhatsApp').appendRow([Utilities.formatDate(new Date(), 'Europe/Rome', 'dd/MM/yyyy HH:mm'), origine, p.nome, p.tel, p.testo, 'Da inviare', '', allegato]);
 }
 
 function scrivi_(sh, i, c, stato, inviati, esito) {
@@ -174,7 +183,12 @@ function scrivi_(sh, i, c, stato, inviati, esito) {
 
 function norm_(x) { const s = String(x || '').trim().toLowerCase(); return s === 'tutti' || s === 'tutte' ? '' : s; }
 function primo_(nome) { return String(nome).trim().split(/\s+/)[0]; }
-function personal_(testo, nome) { return testo.replace(/\{nome\}/gi, primo_(nome)); }
+function giorno_(d) {
+  const m = String(d || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (!m) return String(d || '');
+  const dt = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  return GIORNI[dt.getDay()] + ' ' + ('0' + m[1]).slice(-2) + '/' + ('0' + m[2]).slice(-2);
+}
 function tel_(t) {
   let s = String(t || '').replace(/[^\d+]/g, '');
   if (!s) return '';

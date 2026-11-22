@@ -408,10 +408,10 @@ function formElenco(k, i){
 
 /* ============ COMANDI (promozioni, allenamenti) ============ */
 const COMANDI = {
-  promozioni: {tab:"Promozioni", cols:["Data invio","Destinatari","Sport / Club","Livello","Canali","Messaggio","Stato","Inviati","Esito"], titolo:"Promozioni",
-    spiega:"Scegli il giorno, i destinatari e i canali e scrivi il messaggio (puoi scrivere {nome} per mettere il nome di ognuno). Dal giorno indicato i messaggi partono da soli: 5 persone ogni 20 minuti, dalle 8 alle 21. Mail e SMS partono in automatico; WhatsApp va in una lista che Claude invia quando scrivi «Invia WhatsApp» in chat, con il PC acceso."},
-  allenamenti: {tab:"Allenamenti", cols:["Data invio","Data allenamento","Ora","Club","Livello","Canali","Indicazioni","Stato","Inviati","Esito"], titolo:"Richieste",
-    spiega:"Indica quando mandare la richiesta, il giorno e il club dell'allenamento, il livello e i canali. Dal giorno dell'invio la richiesta parte da sola ai giocatori del foglio Giocatori allenamento di quel livello (e club, se indicato): 5 persone ogni 20 minuti, dalle 8 alle 21. WhatsApp va nella lista che Claude invia quando scrivi «Invia WhatsApp»."}
+  promozioni: {tab:"Promozioni", cols:["Data invio","Destinatari","Sport","Livello","Canali","Messaggio","Allegato","Stato","Inviati","Esito"], titolo:"Promozioni",
+    spiega:"Promozioni per corsi, lezioni, clinic e tornei. Scegli il giorno, il database dei destinatari, sport, livello e canali e scrivi il messaggio ({nome} mette il nome di ognuno). Puoi allegare la locandina. Dal giorno indicato i messaggi partono da soli: 5 persone ogni 20 minuti, dalle 8 alle 21. Mail e SMS in automatico; WhatsApp parte quando scrivi «Invia WhatsApp» in chat, con il PC acceso."},
+  allenamenti: {tab:"Allenamenti", cols:["Data invio","Tipo","Giorno","Ora","Sport","Livello","Canali","Frase in più","Allegato","Stato","Inviati","Esito"], titolo:"Richieste",
+    spiega:"Richieste di disponibilità ed allenamento ai contatti del DATABASE RICHIESTE. Scegli il tipo di richiesta, sport, livello e canali: il messaggio è già pronto, col solo nome di ognuno e senza link (vedi l'anteprima). Dal giorno di invio parte da solo: 5 persone ogni 20 minuti, dalle 8 alle 21. WhatsApp parte quando scrivi «Invia WhatsApp»."}
 };
 async function caricaComandi(k){
   const c = COMANDI[k]; const v = await leggi(ID.comandi, c.tab+"!A2:"+lettera(c.cols.length)+"500");
@@ -437,7 +437,7 @@ async function vistaComandi(k, refresh, msg){
   let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><h2 style="margin-right:auto">'+c.titolo+'</h2><button class="btn" id="nuovo">Nuovo comando</button><button class="btn sec" id="aggiorna">Aggiorna</button></div>'+
     '<p class="hint">'+esc(c.spiega)+'</p>'+calendario(dateSet,k)+'<div id="form"></div><div class="tbl"><table><thead><tr>'+c.cols.map(x=>'<th>'+esc(x)+'</th>').join("")+'</tr></thead><tbody>';
   if (!vis.length) h += '<tr><td colspan="'+c.cols.length+'" class="vuoto">'+(st.sel?'Nessun comando per il '+st.sel+'.':'Nessun comando. Premi Nuovo comando per aggiungerne uno.')+'</td></tr>';
-  vis.forEach(({r,i})=>{ h += '<tr class="click" data-i="'+i+'" tabindex="0">'+r.map((x,j)=>'<td>'+(c.cols[j]==="Stato"?pillStato(x):esc(x))+'</td>').join("")+'</tr>'; });
+  vis.forEach(({r,i})=>{ h += '<tr class="click" data-i="'+i+'" tabindex="0">'+r.map((x,j)=>'<td>'+(c.cols[j]==="Stato"?pillStato(x):c.cols[j]==="Allegato"?(x?'<a href="'+esc(x)+'" target="_blank" rel="noopener">📎 apri</a>':''):c.cols[j]==="Tipo"?esc(nomeTipo(x)):esc(x))+'</td>').join("")+'</tr>'; });
   h += '</tbody></table></div><p class="hint">I comandi si salvano nel foglio «Planner – Comandi» su Drive. Puoi sempre dare gli stessi comandi anche in chat.</p>';
   v.innerHTML = h;
   v.querySelectorAll("[data-mese]").forEach(b=>b.onclick=()=>{ st.m += +b.dataset.mese; if(st.m<0){st.m=11;st.y--;} if(st.m>11){st.m=0;st.y++;} vistaComandi(k); });
@@ -447,61 +447,88 @@ async function vistaComandi(k, refresh, msg){
   $("#aggiorna").onclick = ()=>mostra(vista,true);
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ tr.onclick=()=>formComando(k,+tr.dataset.i); tr.onkeydown=e=>{ if(e.key==="Enter") formComando(k,+tr.dataset.i); }; });
 }
+const LIVELLI_DB = ["principiante","medio","alto","classificato"];
+const TIPI_RICH = [["allenamento","Cerco giocatore per allenamento (giorno e ora)"],["corso1","Corso – testo 1 (preferenze e match)"],["corso2","Corso – testo 2 (quando puoi giocare)"],["lezioni","Lezioni"],["partite","Partite"]];
+const TESTI_RICH = {
+  allenamento: "Ciao {nome}, fammi sapere se {giorno} alle {ora} puoi giocare.",
+  corso1: "Ciao {nome}, fammi sapere se in questa settimana hai preferenze particolari e se nel giorno dell'allenamento vuoi restare dopo per match. Scrivimi anche giorni e fascia oraria in questa settimana in cui vorresti fare match.",
+  corso2: "Ciao {nome}, scrivimi quando puoi giocare questa settimana ed eventualmente se vuoi restare dopo per match.",
+  lezioni: "Ciao {nome}, scrivimi se questa settimana vuoi giocare ed in caso indicami anche fascia oraria in cui sei disponibile.",
+  partite: "Ciao {nome}, fammi sapere se questa settimana vuoi giocare, in caso affermativo scrivimi anche fascia oraria."
+};
+function giornoIt(dmy){ const d = parseDmy(dmy); return d ? GIORNI[d.getDay()]+" "+String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0") : "(giorno)"; }
+function testoRich(t, nome, giorno, ora, frase){ return (TESTI_RICH[t]||TESTI_RICH.allenamento).replace("{nome}",nome).replace("{giorno}",giornoIt(giorno)).replace("{ora}",ora||"(ora)")+(frase?" "+frase:""); }
+function nomeTipo(t){ const x = TIPI_RICH.find(y=>y[0]===t); return x ? x[1].replace(/ \(.*\)$/,"") : (t||""); }
+const opzSel = (arr, sel, vuoto) => arr.map(x=>'<option value="'+esc(x)+'"'+(String(sel||"").toLowerCase()===x.toLowerCase()?' selected':'')+'>'+esc(x||vuoto)+'</option>').join("");
+const campoCanali = can => '<fieldset class="check full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend>'+
+  [["chS","SMS","sms"],["chW","WhatsApp","whatsapp"],["chM","Mail","mail"]].map(([id,l,v])=>'<label><input type="checkbox" id="'+id+'"'+(can.includes(v)?' checked':'')+'> '+l+'</label>').join("")+'</fieldset>';
+const campoAllegato = url => '<div class="full"><input type="hidden" id="fAll" value="'+esc(url||"")+'">'+
+  '<label for="fFile">Locandina da allegare <small style="color:var(--muted)">(va con Mail e WhatsApp; con gli SMS non parte) · immagine o PDF, massimo 6 MB</small><input type="file" id="fFile" accept="image/*,application/pdf"></label>'+
+  '<p class="hint" id="allStato"></p></div>';
+function attivaAllegato(){
+  const st = $("#allStato"), f = $("#fFile");
+  const ridisegna = () => { const u = $("#fAll").value;
+    st.innerHTML = u ? '📎 Allegata: <a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(decodeURIComponent(u.split("/").pop()).replace(/^\d+_/,""))+'</a> · <button type="button" class="btn sec" id="allTogli">Togli</button>' : 'Nessun file allegato.';
+    if (u) $("#allTogli").onclick = () => { $("#fAll").value = ""; f.value = ""; ridisegna(); }; };
+  ridisegna();
+  f.onchange = async () => {
+    const file = f.files[0]; if (!file) return;
+    if (file.size > 6e6){ st.textContent = "File troppo grande: massimo 6 MB."; f.value = ""; return; }
+    const sub = $("#frm button[type=submit]"); if (sub) sub.disabled = true;
+    st.textContent = "Carico il file…";
+    try {
+      const b64 = await new Promise((ok,ko)=>{ const rd = new FileReader(); rd.onload = ()=>ok(String(rd.result).split(",")[1]); rd.onerror = ko; rd.readAsDataURL(file); });
+      const res = await fetch(SALVA_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({op:"salvaLocandina", pw: leggiPw(), nome: file.name, tipo: file.type||"application/octet-stream", file: b64})});
+      const j = await res.json(); if (!j.ok) throw new Error(j.error||"errore");
+      $("#fAll").value = j.data; ridisegna();
+    } catch(e){ st.textContent = "Caricamento non riuscito: "+(e.message||e); f.value = ""; }
+    finally { if (sub) sub.disabled = false; }
+  };
+}
 function formComando(k, i){
   const c = COMANDI[k], st = cache["cal_"+k], r = i>=0 ? cache[k][i] : c.cols.map(()=>""), box = $("#form");
   if (i<0 && st.sel) r[0] = st.sel;
   const bloccato = i>=0 && r[c.cols.indexOf("Stato")] && !/da fare/i.test(r[c.cols.indexOf("Stato")]);
   let h = '<form class="form" id="frm"><h3 class="full">'+(i>=0?'Modifica comando':'Nuovo comando')+'</h3>';
   if (k==="promozioni"){
-    const al = cache.allievi||[], gi = cache.giocatori||[];
-    const dest = r[1]||"Allievi", can = (r[4]||"SMS, Mail").toLowerCase();
-    const op = arr => arr.map(x=>'<option value="'+esc(x)+'">').join("");
+    const dest = r[1]||"Database Promozioni", can = (r[4]||"SMS, Mail").toLowerCase();
     h += '<label for="f0">Giorno di invio<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
-         '<label for="f1">Destinatari<select id="f1"><option'+(dest==="Allievi"?' selected':'')+'>Allievi</option><option'+(dest==="Giocatori allenamento"?' selected':'')+'>Giocatori allenamento</option></select></label>'+
-         '<label for="f2">Sport (allievi) o club (giocatori)<input id="f2" list="lsc" value="'+esc(r[2])+'" placeholder="Tutti"><datalist id="lsc">'+op([...new Set(al.map(x=>x[0]).concat(gi.map(x=>x[2])).filter(Boolean))].sort())+'</datalist></label>'+
-         '<label for="f3">Livello<input id="f3" list="llv" value="'+esc(r[3])+'" placeholder="Tutti i livelli"><datalist id="llv">'+op([...new Set(al.map(x=>x[4]).concat(gi.map(x=>x[1])).filter(Boolean))].sort())+'</datalist></label>'+
-         '<fieldset class="check full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend><label><input type="checkbox" id="chS"'+(can.includes("sms")?' checked':'')+'> SMS</label><label><input type="checkbox" id="chW"'+(can.includes("whatsapp")?' checked':'')+'> WhatsApp</label><label><input type="checkbox" id="chM"'+(can.includes("mail")?' checked':'')+'> Mail (solo allievi)</label></fieldset>'+
-         '<label for="f5" class="full">Messaggio<textarea id="f5" rows="6" required placeholder="Ciao {nome}, giovedì promozione padel…">'+esc(String(r[5]||"").replace(/\s*\[allegato\]/g,""))+'</textarea></label>'+
-         '<label class="full"><input type="checkbox" id="chF"'+(String(r[5]||"").includes("[allegato]")?' checked':'')+'> Allega locandina <small style="color:var(--muted)">(solo Mail e WhatsApp — SMS non supporta file)</small></label>'+
+         '<label for="f1">Destinatari<select id="f1">'+opzSel(["Database Promozioni","Database Richieste","Tutti"],dest)+'</select></label>'+
+         '<label for="f2">Sport<select id="f2">'+opzSel(["","padel","tennis"],r[2],"Tutti")+'</select></label>'+
+         '<label for="f3">Livello<select id="f3">'+opzSel([""].concat(LIVELLI_DB),r[3],"Tutti i livelli")+'</select></label>'+
+         campoCanali(can)+
+         '<label for="f5" class="full">Messaggio<textarea id="f5" rows="6" required placeholder="Ciao {nome}, giovedì promozione padel…">'+esc(r[5])+'</textarea></label>'+
+         campoAllegato(r[6])+
          '<p class="full hint" id="fconta"></p>';
   } else {
-    const circoli = [...new Set((cache.giocatori||[]).map(x=>x[2]).filter(Boolean))].sort();
-const livelli = [...new Set((cache.giocatori||[]).map(x=>x[1]).filter(Boolean))].sort();
-const can = (r[5]||"SMS, WhatsApp").toLowerCase();
-const tipoSalvato = r[1]||"";
-const isData = /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(tipoSalvato);
-const tipoSel = isData ? "allenamento" : (tipoSalvato||"allenamento");
-h += '<label for="f0">Data invio richiesta<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
-'<label for="f0b">Data<input id="f0b" type="date" value="'+(isData?dmyToIso(tipoSalvato):'')+'" aria-label="Data"></label>'+
-'<fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Tipo di azione</legend>'+
-'<div class="check"><label><input type="radio" name="tipo" value="allenamento" id="tipoA"'+(tipoSel==="allenamento"?" checked":"")+'>'+
-' Richiesta allenamento (cerco giocatori)</label>'+
-'<label><input type="radio" name="tipo" value="disponibilita" id="tipoD"'+(tipoSel==="disponibilita"?" checked":"")+'>'+
-' Richiesta disponibilità (settimanale — link modulo inserito automaticamente)</label>'+
-'<label><input type="radio" name="tipo" value="promozione" id="tipoP"'+(tipoSel==="promozione"?" checked":"")+'>'+
-' Promozione</label></div></fieldset>'+
-'<label for="f2">Ora<input id="f2" type="time" value="'+esc(r[2])+'"></label>'+
-'<label for="f3">Club<input id="f3" list="lc" value="'+esc(r[3])+'" placeholder="Qualsiasi club"><datalist id="lc">'+circoli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
-'<label for="f4">Livello<input id="f4" list="ll" value="'+esc(r[4])+'" placeholder="Es. 3.5"><datalist id="ll">'+livelli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
-'<fieldset class="check" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend>'+
-'<label><input type="checkbox" id="chS"'+(can.includes("sms")?' checked':'')+'>  SMS</label>'+
-'<label><input type="checkbox" id="chW"'+(can.includes("whatsapp")?' checked':'')+'>  WhatsApp</label>'+
-'<label><input type="checkbox" id="chM"'+(can.includes("mail")?' checked':'')+'>  Mail</label></fieldset>'+
-'<label><input type="checkbox" id="chF"'+(r[6]&&r[6].includes("[allegato]")?' checked':'')+'>'+
-' Allega locandina <small style="color:var(--muted)">(solo Mail e WhatsApp — SMS non supporta file)</small></label>'+
-'<label for="f6" class="full">Indicazioni<textarea id="f6" placeholder="Indicazioni aggiuntive">'+esc((r[6]||"").replace(/^\[tipo:[^\]]*\]\s*/,"").replace(/\[allegato\]\s*/g,""))+'</textarea></label>';
+    const can = (r[6]||"WhatsApp").toLowerCase(), tipo = r[1]||"allenamento";
+    h += '<label for="f0">Giorno di invio<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
+         '<fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Tipo di richiesta</legend><div class="check">'+
+         TIPI_RICH.map(([v,l])=>'<label><input type="radio" name="tipo" value="'+v+'"'+(tipo===v?' checked':'')+'> '+esc(l)+'</label>').join("")+'</div></fieldset>'+
+         '<label for="fg">Giorno dell\'allenamento<input id="fg" type="date" value="'+dmyToIso(r[2])+'"></label>'+
+         '<label for="fo">Ora<input id="fo" type="time" value="'+esc(r[3])+'"></label>'+
+         '<label for="f2">Sport<select id="f2">'+opzSel(["","padel","tennis"],r[4],"Tutti")+'</select></label>'+
+         '<label for="f3">Livello<select id="f3">'+opzSel([""].concat(LIVELLI_DB),r[5],"Tutti i livelli")+'</select></label>'+
+         campoCanali(can)+
+         '<label for="f6" class="full">Frase in più (facoltativa, va in fondo al messaggio)<textarea id="f6" rows="2">'+esc(r[7])+'</textarea></label>'+
+         campoAllegato(r[8])+
+         '<p class="full hint" id="fante"></p><p class="full hint" id="fconta"></p>';
   }
   if (bloccato) h += '<p class="full msg info">Questo comando è già stato '+esc(r[c.cols.indexOf("Stato")].toLowerCase())+': puoi solo eliminarlo dall\'elenco.</p>';
   h += '<div class="azioni">'+(bloccato?'':'<button class="btn" type="submit">Salva</button>')+'<button class="btn sec" type="button" id="annulla">Annulla</button>'+(i>=0?'<button class="btn del" type="button" id="elimina">Elimina</button>':'')+'</div><p class="full msg err" id="ferr" hidden></p></form>';
   box.innerHTML = h; box.scrollIntoView({behavior:"smooth",block:"start"});
   $("#annulla").onclick = ()=>box.innerHTML="";
-  if (k==="promozioni"){
-    const conta = ()=>{ const al = cache.allievi||[], gi = cache.giocatori||[], f = $("#f2").value.trim().toLowerCase(), l = $("#f3").value.trim().toLowerCase();
-      const ok = (x,y)=>!x || x==="tutti" || String(y||"").toLowerCase()===x;
-      const n = $("#f1").value==="Allievi" ? al.filter(x=>ok(f,x[0])&&ok(l,x[4])).length : gi.filter(x=>ok(f,x[2])&&ok(l,x[1])).length;
-      $("#fconta").textContent = "Destinatari trovati: "+n+(n?" · circa "+Math.ceil(n/5)*20+" minuti per mandarli tutti.":""); };
-    ["f1","f2","f3"].forEach(id=>$("#"+id).addEventListener("input",conta)); conta();
-  }
+  attivaAllegato();
+  const okF = (f,v)=>{ const x = String(v||"").trim().toLowerCase(); return !f || !x || x==="tutti" || x===f; };
+  const elenco = ()=>{ if (k!=="promozioni") return cache.dbR||[]; const d = $("#f1").value;
+    return (d!=="Database Richieste" ? cache.dbP||[] : []).concat(d!=="Database Promozioni" ? cache.dbR||[] : []); };
+  const conta = ()=>{ const s = $("#f2").value, l = $("#f3").value, visti = {}; let n = 0;
+    elenco().forEach(g=>{ if (!String(g[0]||"").trim() || !okF(s,g[5]) || !okF(l,g[6])) return; const key = String(g[2]||g[4]||"").replace(/\s/g,"").toLowerCase(); if (!key || visti[key]) return; visti[key] = 1; n++; });
+    $("#fconta").textContent = "Destinatari trovati: "+n+(n?" · circa "+Math.ceil(n/5)*20+" minuti per mandarli tutti.":"");
+    if (k!=="promozioni"){ const t = (box.querySelector('input[name="tipo"]:checked')||{}).value||"allenamento";
+      ["fg","fo"].forEach(id=>$("#"+id).closest("label").hidden = t!=="allenamento");
+      $("#fante").textContent = "Anteprima: "+testoRich(t,"Mario",isoToDmy($("#fg").value),$("#fo").value,$("#f6").value.trim()); } };
+  box.querySelectorAll("input,select,textarea").forEach(x=>{ x.addEventListener("input",conta); x.addEventListener("change",conta); }); conta();
   const esegui = async (nuove, testo) => {
     box.querySelectorAll("button").forEach(b=>b.disabled=true);
     try{ const prima = (await caricaComandi(k)).length, n = Math.max(nuove.length, prima);
@@ -511,22 +538,20 @@ h += '<label for="f0">Data invio richiesta<input id="f0" type="date" value="'+dm
     catch(e){ const p=$("#ferr"); p.hidden=false; p.textContent=errore(e); box.querySelectorAll("button").forEach(b=>b.disabled=false); }
   };
   if (i>=0){ let conf=false; $("#elimina").onclick=function(){ if(!conf){conf=true; this.textContent="Conferma eliminazione"; return;} const n=cache[k].slice(); n.splice(i,1); esegui(n,"Comando eliminato."); }; }
-  $("#frm").onsubmit = e=>{ e.preventDefault(); const err=$("#ferr");
-    let nr;
+  $("#frm").onsubmit = e=>{ e.preventDefault(); const err=$("#ferr"), no = t=>{ err.hidden=false; err.textContent=t; };
     const can = [["chS","SMS"],["chW","WhatsApp"],["chM","Mail"]].filter(([id])=>$("#"+id).checked).map(x=>x[1]).join(", ");
-    if (k==="promozioni"){ nr = [isoToDmy($("#f0").value), $("#f1").value, $("#f2").value.trim(), $("#f3").value.trim(), can, ($("#f5").value.trim()+(document.getElementById("chF").checked?" [allegato]":"")), r[6]||"Da fare", r[7]||"", r[8]||""];
-      if(!nr[0]||!nr[5]){ err.hidden=false; err.textContent="Servono il giorno di invio e il messaggio."; return; }
-      if(!can){ err.hidden=false; err.textContent="Scegli almeno un canale."; return; } }
-    else {
-const tipo = (document.querySelector('input[name="tipo"]:checked')||{}).value||"allenamento";
-const dataVal = tipo==="allenamento"?isoToDmy(document.getElementById("f0b").value):"";
-const allegato = document.getElementById("chF").checked?" [allegato]":"";
-let indicazioni = document.getElementById("f6").value.trim();
-if (tipo==="disponibilita" && !indicazioni.includes("tinyurl.com/22al752c")) indicazioni += (indicazioni?" ":"")+"https://tinyurl.com/22al752c";
-nr = [isoToDmy(document.getElementById("f0").value), tipo==="allenamento"?dataVal:tipo, document.getElementById("f2").value, document.getElementById("f3").value.trim(), document.getElementById("f4").value.trim(), can, (indicazioni+allegato).trim(), r[7]||"Da fare", r[8]||"", r[9]||""];
-if(!nr[0]){ err.hidden=false; err.textContent="Serve la data di invio."; return; }
-if(tipo==="allenamento"&&!nr[1]){ err.hidden=false; err.textContent="Serve la data dell\'allenamento."; return; }
-if(!can){ err.hidden=false; err.textContent="Scegli almeno un canale."; return; } }
+    const all = $("#fAll").value;
+    let nr;
+    if (k==="promozioni"){
+      nr = [isoToDmy($("#f0").value), $("#f1").value, $("#f2").value, $("#f3").value, can, $("#f5").value.trim(), all, r[7]||"Da fare", r[8]||"", r[9]||""];
+      if(!nr[0]||!nr[5]) return no("Servono il giorno di invio e il messaggio.");
+    } else {
+      const t = (box.querySelector('input[name="tipo"]:checked')||{}).value||"allenamento", a = t==="allenamento";
+      nr = [isoToDmy($("#f0").value), t, a?isoToDmy($("#fg").value):"", a?$("#fo").value:"", $("#f2").value, $("#f3").value, can, $("#f6").value.trim(), all, r[9]||"Da fare", r[10]||"", r[11]||""];
+      if(!nr[0]) return no("Serve il giorno di invio.");
+      if(a && (!nr[2]||!nr[3])) return no("Per l'allenamento servono giorno e ora.");
+    }
+    if(!can) return no("Scegli almeno un canale.");
     const n = cache[k].slice(); if(i>=0) n[i]=nr; else n.push(nr);
     n.sort((a,b)=>(parseDmy(a[0])||0)-(parseDmy(b[0])||0));
     esegui(n, "Comando salvato per il "+nr[0]+".");
@@ -1097,7 +1122,7 @@ async function vistaHome(refresh){
     const imp = g ? g.righe.filter(r=>r.nomi.length) : [];
     const dom = dati.planner ? dati.planner.find(x=>x.data.getTime()===t.getTime()+864e5) : null;
     const nDom = dom ? dom.righe.filter(r=>r.nomi.length).length : 0;
-    const cmd = [...(dati.promozioni||[]).map(r=>({d:r[0],t:(r[1]||"")+(r[2]?" "+r[2]:"")+": "+String(r[5]||"").slice(0,60),s:r[6],k:"Promozione"})),...(dati.allenamenti||[]).map(r=>({d:r[0],t:"Allenamento "+r[1]+(r[3]?" al "+r[3]:"")+(r[4]?", livello "+r[4]:""),s:r[7],k:"Allenamento"}))]
+    const cmd = [...(dati.promozioni||[]).map(r=>({d:r[0],t:(r[1]||"")+(r[2]?" "+r[2]:"")+": "+String(r[5]||"").slice(0,60),s:r[7],k:"Promozione"})),...(dati.allenamenti||[]).map(r=>({d:r[0],t:nomeTipo(r[1])+(r[2]?" "+r[2]:"")+(r[3]?" alle "+r[3]:"")+(r[4]?", "+r[4]:"")+(r[5]?", livello "+r[5]:""),s:r[9],k:"Richiesta"}))]
       .filter(c=>{const d=parseDmy(c.d); return d && d>=t && !/fatt|eseguit/i.test(c.s||"");}).sort((a,b)=>parseDmy(a.d)-parseDmy(b.d));
     let h = '';
     if (err) h += '<p class="msg err">'+esc(err)+'</p>';
@@ -1148,8 +1173,8 @@ async function mostra(v, refresh){
     else if (v==="planner") await vistaPlanner(refresh);
     else if (v==="schede") await vistaSchede(refresh);
     else if (ELENCHI[v]) await vistaElenco(v, refresh);
-    else { if (!cache.giocatori) { try{ cache.giocatori = await caricaElenco("giocatori"); }catch(e){} }
-      if (v==="promozioni" && !cache.allievi) { try{ cache.allievi = await caricaElenco("allievi"); }catch(e){} }
+    else { if (!cache.dbR || refresh) { try{ cache.dbR = await leggi(ID.comandi, "DATABASE RICHIESTE!A2:J1000"); }catch(e){ cache.dbR = []; } }
+      if (v==="promozioni" && (!cache.dbP || refresh)) { try{ cache.dbP = await leggi(ID.comandi, "DATABASE PROMOZIONI!A2:J1000"); }catch(e){ cache.dbP = []; } }
       await vistaComandi(v, refresh); }
     $("#stato").textContent = "";
   }catch(e){
