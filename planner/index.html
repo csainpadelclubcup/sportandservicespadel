@@ -466,15 +466,30 @@ function formComando(k, i){
          '<p class="full hint" id="fconta"></p>';
   } else {
     const circoli = [...new Set((cache.giocatori||[]).map(x=>x[2]).filter(Boolean))].sort();
-    const livelli = [...new Set((cache.giocatori||[]).map(x=>x[1]).filter(Boolean))].sort();
-    const can = (r[5]||"SMS, WhatsApp").toLowerCase();
-    h += '<label for="f0">Data invio richiesta<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
-         '<label for="f1">Data allenamento<input id="f1" type="date" value="'+dmyToIso(r[1])+'" required></label>'+
-         '<label for="f2">Ora<input id="f2" type="time" value="'+esc(r[2])+'"></label>'+
-         '<label for="f3">Club<input id="f3" list="lc" value="'+esc(r[3])+'" placeholder="Qualsiasi club"><datalist id="lc">'+circoli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
-         '<label for="f4">Livello<input id="f4" list="ll" value="'+esc(r[4])+'" placeholder="Es. 3.5"><datalist id="ll">'+livelli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
-         '<fieldset class="check" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend><label><input type="checkbox" id="chS"'+(can.includes("sms")?' checked':'')+'> SMS</label><label><input type="checkbox" id="chW"'+(can.includes("whatsapp")?' checked':'')+'> WhatsApp</label><label><input type="checkbox" id="chM"'+(can.includes("mail")?' checked':'')+'> Mail</label></fieldset>'+
-         '<label for="f6" class="full">Indicazioni<textarea id="f6" placeholder="Es. cercare 3 giocatori per allenamento di 1h30, campo coperto">'+esc(r[6])+'</textarea></label>';
+const livelli = [...new Set((cache.giocatori||[]).map(x=>x[1]).filter(Boolean))].sort();
+const can = (r[5]||"SMS, WhatsApp").toLowerCase();
+const tipoSalvato = r[1]||"";
+const isData = /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(tipoSalvato);
+const tipoSel = isData ? "allenamento" : (tipoSalvato||"allenamento");
+h += '<label for="f0">Data invio richiesta<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
+'<label for="f0b">Data<input id="f0b" type="date" value="'+(isData?dmyToIso(tipoSalvato):'')+'" aria-label="Data"></label>'+
+'<fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Tipo di azione</legend>'+
+'<div class="check"><label><input type="radio" name="tipo" value="allenamento" id="tipoA"'+(tipoSel==="allenamento"?" checked":"")+'>'+
+' Richiesta allenamento (cerco giocatori)</label>'+
+'<label><input type="radio" name="tipo" value="disponibilita" id="tipoD"'+(tipoSel==="disponibilita"?" checked":"")+'>'+
+' Richiesta disponibilità (settimanale — link modulo inserito automaticamente)</label>'+
+'<label><input type="radio" name="tipo" value="promozione" id="tipoP"'+(tipoSel==="promozione"?" checked":"")+'>'+
+' Promozione</label></div></fieldset>'+
+'<label for="f2">Ora<input id="f2" type="time" value="'+esc(r[2])+'"></label>'+
+'<label for="f3">Club<input id="f3" list="lc" value="'+esc(r[3])+'" placeholder="Qualsiasi club"><datalist id="lc">'+circoli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
+'<label for="f4">Livello<input id="f4" list="ll" value="'+esc(r[4])+'" placeholder="Es. 3.5"><datalist id="ll">'+livelli.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist></label>'+
+'<fieldset class="check" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend>'+
+'<label><input type="checkbox" id="chS"'+(can.includes("sms")?' checked':'')+'>  SMS</label>'+
+'<label><input type="checkbox" id="chW"'+(can.includes("whatsapp")?' checked':'')+'>  WhatsApp</label>'+
+'<label><input type="checkbox" id="chM"'+(can.includes("mail")?' checked':'')+'>  Mail</label></fieldset>'+
+'<label><input type="checkbox" id="chF"'+(r[6]&&r[6].includes("[allegato]")?' checked':'')+'>'+
+' Allega locandina <small style="color:var(--muted)">(solo Mail e WhatsApp — SMS non supporta file)</small></label>'+
+'<label for="f6" class="full">Indicazioni<textarea id="f6" placeholder="Indicazioni aggiuntive">'+esc((r[6]||"").replace(/^\[tipo:[^\]]*\]\s*/,"").replace(/\[allegato\]\s*/g,""))+'</textarea></label>';
   }
   if (bloccato) h += '<p class="full msg info">Questo comando è già stato '+esc(r[c.cols.indexOf("Stato")].toLowerCase())+': puoi solo eliminarlo dall\'elenco.</p>';
   h += '<div class="azioni">'+(bloccato?'':'<button class="btn" type="submit">Salva</button>')+'<button class="btn sec" type="button" id="annulla">Annulla</button>'+(i>=0?'<button class="btn del" type="button" id="elimina">Elimina</button>':'')+'</div><p class="full msg err" id="ferr" hidden></p></form>';
@@ -503,9 +518,15 @@ function formComando(k, i){
       if(!nr[0]||!nr[5]){ err.hidden=false; err.textContent="Servono il giorno di invio e il messaggio."; return; }
       if(!can){ err.hidden=false; err.textContent="Scegli almeno un canale."; return; } }
     else {
-      nr = [isoToDmy($("#f0").value), isoToDmy($("#f1").value), $("#f2").value, $("#f3").value.trim(), $("#f4").value.trim(), can, $("#f6").value.trim(), r[7]||"Da fare", r[8]||"", r[9]||""];
-      if(!nr[0]||!nr[1]){ err.hidden=false; err.textContent="Servono la data di invio e la data dell'allenamento."; return; }
-      if(!can){ err.hidden=false; err.textContent="Scegli almeno un canale."; return; } }
+const tipo = (document.querySelector('input[name="tipo"]:checked')||{}).value||"allenamento";
+const dataVal = tipo==="allenamento"?isoToDmy(document.getElementById("f0b").value):"";
+const allegato = document.getElementById("chF").checked?" [allegato]":"";
+let indicazioni = document.getElementById("f6").value.trim();
+if (tipo==="disponibilita" && !indicazioni.includes("tinyurl.com/22al752c")) indicazioni += (indicazioni?" ":"")+"https://tinyurl.com/22al752c";
+nr = [isoToDmy(document.getElementById("f0").value), tipo==="allenamento"?dataVal:tipo, document.getElementById("f2").value, document.getElementById("f3").value.trim(), document.getElementById("f4").value.trim(), can, (indicazioni+allegato).trim(), r[7]||"Da fare", r[8]||"", r[9]||""];
+if(!nr[0]){ err.hidden=false; err.textContent="Serve la data di invio."; return; }
+if(tipo==="allenamento"&&!nr[1]){ err.hidden=false; err.textContent="Serve la data dell\'allenamento."; return; }
+if(!can){ err.hidden=false; err.textContent="Scegli almeno un canale."; return; } }
     const n = cache[k].slice(); if(i>=0) n[i]=nr; else n.push(nr);
     n.sort((a,b)=>(parseDmy(a[0])||0)-(parseDmy(b[0])||0));
     esegui(n, "Comando salvato per il "+nr[0]+".");
