@@ -5,10 +5,19 @@
  * Mail con Gmail, SMS con IFTTT (Webhooks "invia_sms" → Android SMS), WhatsApp nella "Coda WhatsApp".
  * Proprietà dello script: IFTTT_KEY (chiave Webhooks di IFTTT).
  * Primo avvio: eseguire una volta "attiva" e consentire i permessi.
+ *
+ * Destinatari (campo "Destinatari" nella riga Promozioni):
+ *   "Allievi"               → DATABASE RICHIESTE nel foglio Planner – Comandi
+ *   "Giocatori allenamento" → DATABASE PROMOZIONI nel foglio Planner – Comandi
+ *   "Tutti"                 → entrambi i database
+ * Filtro INTERESSI: letto dalla colonna "Interessi" nella riga Promozioni;
+ *   se vuoto o "tutto" non filtra; altrimenti esclude chi ha un interesse diverso.
+ * Colonne DB: NOME(A) COGNOME(B) TELEFONO/WA(C) TELEGRAM(D) EMAIL(E)
+ *             SPORT(F) LIVELLO(G) PROVENIENZA(H) INTERESSI(I) NOTE(J)
  */
 const COMANDI_ID = '1z_BDwRZxgsJ74TkrINPsO0_qnoBT_U_eg4YOYBZ38XI';
-const ALLIEVI_ID = '1WGzxuiLBRkiylw3IK5RZozSQ9eCZ8Q07_DAprCcOBp0';
-const GIOCATORI_ID = '1L2Oep0BkpWDtTnE7LytvJbrEAWX8iqDrSTUKN_c2WOU';
+const DB_PROMO   = 'DATABASE PROMOZIONI';
+const DB_RICH    = 'DATABASE RICHIESTE';
 const PER_GRUPPO = 5, PAUSA_MIN = 20, ORA_DA = 8, ORA_A = 21;
 const FIRMA = '\n\nGianluca – Sport & Services';
 
@@ -43,7 +52,7 @@ function inviiProgrammati() {
         const d = ymd_(r['Data invio']);
         if (!d || d > oggi || /fatto|errore/i.test(r['Stato'])) continue;
         let lista;
-        try { lista = x[1](r); } catch (e) { scrivi_(sh, i, c, 'Errore', '', String(e.message || e)); avvisi.push(x[0] + ' riga ' + (i + 1) + ': ' + (e.message || e)); continue; }
+        try { lista = x[1](ss, r); } catch (e) { scrivi_(sh, i, c, 'Errore', '', String(e.message || e)); avvisi.push(x[0] + ' riga ' + (i + 1) + ': ' + (e.message || e)); continue; }
         const can = String(r['Canali']).toLowerCase();
         let fatti = Number(String(r['Inviati'] || '').split('/')[0]) || 0;
         const err = [];
@@ -69,35 +78,78 @@ function inviiProgrammati() {
   }
 }
 
-function destPromo_(r) {
-  const filtro = norm_(r['Sport / Club']), liv = norm_(r['Livello']);
+// Legge righe dai database in base al campo Destinatari.
+// Ritorna array di {nome, tel, mail, oggetto, testo}.
+function destPromo_(ss, r) {
   const testo = String(r['Messaggio'] || '').trim();
   if (!testo) throw new Error('messaggio vuoto');
+  const filtroSport    = norm_(r['Sport / Club']);
+  const filtroLiv      = norm_(r['Livello']);
+  const filtroInteressi = norm_(r['Interessi'] || '');
+  const dest = String(r['Destinatari'] || '').trim().toLowerCase();
+  const usaRich  = dest === 'allievi' || dest === 'tutti';
+  const usaPromo = dest === 'giocatori allenamento' || dest === 'tutti';
   const out = [];
-  if (r['Destinatari'] === 'Giocatori allenamento') {
-    righe_(GIOCATORI_ID, 'Giocatori').forEach(function (g) {
-      if (!g[0] || !ok_(filtro, g[2]) || !ok_(liv, g[1])) return;
-      out.push({ nome: g[0], tel: tel_(g[3]), mail: '', oggetto: 'Sport & Services', testo: personal_(testo, g[0]) });
-    });
-  } else {
-    righe_(ALLIEVI_ID, 'Allievi').forEach(function (a) {
-      if (!a[1] || !ok_(filtro, a[0]) || !ok_(liv, a[4])) return;
-      out.push({ nome: a[1], tel: tel_(a[3]), mail: String(a[2] || '').trim(), oggetto: 'Sport & Services', testo: personal_(testo, a[1]) });
+  const visti = {}; // evita duplicati se stesso contatto è in entrambi i DB
+  function aggiungi(nome, tel, mail) {
+    const key = tel || mail;
+    if (!key || visti[key]) return;
+    visti[key] = true;
+    out.push({ nome: primo_(nome), tel: tel_(tel), mail: String(mail || '').trim(), oggetto: 'Sport & Services', testo: personal_(testo, nome) });
+  }
+  if (usaRich) {
+    const righe = dbRighe_(ss, DB_RICH);
+    righe.forEach(function (g) {
+      // col: 0=NOME 1=COGNOME 2=TEL 3=TEL 4=EMAIL 5=SPORT 6=LIVELLO 7=PROV 8=INTERESSI
+      const nomeCompleto = (g[0] + ' ' + g[1]).trim();
+      if (!nomeCompleto) return;
+      if (!okFiltro_(filtroSport, g[5])) return;
+      if (!okFiltro_(filtroLiv, g[6])) return;
+      if (!okInteressi_(filtroInteressi, g[8])) return;
+      aggiungi(nomeCompleto, g[2], g[4]);
     });
   }
+  if (usaPromo) {
+    const righe = dbRighe_(ss, DB_PROMO);
+    righe.forEach(function (g) {
+      const nomeCompleto = (g[0] + ' ' + g[1]).trim();
+      if (!nomeCompleto) return;
+      if (!okFiltro_(filtroSport, g[5])) return;
+      if (!okFiltro_(filtroLiv, g[6])) return;
+      if (!okInteressi_(filtroInteressi, g[8])) return;
+      aggiungi(nomeCompleto, g[2], g[4]);
+    });
+  }
+  if (!usaRich && !usaPromo) throw new Error('Destinatari non riconosciuto: ' + r['Destinatari']);
   return out;
 }
 
-function destAllen_(r) {
+function destAllen_(ss, r) {
   const club = norm_(r['Club']), liv = norm_(r['Livello']);
   const out = [];
-  righe_(GIOCATORI_ID, 'Giocatori').forEach(function (g) {
-    if (!g[0] || !ok_(club, g[2]) || !ok_(liv, g[1])) return;
-    const t = 'Ciao ' + primo_(g[0]) + ', sto organizzando un allenamento ' + r['Data allenamento'] + (r['Ora'] ? ' alle ' + r['Ora'] : '') +
-      (r['Club'] ? ' al ' + r['Club'] : '') + '.' + (r['Indicazioni'] ? ' ' + r['Indicazioni'] : '') + ' Ci sei? Rispondimi qui.';
-    out.push({ nome: g[0], tel: tel_(g[3]), mail: '', oggetto: 'Allenamento ' + r['Data allenamento'], testo: t });
+  dbRighe_(ss, DB_PROMO).forEach(function (g) {
+    const nomeCompleto = (g[0] + ' ' + g[1]).trim();
+    if (!nomeCompleto) return;
+    if (!okFiltro_(club, g[7])) return; // filtra per PROVENIENZA=club
+    if (!okFiltro_(liv, g[6])) return;
+    const t = 'Ciao ' + primo_(nomeCompleto) + ', sto organizzando un allenamento ' + r['Data allenamento'] + (r['Ora'] ? ' alle ' + r['Ora'] : '') +
+              (r['Club'] ? ' al ' + r['Club'] : '') + '.' + (r['Indicazioni'] ? ' ' + r['Indicazioni'] : '') + ' Ci sei? Rispondimi qui.';
+    out.push({ nome: primo_(nomeCompleto), tel: tel_(g[2]), mail: '', oggetto: 'Allenamento ' + r['Data allenamento'], testo: t });
   });
   return out;
+}
+
+function dbRighe_(ss, sheetName) {
+  const sh = ss.getSheetByName(sheetName);
+  if (!sh || sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, 10).getDisplayValues();
+}
+
+function okFiltro_(filtro, val) { return !filtro || String(val || '').trim().toLowerCase() === filtro; }
+function okInteressi_(filtro, val) {
+  if (!filtro || filtro === 'tutto') return true;
+  const v = String(val || '').trim().toLowerCase();
+  return !v || v === 'tutto' || v === filtro;
 }
 
 function sms_(tel, testo) {
@@ -120,9 +172,7 @@ function scrivi_(sh, i, c, stato, inviati, esito) {
   sh.getRange(i + 1, c('Esito') + 1).setValue(esito);
 }
 
-function righe_(id, tab) { return SpreadsheetApp.openById(id).getSheetByName(tab).getDataRange().getDisplayValues().slice(1); }
 function norm_(x) { const s = String(x || '').trim().toLowerCase(); return s === 'tutti' || s === 'tutte' ? '' : s; }
-function ok_(filtro, val) { return !filtro || String(val || '').trim().toLowerCase() === filtro; }
 function primo_(nome) { return String(nome).trim().split(/\s+/)[0]; }
 function personal_(testo, nome) { return testo.replace(/\{nome\}/gi, primo_(nome)); }
 function tel_(t) {
