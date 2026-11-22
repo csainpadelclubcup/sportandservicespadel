@@ -1,14 +1,18 @@
 /**
- * Richieste dal sito (moduli Attività) → Planner.
+ * Richieste dal sito (moduli Attività) → Planner + DATABASE PROMOZIONI.
  * Ogni 10 minuti legge le mail "Richiesta …" inviate da info@sportandservicespadel.it,
  * le scrive nel foglio "RICHIESTE SITO" e, se il giorno è già nel planner,
  * le inserisce nel "PLANNER ATTIVITA'" con la nota "RICHIESTA SITO – da confermare".
+ * Per ogni nuovo contatto, aggiunge (o aggiorna) una riga in DATABASE PROMOZIONI
+ * nel foglio "Planner – Comandi" (PROVENIENZA = sito).
  * Per attivarlo: eseguire una volta la funzione "installa" e consentire l'accesso.
  */
 const PLANNER = "PLANNER ATTIVITA'";
 const REGISTRO = 'RICHIESTE SITO';
 const ETICHETTA = 'Planner-inserita';
 const COLORE = { Tennis: '#F6B26B', Padel: '#FFE599' }; // arancione tennis, giallo padel
+const COMANDI_ID = '1z_BDwRZxgsJ74TkrINPsO0_qnoBT_U_eg4YOYBZ38XI';
+const DB_PROMO = 'DATABASE PROMOZIONI';
 
 function installa() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
@@ -33,18 +37,20 @@ function leggiRichieste() {
       th.getMessages().forEach(function (m) {
         // una mail può avere più righe PLANNER (corso con 2 o 3 giorni scelti)
         (m.getPlainBody().match(/PLANNER\|[^\r\n]+/g) || []).forEach(function (riga) {
-        const p = riga.split('|'); // PLANNER|giorno|ora|sport|richiesta|nome|tel|superficie|id
-        const r = { giorno: p[1], ora: p[2], sport: p[3], tipo: p[4], nome: p[5], tel: p[6], sup: p[7], id: p[8], ricevuta: m.getDate() };
-        if (/^PROVA /.test(r.nome)) return; // mail di prova del sito
-        const esito = nelPlanner_(ss, r);
-        if (!giaViste[r.id]) {
-          reg.appendRow([r.ricevuta, dataIt_(r.giorno), r.ora, r.sport, r.tipo, r.nome, r.tel, r.sup, 'Da confermare (WhatsApp/SMS)', esito.testo, r.id]);
-          reg.getRange(reg.getLastRow(), 1, 1, 11).setBackground(COLORE[r.sport] || null);
-          giaViste[r.id] = true;
-        } else if (esito.ok) {
-          aggiornaEsito_(reg, r.id, esito.testo);
-        }
-        if (!esito.finito) fatto = false;
+          const p = riga.split('|'); // PLANNER|giorno|ora|sport|richiesta|nome|tel|superficie|id|email(opz)
+          const r = { giorno: p[1], ora: p[2], sport: p[3], tipo: p[4], nome: p[5], tel: (p[6] || '').trim(), sup: p[7], id: p[8], email: (p[9] || '').trim(), ricevuta: m.getDate() };
+          if (/^PROVA /.test(r.nome)) return; // mail di prova del sito
+          const esito = nelPlanner_(ss, r);
+          if (!giaViste[r.id]) {
+            reg.appendRow([r.ricevuta, dataIt_(r.giorno), r.ora, r.sport, r.tipo, r.nome, r.tel, r.sup, 'Da confermare (WhatsApp/SMS)', esito.testo, r.id]);
+            reg.getRange(reg.getLastRow(), 1, 1, 11).setBackground(COLORE[r.sport] || null);
+            giaViste[r.id] = true;
+            // Aggiorna DATABASE PROMOZIONI nel foglio Planner – Comandi
+            aggiornaDbPromo_(r);
+          } else if (esito.ok) {
+            aggiornaEsito_(reg, r.id, esito.testo);
+          }
+          if (!esito.finito) fatto = false;
         });
       });
       if (fatto) th.addLabel(lab);
@@ -52,6 +58,62 @@ function leggiRichieste() {
   } finally {
     lock.releaseLock();
   }
+}
+
+// Inserisce o aggiorna il contatto in DATABASE PROMOZIONI.
+// Duplicato: stessa TELEFONO/WA (col C) o stessa EMAIL (col E, se non vuota).
+// Se trovato: integra campi vuoti (non sovrascrive). Se nuovo: aggiunge riga.
+function aggiornaDbPromo_(r) {
+  try {
+    const ss2 = SpreadsheetApp.openById(COMANDI_ID);
+    const sh = ss2.getSheetByName(DB_PROMO);
+    if (!sh) return;
+    const lastRow = sh.getLastRow();
+    if (lastRow < 2) {
+      // solo intestazione → aggiungi subito
+      sh.appendRow(nuovaRiga_(r));
+      return;
+    }
+    const dati = sh.getRange(2, 1, lastRow - 1, 10).getValues();
+    // cerca duplicato per telefono (col C = indice 2) o email (col E = indice 4)
+    let rigaDup = -1;
+    for (let i = 0; i < dati.length; i++) {
+      const telDb = (dati[i][2] || '').toString().replace(/\s/g, '');
+      const mailDb = (dati[i][4] || '').toString().trim().toLowerCase();
+      const telR = r.tel.replace(/\s/g, '');
+      const mailR = r.email.toLowerCase();
+      if ((telR && telDb === telR) || (mailR && mailDb === mailR)) {
+        rigaDup = i + 2; // riga foglio (1-based, +1 per header)
+        break;
+      }
+    }
+    if (rigaDup > 0) {
+      // duplicato trovato: integra solo i campi vuoti
+      const row = dati[rigaDup - 2];
+      if (!row[0] && r.nome.split(' ')[0]) sh.getRange(rigaDup, 1).setValue(r.nome.split(' ')[0]);
+      if (!row[1] && r.nome.split(' ').slice(1).join(' ')) sh.getRange(rigaDup, 2).setValue(r.nome.split(' ').slice(1).join(' '));
+      if (!row[2] && r.tel) sh.getRange(rigaDup, 3).setValue(r.tel);
+      if (!row[4] && r.email) sh.getRange(rigaDup, 5).setValue(r.email);
+      if (!row[5] && r.sport && r.sport !== 'tutti') sh.getRange(rigaDup, 6).setValue(r.sport.charAt(0).toUpperCase() + r.sport.slice(1).toLowerCase());
+      // PROVENIENZA (col H = 8): non sovrascrivere se già valorizzata
+      if (!row[7]) sh.getRange(rigaDup, 8).setValue('sito');
+      // INTERESSI (col I = 9): aggiungi se vuota
+      if (!row[8] && r.tipo) sh.getRange(rigaDup, 9).setValue(r.tipo);
+    } else {
+      sh.appendRow(nuovaRiga_(r));
+    }
+  } catch (e) {
+    // non blocca il flusso principale
+    Logger.log('aggiornaDbPromo_ errore: ' + e.message);
+  }
+}
+
+function nuovaRiga_(r) {
+  const parti = r.nome.split(' ');
+  const nome = parti[0] || '';
+  const cognome = parti.slice(1).join(' ') || '';
+  const sport = r.sport ? r.sport.charAt(0).toUpperCase() + r.sport.slice(1).toLowerCase() : '';
+  return [nome, cognome, r.tel, '', r.email, sport, '', 'sito', r.tipo || '', ''];
 }
 
 // Inserisce la richiesta nel blocco del giorno. Restituisce {ok, finito, testo}.
