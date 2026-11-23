@@ -1,7 +1,8 @@
 /**
  * Invii programmati (Promozioni e Richieste dell'app Planner).
- * Ogni 10 minuti, dalle 8 alle 21: se sono passati almeno 20 minuti dall'ultimo gruppo,
- * manda il messaggio alle prossime 5 persone dei comandi con data di invio arrivata.
+ * Ogni 10 minuti, dalle 9 alle 22: se sono passati almeno 30 minuti dall'ultimo gruppo,
+ * manda il messaggio alle prossime 3 persone (nell'ordine del database) dei comandi
+ * con giorno e ora di invio arrivati. Alle 22 si ferma e riprende il giorno dopo alle 9.
  * Mail con Gmail (con la locandina allegata), SMS con IFTTT (Webhooks "invia_sms" → Android SMS),
  * WhatsApp nella "Coda WhatsApp" (colonna Allegato con il link della locandina).
  * Proprietà dello script: IFTTT_KEY (chiave Webhooks di IFTTT).
@@ -22,7 +23,7 @@
 const COMANDI_ID = '1z_BDwRZxgsJ74TkrINPsO0_qnoBT_U_eg4YOYBZ38XI';
 const DB_PROMO   = 'DATABASE PROMOZIONI';
 const DB_RICH    = 'DATABASE RICHIESTE';
-const PER_GRUPPO = 5, PAUSA_MIN = 20, ORA_DA = 8, ORA_A = 21;
+const PER_GRUPPO = 3, PAUSA_MIN = 30, ORA_DA = 9, ORA_A = 22;
 const FIRMA = '\n\nGianluca – Sport & Services';
 const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
 const TESTI_RICH = {
@@ -52,7 +53,7 @@ function inviiProgrammati() {
   if (!lock.tryLock(10000)) return;
   try {
     const ss = SpreadsheetApp.openById(COMANDI_ID);
-    const oggi = Utilities.formatDate(new Date(), 'Europe/Rome', 'yyyyMMdd');
+    const adesso = Utilities.formatDate(new Date(), 'Europe/Rome', 'yyyyMMddHHmm');
     const avvisi = [];
     let posti = PER_GRUPPO;
     [['Promozioni', destPromo_], ['Allenamenti', destRich_]].forEach(function (x) {
@@ -63,7 +64,7 @@ function inviiProgrammati() {
       for (let i = 1; i < v.length && posti > 0; i++) {
         const r = {}; h.forEach(function (n, j) { r[n] = v[i][j]; });
         const d = ymd_(r['Data invio']);
-        if (!d || d > oggi || /fatto|errore/i.test(r['Stato'])) continue;
+        if (!d || d + hm_(r['Ora invio']) > adesso || /fatto|errore/i.test(r['Stato'])) continue;
         let lista, file = null;
         try {
           lista = x[1](ss, r);
@@ -196,6 +197,11 @@ function tel_(t) {
   if (s.indexOf('00') === 0) return '+' + s.slice(2);
   if (s.indexOf('39') === 0 && s.length >= 11) return '+' + s;
   return '+39' + s;
+}
+// ora di invio "9:00" / "09:00" / "09:00:00" → "0900"; vuota = subito
+function hm_(t) {
+  const m = String(t || '').match(/(\d{1,2})[:.](\d{2})/);
+  return m ? ('0' + m[1]).slice(-2) + m[2] : '0000';
 }
 function ymd_(d) {
   const m = String(d || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
