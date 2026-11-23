@@ -167,6 +167,11 @@ main{padding:12px}
 .wiz span{flex:1;min-width:84px;text-align:center;font-size:12px;font-weight:700;padding:7px 4px;border-radius:8px;background:var(--tint);color:var(--muted);border-bottom:3px solid transparent}
 .wiz span.on{background:var(--navy);color:var(--gold)}
 .wiz span.ok{color:var(--ok);border-bottom-color:var(--ok)}
+.voci{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin:-6px 0 6px;-webkit-overflow-scrolling:touch}
+.voci span{flex:0 0 auto;font-size:13px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--paper);color:var(--navy);border:1px solid var(--line,#cfd6e4);cursor:pointer;white-space:nowrap}
+.voci span.on{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.voci span.ok{border-color:var(--ok)}
+.fbtn{font-size:13px!important;padding:6px 12px!important;display:inline-flex!important;flex-direction:row!important;align-items:center;margin:4px 6px 4px 0;font-weight:600!important;line-height:1.2;cursor:pointer}
 .wiz.clic span{cursor:pointer} .wiz.clic span:hover{outline:2px solid var(--gold)}
 .voce{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--paper)}
 .voce h4{margin:0 0 6px;font-family:var(--display);color:var(--navy);font-size:16px}
@@ -770,7 +775,7 @@ async function schCreaScheda(pid, sport){
 }
 
 /* ---------- foto: ritaglio nel browser e salvataggio diretto nell'archivio ---------- */
-function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<figure style="margin:6px 6px 6px 0;display:inline-block;max-width:220px"><img data-foto="'+esc(n)+'" alt="" style="display:block;width:220px;max-width:100%;border-radius:10px;background:#eee;min-height:60px"><figcaption style="font-size:12px;color:var(--muted)">'+esc(n)+'</figcaption></figure>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec" for="fotoIn">'+(nomi.length?'Cambia foto':'Aggiungi foto')+'</label>'+(nomi.length?'<button type="button" class="btn sec" id="fotoDel">Elimina foto</button>':'')+'<input type="file" accept="image/*" id="fotoIn" hidden></div><div id="fotoApp"></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">Ritaglia la foto e salvala: va direttamente nell\'archivio della scheda.</p></div>'; }
+function fotoBox(nomi, titolo){ return '<div class="full voce"><h4>'+titolo+'</h4><div class="bar" style="margin:0">'+(nomi.length?nomi.map(n=>'<figure style="margin:6px 6px 6px 0;display:inline-block;max-width:220px"><img data-foto="'+esc(n)+'" alt="" style="display:block;width:220px;max-width:100%;border-radius:10px;background:#eee;min-height:60px"><figcaption style="font-size:12px;color:var(--muted)">'+esc(n)+'</figcaption></figure>').join(" "):'<span class="vuoto" style="padding:0">nessuna foto</span>')+'<label class="btn sec fbtn" for="fotoIn">🖼 '+(nomi.length?'Cambia foto':'Aggiungi foto')+'</label><label class="btn sec fbtn" for="fotoCam">📷 Scatta foto</label>'+(nomi.length?'<button type="button" class="btn del fbtn" id="fotoDel">Elimina foto</button>':'')+'<input type="file" accept="image/*" id="fotoIn" hidden><input type="file" accept="image/*" capture="environment" id="fotoCam" hidden></div><div id="fotoApp"></div><p class="hint" id="fotoMsg" style="margin:6px 0 0">Ritaglia la foto e salvala: va direttamente nell\'archivio della scheda.</p></div>'; }
 function fotoJpeg(file){ return new Promise((ok,ko)=>{ const im = new Image(); im.onload = ()=>ok(im); im.onerror = ()=>ko({code:"tool_error", message:"foto non leggibile"}); im.src = URL.createObjectURL(file); }); }
 function fotoNomeFile(testo){ return String(testo||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]/g,"_"); }
 // scrive il nome della foto nel foglio (VOTI colonna H o SCHEDE colonna N) e allinea l'archivio
@@ -790,7 +795,9 @@ function fotoAttiva(sid, voce, dopo){
   const inp = $("#fotoIn"); if (!inp) return;
   const box = $("#fotoApp"), m = $("#fotoMsg");
   const del = $("#fotoDel"); if (del) del.onclick = async ()=>{ del.disabled = true; try { await fotoSegnaNome(sid, voce, ""); schWizSc(); } catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; del.disabled = false; } };
-  inp.onchange = async ()=>{ const f = inp.files[0]; inp.value = ""; if (!f) return;
+  const cam = $("#fotoCam"); if (cam) cam.onchange = ()=>{ const f = cam.files[0]; cam.value = ""; if (f) apri(f); };
+  inp.onchange = ()=>{ const f = inp.files[0]; inp.value = ""; if (f) apri(f); };
+  const apri = async f=>{
     let im; try { im = await fotoJpeg(f); } catch(e){ m.innerHTML = '<span style="color:var(--ko)">'+esc(errore(e))+'</span>'; return; }
     const ratio = voce ? 1.25 : 1; // colpi 4:5, profilo quadrato
     box.innerHTML = '<div style="margin-top:10px"><div id="cropFr" style="position:relative;overflow:hidden;width:100%;max-width:360px;background:#111;border-radius:12px;touch-action:none;cursor:move"><img id="cropImg" src="'+im.src+'" alt="" draggable="false" style="position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;max-width:none"></div><label style="display:block;margin-top:8px">Zoom <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" style="width:100%;max-width:360px"></label><div class="bar" style="margin:8px 0 0;gap:6px;flex-wrap:wrap"><button type="button" class="btn" id="cropOk">✓ Ritaglia e salva</button><button type="button" class="btn sec" id="cropNo">Annulla</button></div></div>';
@@ -919,6 +926,7 @@ function schWizSc(){
     else {
       if (schVi<0 || schVi>=voti.length) schVi = schVi<0 ? voti.length-1 : 0;
       const r = voti[schVi].r;
+      h += '<div class="full voci" id="voci">'+voti.map((x,j)=>'<span data-j="'+j+'" class="'+(j===schVi?'on':(nVoto(cc(x.r,5))?'ok':''))+'">'+esc(cc(x.r,4))+'</span>').join("")+'</div>';
       h += '<div class="full" style="display:grid;gap:12px"><div style="color:var(--muted);font-weight:600">'+area+' · voce '+(schVi+1)+' di '+voti.length+'</div><h2 style="font-size:30px;color:var(--navy)">'+esc(cc(r,4))+'</h2>'+
         '<label>Voto da 1 a 10 (anche 6,5)<input id="v0" type="number" min="1" max="10" step="0.5" inputmode="decimal" value="'+esc(nVoto(cc(r,5)))+'" style="font-size:24px;max-width:150px"></label>'+
         '<label>Commento<textarea id="d0" placeholder="Scrivi qui il commento…" style="min-height:220px;font-size:18px;background:#fff">'+esc(cc(r,6))+'</textarea></label>'+fotoBox(righeTxt(cc(r,7).replace(/,\s*/g,"\n")), "Foto del colpo")+videoBox()+'</div>';
@@ -951,6 +959,11 @@ function schWizSc(){
     if (i===s) return;
     if (modificato && !confirm("In questa pagina ci sono modifiche non salvate. Vuoi passare a «"+SC_STEPS[i]+"» senza salvarle?")) return;
     schUI.step = i; schVi = 0; schUI.key = sid+":"+i; schWizSc(); }; });
+  v.querySelectorAll("#voci span").forEach(sp=>{ sp.onclick = ()=>{ const j = +sp.dataset.j;
+    if (j===schVi) return;
+    if (modificato && !confirm("In questa voce ci sono modifiche non salvate. Vuoi passare a «"+sp.textContent+"» senza salvarle?")) return;
+    schVi = j; schWizSc(); }; });
+  const vOn = v.querySelector("#voci span.on"); if (vOn) vOn.scrollIntoView({block:"nearest",inline:"center"});
   if ($("#ind")) $("#ind").onclick = ()=>{ if (eVoce && schVi>0){ schVi--; return schWizSc(); } schUI.step--; if (schUI.step>=1 && schUI.step<=4){ schVi=-1; } else schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
   $("#salta").onclick = ()=>{ if (s===SC_STEPS.length-1) return esci(); if (eVoce && !ultimaV){ schVi++; return schWizSc(); } schUI.step++; schVi=0; schUI.key = sid+":"+schUI.step; schWizSc(); };
   $("#frm").onsubmit = async e=>{
