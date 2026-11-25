@@ -442,7 +442,7 @@ async function vistaComandi(k, refresh, msg){
   let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><h2 style="margin-right:auto">'+c.titolo+'</h2><button class="btn" id="nuovo">Nuovo comando</button><button class="btn sec" id="aggiorna">Aggiorna</button></div>'+
     '<p class="hint">'+esc(c.spiega)+'</p>'+calendario(dateSet,k)+'<div id="form"></div><div class="tbl"><table><thead><tr>'+c.cols.map(x=>'<th>'+esc(x)+'</th>').join("")+'</tr></thead><tbody>';
   if (!vis.length) h += '<tr><td colspan="'+c.cols.length+'" class="vuoto">'+(st.sel?'Nessun comando per il '+st.sel+'.':'Nessun comando. Premi Nuovo comando per aggiungerne uno.')+'</td></tr>';
-  vis.forEach(({r,i})=>{ h += '<tr class="click" data-i="'+i+'" tabindex="0">'+r.map((x,j)=>'<td>'+(c.cols[j]==="Stato"?pillStato(x):c.cols[j]==="Allegato"?(x?'<a href="'+esc(x)+'" target="_blank" rel="noopener">📎 apri</a> · <a href="#" data-pdf="'+esc(x)+'">⬇ PDF</a>':''):c.cols[j]==="Tipo"?esc(nomeTipo(x)):esc(x))+'</td>').join("")+'</tr>'; });
+  vis.forEach(({r,i})=>{ h += '<tr class="click" data-i="'+i+'" tabindex="0">'+r.map((x,j)=>'<td>'+(c.cols[j]==="Stato"?pillStato(x):c.cols[j]==="Allegato"?(x?'<a href="'+esc(x)+'" target="_blank" rel="noopener">📎 apri</a>':''):c.cols[j]==="Tipo"?esc(nomeTipo(x)):esc(x))+'</td>').join("")+'</tr>'; });
   h += '</tbody></table></div><p class="hint">I comandi si salvano nel foglio «Planner – Comandi» su Drive. Puoi sempre dare gli stessi comandi anche in chat.</p>';
   v.innerHTML = h;
   v.querySelectorAll("[data-mese]").forEach(b=>b.onclick=()=>{ st.m += +b.dataset.mese; if(st.m<0){st.m=11;st.y--;} if(st.m>11){st.m=0;st.y++;} vistaComandi(k); });
@@ -450,7 +450,6 @@ async function vistaComandi(k, refresh, msg){
   const tt = $("#tutte"); if (tt) tt.onclick = ()=>{ st.sel=null; vistaComandi(k); };
   $("#nuovo").onclick = ()=>formComando(k,-1);
   $("#aggiorna").onclick = ()=>mostra(vista,true);
-  v.querySelectorAll("[data-pdf]").forEach(a=>a.onclick=e=>{ e.preventDefault(); e.stopPropagation(); scaricaLocandinaPdf(a.dataset.pdf, a); });
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ tr.onclick=()=>formComando(k,+tr.dataset.i); tr.onkeydown=e=>{ if(e.key==="Enter") formComando(k,+tr.dataset.i); }; });
 }
 const LIVELLI_DB = ["principiante","medio","alto","classificato"];
@@ -468,59 +467,14 @@ function nomeTipo(t){ const x = TIPI_RICH.find(y=>y[0]===t); return x ? x[1].rep
 const opzSel = (arr, sel, vuoto) => arr.map(x=>'<option value="'+esc(x)+'"'+(String(sel||"").toLowerCase()===x.toLowerCase()?' selected':'')+'>'+esc(x||vuoto)+'</option>').join("");
 const campoCanali = can => '<fieldset class="check full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Canali</legend>'+
   [["chS","SMS","sms"],["chW","WhatsApp","whatsapp"],["chM","Mail","mail"]].map(([id,l,v])=>'<label><input type="checkbox" id="'+id+'"'+(can.includes(v)?' checked':'')+'> '+l+'</label>').join("")+'</fieldset>';
-/* ---------- locandina: scarica in PDF (il file caricato non cambia) ---------- */
-const nomeLocandina = u => (decodeURIComponent(String(u).split("/").pop()).replace(/^\d+_/,"").replace(/\.[a-z0-9]+$/i,"") || "locandina");
-const unisciBytes = (...b) => { const r = new Uint8Array(b.reduce((s,x)=>s+x.length,0)); let o = 0; b.forEach(x=>{ r.set(x,o); o += x.length; }); return r; };
-function pdfDaJpeg(jpg, w, h){ // PDF A4, immagine JPEG centrata e proporzionata
-  const enc = new TextEncoder(), A4W = 595.28, A4H = 841.89, mg = 28;
-  const sc = Math.min((A4W-2*mg)/w, (A4H-2*mg)/h), dw = w*sc, dh = h*sc, dx = (A4W-dw)/2, dy = (A4H-dh)/2;
-  const cont = enc.encode("q "+dw.toFixed(2)+" 0 0 "+dh.toFixed(2)+" "+dx.toFixed(2)+" "+dy.toFixed(2)+" cm /Im0 Do Q");
-  const oggetti = [
-    enc.encode("<< /Type /Catalog /Pages 2 0 R >>"),
-    enc.encode("<< /Type /Pages /Kids [3 0 R] /Count 1 >>"),
-    enc.encode("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "+A4W+" "+A4H+"] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>"),
-    unisciBytes(enc.encode("<< /Length "+cont.length+" >>\nstream\n"), cont, enc.encode("\nendstream")),
-    unisciBytes(enc.encode("<< /Type /XObject /Subtype /Image /Width "+w+" /Height "+h+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+jpg.length+" >>\nstream\n"), jpg, enc.encode("\nendstream"))
-  ];
-  const parti = [], offs = []; let pos = 0;
-  const scrivi = b => { parti.push(b); pos += b.length; };
-  scrivi(enc.encode("%PDF-1.4\n"));
-  oggetti.forEach((o,i) => { offs.push(pos); scrivi(enc.encode((i+1)+" 0 obj\n")); scrivi(o); scrivi(enc.encode("\nendobj\n")); });
-  const xref = pos;
-  let x = "xref\n0 "+(oggetti.length+1)+"\n0000000000 65535 f \n";
-  offs.forEach(o => { x += String(o).padStart(10,"0")+" 00000 n \n"; });
-  x += "trailer\n<< /Size "+(oggetti.length+1)+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF\n";
-  scrivi(enc.encode(x));
-  return new Blob(parti, {type:"application/pdf"});
-}
-async function scaricaLocandinaPdf(url, btn){
-  const nome = nomeLocandina(url), prima = btn ? btn.textContent : "";
-  if (btn){ btn.disabled = true; btn.textContent = "Preparo il PDF…"; }
-  try {
-    const res = await fetch(url); if (!res.ok) throw new Error("download");
-    const file = await res.blob(); let pdf;
-    if (/pdf/i.test(file.type) || /\.pdf(\?|$)/i.test(url)) pdf = new Blob([file], {type:"application/pdf"});
-    else {
-      const bmp = await createImageBitmap(file);
-      const cv = document.createElement("canvas"); cv.width = bmp.width; cv.height = bmp.height;
-      const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(bmp,0,0);
-      const jpg = await new Promise((ok,ko) => cv.toBlob(b => b ? ok(b) : ko(new Error("immagine")), "image/jpeg", .92));
-      pdf = pdfDaJpeg(new Uint8Array(await jpg.arrayBuffer()), bmp.width, bmp.height);
-    }
-    const a = document.createElement("a"); a.href = URL.createObjectURL(pdf); a.download = nome+".pdf";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  } catch(e){ window.open(url, "_blank", "noopener"); }
-  finally { if (btn){ btn.disabled = false; btn.textContent = prima; } }
-}
 const campoAllegato = url => '<div class="full"><input type="hidden" id="fAll" value="'+esc(url||"")+'">'+
   '<label for="fFile">Locandina da allegare <small style="color:var(--muted)">(va con Mail e WhatsApp; con gli SMS non parte) · immagine o PDF, massimo 6 MB</small><input type="file" id="fFile" accept="image/*,application/pdf"></label>'+
   '<p class="hint" id="allStato"></p></div>';
 function attivaAllegato(){
   const st = $("#allStato"), f = $("#fFile");
   const ridisegna = () => { const u = $("#fAll").value;
-    st.innerHTML = u ? '📎 Allegata: <a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(decodeURIComponent(u.split("/").pop()).replace(/^\d+_/,""))+'</a> · <button type="button" class="btn sec" id="allTogli">Togli</button> <button type="button" class="btn sec" id="allPdf">Scarica PDF</button>' : 'Nessun file allegato.';
-    if (u) { $("#allTogli").onclick = () => { $("#fAll").value = ""; f.value = ""; ridisegna(); }; $("#allPdf").onclick = () => scaricaLocandinaPdf(u, $("#allPdf")); } };
+    st.innerHTML = u ? '📎 Allegata: <a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(decodeURIComponent(u.split("/").pop()).replace(/^\d+_/,""))+'</a> · <button type="button" class="btn sec" id="allTogli">Togli</button>' : 'Nessun file allegato.';
+    if (u) $("#allTogli").onclick = () => { $("#fAll").value = ""; f.value = ""; ridisegna(); }; };
   ridisegna();
   f.onchange = async () => {
     const file = f.files[0]; if (!file) return;
