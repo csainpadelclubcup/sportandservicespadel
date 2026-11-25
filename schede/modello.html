@@ -139,6 +139,8 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 body.giocatore .solo-maestro{display:none!important}
 body.maestro .solo-giocatore{display:none!important}
 
+/* telefono aperto / tablet piccolo: 2 foto per riga invece di una gigante */
+@media (min-width:480px) and (max-width:700px){.items{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){
   .cover,.cover:has(.ritratto){grid-template-columns:1fr;text-align:center;background:var(--slate);padding:18px 14px 12px} .cover img.logo,.cover .titoli,.cover .ritratto{grid-column:1;justify-self:center} .cover img.logo{margin:0 auto}
   .wrap{padding:14px 10px 40px} section.page{padding:16px 14px 14px} .sec-title h2{font-size:19px} .area-head{text-align:center} .item{padding:12px} .cover .ritratto{margin:6px auto 4px;width:120px} .cover .titoli{padding-top:0}
