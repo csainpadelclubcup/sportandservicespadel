@@ -414,7 +414,7 @@ function formElenco(k, i){
 /* ============ COMANDI (promozioni, allenamenti) ============ */
 const COMANDI = {
   promozioni: {tab:"Promozioni", cols:["Data invio","Ora invio","Destinatari","Sport","Livello","Canali","Messaggio","Allegato","Stato","Inviati","Esito"], titolo:"Promozioni",
-    spiega:"Promozioni per corsi, lezioni, clinic e tornei. Scegli il giorno, il database dei destinatari, sport, livello e canali e scrivi il messaggio ({nome} mette il nome di ognuno). Puoi allegare la locandina. Dal giorno e dall'ora di invio i messaggi partono da soli, seguendo l'ordine del database: 3 persone ogni 30 minuti, dalle 9 alle 22 (se non finisce, riprende il giorno dopo alle 9). Mail e SMS in automatico; WhatsApp parte quando scrivi «Invia WhatsApp» in chat, con il PC acceso. Mail a «Provenienza sito» da info@sportandservicespadel.it, agli altri database da Gianluca Micarelli."},
+    spiega:"Promozioni per corsi, lezioni, clinic e tornei. Scegli il giorno, il database dei destinatari, sport, livello e canali e scrivi il messaggio ((nome) mette il nome di ognuno). Puoi allegare la locandina. Dal giorno e dall'ora di invio i messaggi partono da soli, seguendo l'ordine del database: 3 persone ogni 30 minuti, dalle 9 alle 22 (se non finisce, riprende il giorno dopo alle 9). Mail e SMS in automatico; WhatsApp parte quando scrivi «Invia WhatsApp» in chat, con il PC acceso. Mail a «Provenienza sito» da info@sportandservicespadel.it, agli altri database da Gianluca Micarelli."},
   allenamenti: {tab:"Allenamenti", cols:["Data invio","Ora invio","Tipo","Giorno","Ora","Sport","Livello","Canali","Frase in più","Allegato","Stato","Inviati","Esito"], titolo:"Richieste",
     spiega:"Richieste di disponibilità ed allenamento ai contatti del DATABASE RICHIESTE. Scegli il tipo di richiesta, sport, livello e canali: il messaggio è già pronto, col solo nome di ognuno e senza link (vedi l'anteprima). Dal giorno e dall'ora di invio parte da solo, seguendo l'ordine del database: 3 persone ogni 30 minuti, dalle 9 alle 22 (se non finisce, riprende il giorno dopo alle 9). WhatsApp parte quando scrivi «Invia WhatsApp»."}
 };
@@ -454,13 +454,14 @@ async function vistaComandi(k, refresh, msg){
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ tr.onclick=()=>formComando(k,+tr.dataset.i); tr.onkeydown=e=>{ if(e.key==="Enter") formComando(k,+tr.dataset.i); }; });
 }
 const LIVELLI_DB = ["principiante","medio","alto","classificato"];
-const TIPI_RICH = [["allenamento","Cerco giocatore per allenamento (giorno e ora)"],["corso1","Corso – testo 1 (preferenze e match)"],["corso2","Corso – testo 2 (quando puoi giocare)"],["lezioni","Lezioni"],["partite","Partite"]];
+const TIPI_RICH = [["allenamento","Cerco giocatore per allenamento (giorno e ora)"],["corso1","Corso – testo 1 (preferenze e match)"],["corso2","Corso – testo 2 (quando puoi giocare)"],["lezioni","Lezioni"],["partite","Partite"],["weekend","Partite weekend (padel)"]];
 const TESTI_RICH = {
   allenamento: "Ciao {nome}, fammi sapere se {giorno} alle {ora} puoi giocare.",
   corso1: "Ciao {nome}, fammi sapere se in questa settimana hai preferenze particolari e se nel giorno dell'allenamento vuoi restare dopo per match. Scrivimi anche giorni e fascia oraria in questa settimana in cui vorresti fare match.",
   corso2: "Ciao {nome}, scrivimi quando puoi giocare questa settimana ed eventualmente se vuoi restare dopo per match.",
   lezioni: "Ciao {nome}, scrivimi se questa settimana vuoi giocare ed in caso indicami anche fascia oraria in cui sei disponibile.",
-  partite: "Ciao {nome}, fammi sapere se questa settimana vuoi giocare, in caso affermativo scrivimi anche fascia oraria."
+  partite: "Ciao {nome}, fammi sapere se questa settimana vuoi giocare, in caso affermativo scrivimi anche fascia oraria.",
+  weekend: "Ciao {nome}, fammi sapere come sei messo questo weekend, eventualmente scrivimi le fasce orarie in cui puoi giocare."
 };
 function giornoIt(dmy){ const d = parseDmy(dmy); return d ? GIORNI[d.getDay()]+" "+String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0") : "(giorno)"; }
 function testoRich(t, nome, giorno, ora, frase){ return (TESTI_RICH[t]||TESTI_RICH.allenamento).replace("{nome}",nome).replace("{giorno}",giornoIt(giorno)).replace("{ora}",ora||"(ora)")+(frase?" "+frase:""); }
@@ -549,7 +550,7 @@ function formComando(k, i){
          '<label for="f2">Sport<select id="f2">'+opzSel(["","padel","tennis"],r[3],"Tutti")+'</select></label>'+
          '<label for="f3">Livello<select id="f3">'+opzSel([""].concat(LIVELLI_DB),r[4],"Tutti i livelli")+'</select></label>'+
          campoCanali(can)+
-         '<label for="f5" class="full">Messaggio<textarea id="f5" rows="6" required placeholder="Ciao {nome}, giovedì promozione padel…">'+esc(r[6])+'</textarea></label>'+
+         '<label for="f5" class="full">Messaggio<textarea id="f5" rows="6" required placeholder="Ciao (nome), giovedì promozione padel…">'+esc(r[6])+'</textarea></label>'+
          campoAllegato(r[7])+
          '<p class="full hint" id="fconta"></p>';
   } else {
