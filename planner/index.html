@@ -414,9 +414,9 @@ function formElenco(k, i){
 /* ============ COMANDI (promozioni, allenamenti) ============ */
 const COMANDI = {
   promozioni: {tab:"Promozioni", cols:["Data invio","Ora invio","Destinatari","Sport","Livello","Canali","Messaggio","Allegato","Stato","Inviati","Esito"], titolo:"Promozioni",
-    spiega:"Promozioni per corsi, lezioni, clinic e tornei. Scegli il giorno, il database dei destinatari, sport, livello e canali e scrivi il messaggio ((nome) mette il nome di ognuno). Puoi allegare la locandina. Dal giorno e dall'ora di invio i messaggi partono da soli, seguendo l'ordine del database: 3 persone ogni 30 minuti, dalle 9 alle 22 (se non finisce, riprende il giorno dopo alle 9). Mail e SMS in automatico; WhatsApp parte quando scrivi «Invia WhatsApp» in chat, con il PC acceso. Mail a «Provenienza sito» da info@sportandservicespadel.it, agli altri database da Gianluca Micarelli."},
+    spiega:"Promozioni per corsi, lezioni, clinic e tornei. Scegli il giorno, i gruppi dei destinatari (nessun gruppo = tutti), sport, livello e canali e scrivi il messaggio ((nome) mette il nome di ognuno). Puoi allegare la locandina. Dal giorno e dall'ora di invio i messaggi partono da soli, seguendo l'ordine del database: 3 persone ogni 30 minuti, dalle 9 alle 22 (se non finisce, riprende il giorno dopo alle 9). Mail e SMS in automatico; WhatsApp parte quando scrivi «Invia WhatsApp» in chat, con il PC acceso. Mail a «Provenienza sito» da info@sportandservicespadel.it, agli altri database da Gianluca Micarelli."},
   allenamenti: {tab:"Allenamenti", cols:["Data invio","Ora invio","Tipo","Giorno","Ora","Sport","Livello","Canali","Frase in più","Allegato","Stato","Inviati","Esito"], titolo:"Richieste",
-    spiega:"Richieste di disponibilità ed allenamento ai contatti del DATABASE RICHIESTE. Scegli il tipo di richiesta, sport, livello e canali: il messaggio è già pronto, col solo nome di ognuno e senza link (vedi l'anteprima). Dal giorno e dall'ora di invio parte da solo, seguendo l'ordine del database: 3 persone ogni 30 minuti, dalle 9 alle 22 (se non finisce, riprende il giorno dopo alle 9). WhatsApp parte quando scrivi «Invia WhatsApp»."}
+    spiega:"Richieste di disponibilità ed allenamento ai contatti di CONTATTI, al gruppo del tipo scelto (allenamento 2, corso 6, lezioni 7, partite 4, partite weekend 5; chi ha 8 riceve sempre). Scegli il tipo di richiesta, sport, livello e canali: il messaggio è già pronto, col solo nome di ognuno e senza link (vedi l'anteprima). Dal giorno e dall'ora di invio parte da solo, seguendo l'ordine del database: 3 persone ogni 30 minuti, dalle 9 alle 22 (se non finisce, riprende il giorno dopo alle 9). WhatsApp parte quando scrivi «Invia WhatsApp»."}
 };
 async function caricaComandi(k){
   const c = COMANDI[k]; const v = await leggi(ID.comandi, c.tab+"!A2:"+lettera(c.cols.length)+"500");
@@ -454,6 +454,14 @@ async function vistaComandi(k, refresh, msg){
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ tr.onclick=()=>formComando(k,+tr.dataset.i); tr.onkeydown=e=>{ if(e.key==="Enter") formComando(k,+tr.dataset.i); }; });
 }
 const LIVELLI_DB = ["principiante","medio","alto","classificato"];
+const GRUPPI = [["1","Richiesta sito"],["2","Allenamento"],["3","Promozioni"],["4","Partite"],["5","Partite weekend"],["6","Allievi corso"],["7","Lezioni private"]];
+const GRUPPI_RICH = {allenamento:"2", corso1:"6", corso2:"6", lezioni:"7", partite:"4", weekend:"5"};
+const listaGr = x => String(x||"").split(/[^0-9]+/).filter(Boolean);
+// Contatto nei gruppi voluti? (nessun gruppo voluto = tutti; chi ha 8 è in tutti i gruppi)
+const inGruppi = (g, voluti) => { const s = listaGr(g[7]); return !voluti.length || s.includes("8") || voluti.some(x=>s.includes(x)); };
+// Vecchi valori dei Destinatari (prima del 27/11/2026) → gruppi
+const grDaDest = d => { const s = String(d||"").trim().toLowerCase(); if (!s || s==="tutti") return [];
+  if (s==="database promozioni") return ["3"]; if (s==="database richieste") return ["2","4","5","6","7"]; if (s==="provenienza sito") return ["1"]; return listaGr(s); };
 const TIPI_RICH = [["allenamento","Cerco giocatore per allenamento (giorno e ora)"],["corso1","Corso – testo 1 (preferenze e match)"],["corso2","Corso – testo 2 (quando puoi giocare)"],["lezioni","Lezioni"],["partite","Partite"],["weekend","Partite weekend (padel)"]];
 const TESTI_RICH = {
   allenamento: "Ciao {nome}, fammi sapere se {giorno} alle {ora} puoi giocare.",
@@ -543,10 +551,11 @@ function formComando(k, i){
   const bloccato = i>=0 && r[c.cols.indexOf("Stato")] && !/da fare/i.test(r[c.cols.indexOf("Stato")]);
   let h = '<form class="form" id="frm"><h3 class="full">'+(i>=0?'Modifica comando':'Nuovo comando')+'</h3>';
   if (k==="promozioni"){
-    const dest = r[2]||"Database Promozioni", can = (r[5]||"SMS, Mail").toLowerCase();
+    const grSel = grDaDest(r[2]), can = (r[5]||"SMS, Mail").toLowerCase();
     h += '<label for="f0">Giorno di invio<input id="f0" type="date" value="'+dmyToIso(r[0])+'" required></label>'+
          '<label for="fh">Ora di invio<input id="fh" type="time" value="'+esc(r[1]||"09:00")+'" required></label>'+
-         '<label for="f1">Destinatari<select id="f1">'+opzSel(["Database Promozioni","Database Richieste","Provenienza sito","Tutti"],dest)+'</select></label>'+
+         '<fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:14px;color:var(--muted);font-weight:600">Destinatari: gruppi (nessuno spuntato = tutti)</legend><div class="check">'+
+         GRUPPI.map(([v,l])=>'<label><input type="checkbox" class="gr" value="'+v+'"'+(grSel.includes(v)?' checked':'')+'> '+v+' '+esc(l)+'</label>').join("")+'</div><input type="hidden" id="f1"></fieldset>'+
          '<label for="f2">Sport<select id="f2">'+opzSel(["","padel","tennis"],r[3],"Tutti")+'</select></label>'+
          '<label for="f3">Livello<select id="f3">'+opzSel([""].concat(LIVELLI_DB),r[4],"Tutti i livelli")+'</select></label>'+
          campoCanali(can)+
@@ -574,9 +583,9 @@ function formComando(k, i){
   $("#annulla").onclick = ()=>box.innerHTML="";
   attivaAllegato();
   const okF = (f,v)=>{ const x = String(v||"").trim().toLowerCase(); return !f || !x || x==="tutti" || x===f; };
-  const elenco = ()=>{ if (k!=="promozioni") return cache.dbR||[]; const d = $("#f1").value;
-    const tutti = d==="Tutti";
-    return (tutti||d==="Database Richieste" ? cache.dbR||[] : []).concat(tutti||d==="Database Promozioni" ? cache.dbP||[] : [], tutti||d==="Provenienza sito" ? cache.dbS||[] : []); };
+  const grVoluti = ()=>{ if (k==="promozioni"){ const v=[...box.querySelectorAll("input.gr:checked")].map(x=>x.value); $("#f1").value = v.length ? v.join(",") : "Tutti"; return v; }
+    const t = (box.querySelector('input[name="tipo"]:checked')||{}).value||"allenamento"; return [GRUPPI_RICH[t]||"2"]; };
+  const elenco = ()=>{ const v = grVoluti(); return (cache.dbC||[]).filter(g=>inGruppi(g,v)); };
   const conta = ()=>{ const s = $("#f2").value, l = $("#f3").value, visti = {}; let n = 0;
     elenco().forEach(g=>{ if (!String(g[0]||"").trim() || !okF(s,g[5]) || !okF(l,g[6])) return; const key = String(g[2]||g[4]||"").replace(/\s/g,"").toLowerCase(); if (!key || visti[key]) return; visti[key] = 1; n++; });
     $("#fconta").textContent = "Destinatari trovati: "+n+(n?" · 3 ogni 30 minuti: circa "+Math.max(0,Math.ceil(n/3)-1)*30+" minuti per mandarli tutti (dalle 9 alle 22).":"");
@@ -1249,9 +1258,7 @@ async function mostra(v, refresh){
     else if (v==="planner") await vistaPlanner(refresh);
     else if (v==="schede") await vistaSchede(refresh);
     else if (ELENCHI[v]) await vistaElenco(v, refresh);
-    else { if (!cache.dbR || refresh) { try{ cache.dbR = await leggi(ID.comandi, "DATABASE RICHIESTE!A2:J1000"); }catch(e){ cache.dbR = []; } }
-      if (v==="promozioni" && (!cache.dbP || refresh)) { try{ cache.dbP = await leggi(ID.comandi, "DATABASE PROMOZIONI!A2:J1000"); }catch(e){ cache.dbP = []; } }
-      if (v==="promozioni" && (!cache.dbS || refresh)) { try{ cache.dbS = await leggi(ID.comandi, "PROVENIENZA SITO!A2:I1000"); }catch(e){ cache.dbS = []; } }
+    else { if (!cache.dbC || refresh) { try{ cache.dbC = await leggi(ID.comandi, "CONTATTI!A2:K1000"); }catch(e){ cache.dbC = []; } }
       await vistaComandi(v, refresh); }
     $("#stato").textContent = "";
   }catch(e){
