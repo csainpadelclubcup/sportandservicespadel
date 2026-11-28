@@ -113,6 +113,8 @@ section.page{background:var(--paper);border-radius:14px;padding:22px 22px 18px;m
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{background:var(--tint);text-align:left;font-weight:700;color:var(--slate);padding:8px 10px;border-bottom:1px solid var(--line)}
 td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td{overflow-wrap:anywhere}
+@media (max-width:600px){table.rt thead{display:none}table.rt,table.rt tbody,table.rt tr,table.rt td{display:block;width:100%;box-sizing:border-box}table.rt tr{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:4px 0;background:#fff}table.rt td{display:flex;gap:10px;justify-content:space-between;border-bottom:1px dashed var(--line);padding:7px 12px;text-align:right}table.rt td:last-child{border-bottom:none}table.rt td::before{content:attr(data-l);font-weight:700;color:var(--slate);text-align:left;flex:none}table.rt td[colspan]{display:block;text-align:left}table.rt td[colspan]::before{content:none}}
 .kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:0 22px}
 .kv div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0}
 .kv span:first-child{color:var(--muted)}
@@ -357,15 +359,15 @@ function render(){
 
   /* 2 DOCUMENTI */
   h+=`<section class="page solo-maestro">${titolo(2,"Documenti","solo maestro")}
-    <table><thead><tr><th>Documento</th><th>Stato</th><th>Scadenza</th><th>Note</th></tr></thead><tbody>
-    ${S.documenti.map(d=>`<tr><td><b>${esc(d.nome)}</b></td><td>${badge(d.stato)}</td><td>${d.scadenza?fmtData(d.scadenza):"–"}</td><td>${esc(d.note)||"–"}</td></tr>`).join("")}
+    <table class="rt"><thead><tr><th>Documento</th><th>Stato</th><th>Scadenza</th><th>Note</th></tr></thead><tbody>
+    ${S.documenti.map(d=>`<tr><td data-l="Documento"><b>${esc(d.nome)}</b></td><td data-l="Stato">${badge(d.stato)}</td><td data-l="Scadenza">${d.scadenza?fmtData(d.scadenza):"–"}</td><td data-l="Note">${esc(d.note)||"–"}</td></tr>`).join("")}
     </tbody></table></section>`;
 
   /* 3 PAGAMENTI */
   h+=`<section class="page solo-maestro">${titolo(3,"Pagamenti","solo maestro")}
     <div class="summary"><div class="box"><b>€ ${totPag.toLocaleString("it-IT")}</b>totale versato</div><div class="box"><b>${S.pagamenti.length}</b>pagamenti registrati</div></div>
-    <table><thead><tr><th>Data</th><th>Voce</th><th>Importo</th><th>Metodo</th><th>Ricevuta</th></tr></thead><tbody>
-    ${S.pagamenti.length?S.pagamenti.map(p=>`<tr><td>${fmtData(p.data)}</td><td>${esc(p.voce)}</td><td>€ ${esc(p.importo)}</td><td>${esc(p.metodo)}</td><td>${esc(p.ricevuta)||"–"}</td></tr>`).join(""):`<tr><td colspan="5">${vuoto("nessun pagamento registrato")}</td></tr>`}
+    <table class="rt"><thead><tr><th>Data</th><th>Voce</th><th>Importo</th><th>Metodo</th><th>Ricevuta</th></tr></thead><tbody>
+    ${S.pagamenti.length?S.pagamenti.map(p=>`<tr><td data-l="Data">${fmtData(p.data)}</td><td data-l="Voce">${esc(p.voce)}</td><td data-l="Importo">€ ${esc(p.importo)}</td><td data-l="Metodo">${esc(p.metodo)}</td><td data-l="Ricevuta">${esc(p.ricevuta)||"–"}</td></tr>`).join(""):`<tr><td colspan="5">${vuoto("nessun pagamento registrato")}</td></tr>`}
     </tbody></table></section>`;
 
   /* 4 PRESENZE */
