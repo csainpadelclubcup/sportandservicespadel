@@ -1101,18 +1101,12 @@ async function schConsulta(sid){
   $("#ind").onclick = ()=>{ schUI.v = "lista"; vistaSchede(); };
   $("#modsc").onclick = ()=>{ schUI.v="wizSc"; schUI.sid=sid; schUI.pid=cc(sc,1); schUI.step=0; schUI.key=null; vistaSchede(); };
   try {
-    const dati = schDatiDb(sid).dati;
-    if (cc(sc,12)) dati.aggiornata = cc(sc,12);
-    const nomi = new Set(); if (dati.fotoProfilo) nomi.add(dati.fotoProfilo);
-    ["tecnica","atletica","tattica","mentale"].forEach(k => (dati[k]||[]).forEach(x => (x.foto||[]).forEach(f => nomi.add(f))));
-    const [mod, vid, ...urls] = await Promise.all([
+    const [mod, x] = await Promise.all([
       schModello ? schModello : fetch("../schede/modello.html", {cache:"no-cache"}).then(r => { if (!r.ok) throw 0; return r.text(); }),
-      salvaApi({op:"leggiVideo", id: sid}).catch(() => ({})),
-      ...[...nomi].map(n => salvaApi({op:"fotoUrl", id: sid, nome: n}).catch(() => ""))
+      salvaApi({op:"leggiScheda", id: sid})
     ]);
     schModello = mod;
-    dati.fotoData = {}; [...nomi].forEach((n,i) => { if (urls[i]) dati.fotoData[n] = urls[i]; });
-    ["tecnica","atletica","tattica","mentale"].forEach(k => (dati[k]||[]).forEach(x => { const l = (vid||{})[x.voce]; if (l && l.length) x.video = l; }));
+    const dati = Object.assign({}, x.dati, {fotoData: x.fotoData || {}});
     const h = mod.replace("/*__DATI__*/null", JSON.stringify(dati).replace(/</g,"\\u003c")).replace('/*__MODO__*/"giocatore"', '"maestro"');
     const f = $("#cfr"); if (!f || schUI.v !== "consulta" || schUI.sid !== sid) return;
     f.onload = () => { const d = f.contentDocument, fit = () => { try { f.style.height = (Math.ceil(d.body.getBoundingClientRect().height)+4)+"px"; } catch(e){} }; fit(); setTimeout(fit,400); setTimeout(fit,1500); try { new ResizeObserver(fit).observe(d.body); } catch(e){} };
