@@ -756,21 +756,22 @@ async function vistaSchede(refresh, msg){
   if (!SCH || refresh){ v.innerHTML = '<p class="msg info">Leggo il database schede…</p>'; await schCarica(true); }
   if (schUI.v==="menu") return schMenu(msg);
   if (schUI.v==="stampa") return schStampa(schUI.sid);
+  if (schUI.v==="consulta") return schConsulta(schUI.sid);
   if (schUI.v==="persona") return schPersona(msg);
   if (schUI.v==="wizAn") return schWizAn();
   if (schUI.v==="wizSc") return schWizSc();
   return schLista(msg);
 }
 function schLista(msg){
-  const v = $("#view"), q = schUI.q.toLowerCase(), stampa = schUI.mode==="stampa" || schUI.mode==="cerca", cerca = schUI.mode==="cerca";
+  const v = $("#view"), q = schUI.q.toLowerCase(), consulta = schUI.mode==="consulta", stampa = schUI.mode==="stampa" || schUI.mode==="cerca" || consulta, cerca = schUI.mode==="cerca";
   const tutte = schPers();
   const pers = tutte.filter(({r})=>!q || r.join(" ").toLowerCase().includes(q)).sort((a,b)=>(cc(a.r,1)+cc(a.r,2)).localeCompare(cc(b.r,1)+cc(b.r,2),"it"));
-  let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><button class="btn sec" id="menu">‹ Schede</button><h2 style="margin-right:auto">'+(cerca?'Cerca un allievo':stampa?'Stampa: scegli la scheda':'Modifica: scegli l\'allievo')+' <small style="color:var(--muted);font-size:16px">('+tutte.length+')</small></h2>'+
+  let h = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><button class="btn sec" id="menu">‹ Schede</button><h2 style="margin-right:auto">'+(cerca?'Cerca un allievo':consulta?'Consulta: scegli la scheda':stampa?'Stampa: scegli la scheda':'Modifica: scegli l\'allievo')+' <small style="color:var(--muted);font-size:16px">('+tutte.length+')</small></h2>'+
     '<input id="cerca" placeholder="Cerca allievo…" value="'+esc(schUI.q)+'" aria-label="Cerca">'+(stampa?'':'<button class="btn" id="nuovo">Nuovo allievo</button>')+'<button class="btn sec" id="aggiorna">Aggiorna</button></div>'+
     '<div class="tbl"><table style="font-size:18px"><thead><tr><th>Allievo</th><th>Schede</th></tr></thead><tbody>';
   if (!pers.length) h += '<tr><td colspan="2" class="vuoto">'+(tutte.length?'Nessun allievo con questa ricerca.':'Nessun allievo: premi Nuovo allievo.')+'</td></tr>';
   pers.forEach(({r})=>{
-    const sp = stampa ? schDi(cc(r,0)).map(x=>'<button class="btn" data-st="'+esc(cc(x.r,0))+'">'+(cerca?'Apri ':'Stampa ')+esc(cc(x.r,3).toLowerCase())+'</button>').join(" ") : schDi(cc(r,0)).map(x=>pillSport(cc(x.r,3))).join(" ");
+    const sp = stampa ? schDi(cc(r,0)).map(x=>'<button class="btn" data-st="'+esc(cc(x.r,0))+'">'+(cerca?'Apri ':consulta?'Consulta ':'Stampa ')+esc(cc(x.r,3).toLowerCase())+'</button>').join(" ") : schDi(cc(r,0)).map(x=>pillSport(cc(x.r,3))).join(" ");
     h += '<tr class="click" data-p="'+esc(cc(r,0))+'" tabindex="0"><td>'+esc(cc(r,1)+" "+cc(r,2))+'</td><td>'+(sp||'<span class="vuoto">nessuna</span>')+'</td></tr>';
   });
   h += '</tbody></table></div><p class="hint">Dati nel foglio Google «Database Schede Allievi». Le modifiche fatte qui vanno subito nel foglio; ogni sera Claude le porta da solo nelle schede online e nel sito. Se ti serve subito scrivi a Claude «Aggiorna schede». In aereo scrivi direttamente nel foglio con l\'app Fogli Google (disponibile offline): le modifiche si sincronizzano da sole quando torni online.</p>';
@@ -779,7 +780,7 @@ function schLista(msg){
   if ($("#nuovo")) $("#nuovo").onclick = ()=>{ schUI = {v:"wizAn", pid:null, sid:null, step:0, draft:Array(12).fill(""), q:schUI.q, mode:"modifica"}; vistaSchede(); };
   $("#aggiorna").onclick = ()=>mostra("schede",true);
   v.querySelectorAll("tr[data-p]").forEach(tr=>{ const ap = ()=>{ if (stampa) return; schUI.v="persona"; schUI.pid=tr.dataset.p; vistaSchede(); }; tr.onclick=ap; tr.onkeydown=e=>{ if(e.key==="Enter") ap(); }; });
-  v.querySelectorAll("[data-st]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); schUI.v="stampa"; schUI.sid=b.dataset.st; vistaSchede(); });
+  v.querySelectorAll("[data-st]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); schUI.v = consulta ? "consulta" : "stampa"; schUI.sid=b.dataset.st; vistaSchede(); });
   $("#menu").onclick = ()=>{ schUI.v="menu"; vistaSchede(); };
   if (cerca){ const cx = $("#cerca"); if (cx) cx.focus(); }
 }
@@ -1072,6 +1073,7 @@ function schMenu(msg){
     find:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
     add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
     mod:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
+    con:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
     prt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><rect x="7" y="14" width="10" height="7"/></svg>'
   };
   v.innerHTML = (msg?'<p class="msg ok">'+esc(msg)+'</p>':'')+'<div class="bar"><h2 style="margin-right:auto">Schede tecniche <small style="color:var(--muted);font-size:16px">('+n+' allievi)</small></h2></div>'+
@@ -1079,14 +1081,43 @@ function schMenu(msg){
     '<button class="tile big" data-az="find">'+ic.find+'<b>Cerca</b><small>Trova un allievo e guarda la sua scheda</small></button>'+
     '<button class="tile" data-az="add">'+ic.add+'<b>Aggiungi scheda</b><small>Nuovo allievo, poi scheda tennis o padel</small></button>'+
     '<button class="tile" data-az="mod">'+ic.mod+'<b>Modifica</b><small>Scegli un allievo e compila voce per voce</small></button>'+
-    '<button class="tile" data-az="prt">'+ic.prt+'<b>Stampa</b><small>Pagina riepilogativa A4 da consegnare</small></button></div>'+
+    '<button class="tile" data-az="prt">'+ic.prt+'<b>Stampa</b><small>Pagina riepilogativa A4 da consegnare</small></button>'+
+    '<button class="tile" data-az="con">'+ic.con+'<b>Consulta</b><small>La scheda come la vedi sul sito</small></button></div>'+
     '<p class="hint">Per aggiungere una scheda tennis o padel a un allievo che c\'è già: Modifica, scegli il nome, poi «Crea scheda».</p>';
   v.querySelectorAll("[data-az]").forEach(b=>b.onclick=()=>{
     const a = b.dataset.az;
     if (a==="add") schUI = {v:"wizAn", pid:null, sid:null, step:0, draft:Array(12).fill(""), q:"", mode:"modifica"};
-    else { schUI.v = "lista"; schUI.mode = a==="prt" ? "stampa" : a==="find" ? "cerca" : "modifica"; schUI.q = ""; }
+    else { schUI.v = "lista"; schUI.mode = a==="prt" ? "stampa" : a==="con" ? "consulta" : a==="find" ? "cerca" : "modifica"; schUI.q = ""; }
     vistaSchede();
   });
+}
+
+/* ---------- consulta: la scheda con la grafica del sito ---------- */
+let schModello = null;
+async function schConsulta(sid){
+  const v = $("#view"), sc = SCH.sc.slice(1).find(r => cc(r,0) === sid);
+  if (!sc){ schUI.v = "lista"; return schLista(); }
+  v.innerHTML = '<div class="bar"><button class="btn sec" id="ind">‹ Indietro</button><h2 style="margin-right:auto">Consulta: '+esc(cc(sc,2))+' · '+esc(cc(sc,3).toLowerCase())+'</h2><button class="btn sec" id="modsc">Modifica scheda</button></div><div id="cmsg"><p class="msg info">Preparo la scheda…</p></div><iframe id="cfr" title="Scheda tecnica" style="width:100%;border:0;display:block;min-height:300px;background:#fff;border-radius:12px"></iframe>';
+  $("#ind").onclick = ()=>{ schUI.v = "lista"; vistaSchede(); };
+  $("#modsc").onclick = ()=>{ schUI.v="wizSc"; schUI.sid=sid; schUI.pid=cc(sc,1); schUI.step=0; schUI.key=null; vistaSchede(); };
+  try {
+    const dati = schDatiDb(sid).dati;
+    if (cc(sc,12)) dati.aggiornata = cc(sc,12);
+    const nomi = new Set(); if (dati.fotoProfilo) nomi.add(dati.fotoProfilo);
+    ["tecnica","atletica","tattica","mentale"].forEach(k => (dati[k]||[]).forEach(x => (x.foto||[]).forEach(f => nomi.add(f))));
+    const [mod, vid, ...urls] = await Promise.all([
+      schModello ? schModello : fetch("../schede/modello.html", {cache:"no-cache"}).then(r => { if (!r.ok) throw 0; return r.text(); }),
+      salvaApi({op:"leggiVideo", id: sid}).catch(() => ({})),
+      ...[...nomi].map(n => salvaApi({op:"fotoUrl", id: sid, nome: n}).catch(() => ""))
+    ]);
+    schModello = mod;
+    dati.fotoData = {}; [...nomi].forEach((n,i) => { if (urls[i]) dati.fotoData[n] = urls[i]; });
+    ["tecnica","atletica","tattica","mentale"].forEach(k => (dati[k]||[]).forEach(x => { const l = (vid||{})[x.voce]; if (l && l.length) x.video = l; }));
+    const h = mod.replace("/*__DATI__*/null", JSON.stringify(dati).replace(/</g,"\\u003c")).replace('/*__MODO__*/"giocatore"', '"maestro"');
+    const f = $("#cfr"); if (!f || schUI.v !== "consulta" || schUI.sid !== sid) return;
+    f.onload = () => { const d = f.contentDocument, fit = () => { try { f.style.height = (Math.ceil(d.body.getBoundingClientRect().height)+4)+"px"; } catch(e){} }; fit(); setTimeout(fit,400); setTimeout(fit,1500); try { new ResizeObserver(fit).observe(d.body); } catch(e){} };
+    f.srcdoc = h; $("#cmsg").innerHTML = "";
+  } catch(e){ const m = $("#cmsg"); if (m) m.innerHTML = '<p class="msg err">Non riesco ad aprire la scheda: controlla la connessione e riprova.</p>'; }
 }
 
 /* ---------- stampa: pagina riepilogativa A4 ---------- */
